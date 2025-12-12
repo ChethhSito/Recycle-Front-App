@@ -1,13 +1,25 @@
 import React from 'react';
-import { View, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import {
+    View,
+    Image,
+    StyleSheet,
+    TouchableOpacity,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    TouchableWithoutFeedback,
+    Keyboard
+} from 'react-native';
 import { Text, TextInput, Button, useTheme } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 import Svg, { Path } from 'react-native-svg';
 import { GoogleIcon } from '../../../shared/svgs/google';
 
 
-const { width } = Dimensions.get('window');
 
+const { width, height } = Dimensions.get('window');
+const os = Platform.OS;
+console.log(os);
 
 
 export const LoginScreen = () => {
@@ -20,99 +32,100 @@ export const LoginScreen = () => {
     const onSubmit = (data) => console.log(data);
 
     return (
-        <View style={[styles.container, { backgroundColor: '#B7ECDD' }]}>
-
-            {/* 1. ILUSTRACIÓN SUPERIOR */}
-            <View style={styles.header}>
-                {/* Aquí iría tu imagen de los personajes reciclando */}
-                <Image
-                    alt='Recycle'
-                    source={require('../../../../assets/reciclaje.jpg')}
-                    style={styles.illustration}
-                    resizeMode="contain"
-                />
-            </View>
-
-            {/* 2. FORMULARIO */}
-            <View style={styles.formContainer}>
-                <Text variant="headlineMedium" style={styles.title}>Inicia Sesión</Text>
-
-                {/* Input Email */}
-                <Controller
-                    control={control}
-                    name="email"
-                    render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            mode="flat"
-                            placeholder="Email:"
-                            placeholderTextColor="#000000"
-                            placeholderOpacity={0.7}
-                            style={styles.input}
-                            value={value}
-                            onChangeText={onChange}
-                            underlineColor="transparent"
-                            activeUnderlineColor="transparent"
-                            left={<TextInput.Icon icon="email" color="#000000" opacity={0.7} />}
-                        />
-                    )}
-                />
-
-                {/* Input Password */}
-                <Controller
-                    control={control}
-                    name="password"
-                    render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            mode="flat"
-                            placeholder="Contraseña:"
-                            placeholderTextColor="#000000"
-                            placeholderOpacity={0.7}
-                            style={styles.input}
-                            value={value}
-                            onChangeText={onChange}
-                            secureTextEntry
-                            underlineColor="transparent"
-                            activeUnderlineColor="transparent"
-                            left={<TextInput.Icon icon="lock" color="#000000" opacity={0.7} />}
-                            right={<TextInput.Icon icon="eye" color="#000000" opacity={0.7} />}
-                        />
-                    )}
-                />
-
-                <TouchableOpacity>
-                    <Text style={styles.forgotPass}>¿Olvidaste tu contraseña?</Text>
-                </TouchableOpacity>
-
-                {/* Botón Iniciar Sesión (Oscuro) */}
-                <Button
-                    mode="contained"
-                    onPress={handleSubmit(onSubmit)}
-                    style={styles.loginBtn}
-                    labelStyle={{ fontSize: 16 }}
-                >
-                    Iniciar Sesión
-                </Button>
-
-                {/* Botón Google (Verde claro) */}
-                <Button
-                    mode="contained"
-                    icon={GoogleIcon}
-                    onPress={() => console.log('Google Login')}
-                    style={styles.googleBtn}
-                    labelStyle={{ color: '#000000', fontSize: 16 }} // Texto oscuro
-                >
-                    Iniciar sesión con Google
-                </Button>
-
-                <View style={styles.registerContainer}>
-                    <Text style={{ color: '#000000', fontSize: 16 }}>¿Aún no tienes Cuenta? </Text>
-                    <TouchableOpacity>
-                        <Text style={{ color: '#fff', fontSize: 16 }}>Regístrate</Text>
-                    </TouchableOpacity>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <KeyboardAvoidingView
+                // CAMBIO 1: Quitamos el array y dejamos solo styles.container
+                // El color de fondo lo manejamos en el estilo directo
+                style={styles.container}
+                behavior={Platform.OS === 'android' ? 'padding' : 'height'}
+                // CAMBIO 2: Esto ayuda a ajustar el teclado
+                keyboardVerticalOffset={Platform.OS === 'android' ? 0 : 20}
+            >
+                {/* 1. ILUSTRACIÓN SUPERIOR */}
+                <View style={styles.header}>
+                    <Image
+                        alt='Recycle'
+                        source={require('../../../../assets/reciclaje.png')} // Cambiado a .jpg según tu archivo real
+                        style={styles.illustration}
+                        resizeMode="contain"
+                    />
                 </View>
 
-            </View>
-        </View>
+                {/* 2. FORMULARIO */}
+                <View style={styles.formContainer}>
+                    <Text variant="headlineMedium" style={styles.title}>Inicia Sesión</Text>
+
+                    {/* Inputs... (igual que antes) */}
+                    <Controller
+                        control={control}
+                        name="email"
+                        render={({ field: { onChange, value } }) => (
+                            <TextInput
+                                mode="flat"
+                                placeholder="Email:"
+                                placeholderTextColor="#000000"
+                                style={styles.input}
+                                value={value}
+                                onChangeText={onChange}
+                                underlineColor="transparent"
+                                activeUnderlineColor="transparent"
+                                left={<TextInput.Icon icon="email" color="#000000" />}
+                            />
+                        )}
+                    />
+
+                    <Controller
+                        control={control}
+                        name="password"
+                        render={({ field: { onChange, value } }) => (
+                            <TextInput
+                                mode="flat"
+                                placeholder="Contraseña:"
+                                placeholderTextColor="#000000"
+                                style={styles.input}
+                                value={value}
+                                onChangeText={onChange}
+                                secureTextEntry
+                                underlineColor="transparent"
+                                activeUnderlineColor="transparent"
+                                left={<TextInput.Icon icon="lock" color="#000000" />}
+                                right={<TextInput.Icon icon="eye" color="#000000" />}
+                            />
+                        )}
+                    />
+
+                    <TouchableOpacity>
+                        <Text style={styles.forgotPass}>¿Olvidaste tu contraseña?</Text>
+                    </TouchableOpacity>
+
+                    <Button
+                        mode="contained"
+                        onPress={handleSubmit(onSubmit)}
+                        style={styles.loginBtn}
+                        labelStyle={{ fontSize: 16 }}
+                    >
+                        Iniciar Sesión
+                    </Button>
+
+                    <Button
+                        mode="contained"
+                        icon={() => <GoogleIcon />} // Asegúrate de pasar el componente así si es SVG
+                        onPress={() => console.log('Google Login')}
+                        style={styles.googleBtn}
+                        labelStyle={{ color: '#000000', fontSize: 16 }}
+                    >
+                        Iniciar sesión con Google
+                    </Button>
+
+                    <View style={styles.registerContainer}>
+                        <Text style={{ color: '#000000', fontSize: 16 }}>¿Aún no tienes Cuenta? </Text>
+                        <TouchableOpacity>
+                            <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Regístrate</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
     );
 };
 
@@ -120,31 +133,31 @@ const styles = StyleSheet.create({
     container: {
         fontFamily: 'InclusiveSans-Regular',
         flex: 1,
-        backgroundColor: '#B7ECDD', // Tu verde de fondo
+        backgroundColor: '#b1eedc', // Tu verde de fondo
     },
     header: {
-        flex: 0.45, // Le damos un poco más de espacio al cielo (45%)
-        justifyContent: 'flex-end', // Esto pega la imagen al "pasto" de abajo
+        // En vez de flex fijo, le damos una altura basada en la pantalla pero flexible
+        height: height * 0.40,
+        justifyContent: 'flex-end',
         alignItems: 'center',
         paddingBottom: 0,
-        marginBottom: -30, // Hacemos que la imagen pise un poco el verde (efecto 3D)
-        zIndex: 1, // Asegura que la imagen esté por encima del borde verde
+        marginBottom: -30, // El truco para que se monte
+        zIndex: 1,
     },
     illustration: {
-        // AL HACERLA MÁS PEQUEÑA, BAJARÁ VISUALMENTE
-        width: width, // 85% del ancho (antes era 100%)
-        height: width, // Mantenemos proporción cuadrada
-        maxHeight: 330,
+        width: width, // 90% del ancho
+        height: '85%', // Ocupa el 85% del header, no más
+        // maxHeight elimina el problema en pantallas muy largas
+        maxHeight: 300,
     },
     formContainer: {
-        backgroundColor: '#00926F',
-        flex: 0.55,
-        // CAMBIO 4: El color VERDE OSCURO ahora va aquí (Pasto)
-        paddingHorizontal: 35,
-        // Añadimos padding superior porque quitamos el espacio del header
+        backgroundColor: '#018f64',
+        flex: 1, // "Toma todo el espacio que sobre" (importante para pantallas largas)
+        paddingHorizontal: 30,
         paddingTop: 25,
-        // CAMBIO 5: Bordes redondeados arriba para efecto "colina"
-
+        minHeight: height,
+        paddingBottom: 20,
+        // justifyContent: 'center', // Opcional: Si quieres centrar verticalmente el form
     },
     title: {
         color: '#000000',

@@ -29,7 +29,7 @@ export default function App() {
         // 2. Pre-cargamos la imagen pesada del Login AQUÍ
         // Así cuando entres al Login, la imagen ya está en memoria RAM
         const imagesToLoad = [
-          require('./assets/reciclaje.jpg'),
+          require('./assets/reciclaje.png'),
         ];
         // Cacheamos las imágenes
         const cacheImages = imagesToLoad.map(image => {
