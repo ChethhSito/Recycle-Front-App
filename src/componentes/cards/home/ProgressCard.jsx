@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Card, Text, ProgressBar, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
-export const ProgressCard = ({ 
+export const ProgressCard = ({
     badgeIcon = 'seed',
     badgeTitle = 'Semilla de Cambio',
     rank = 'Rango 1',
@@ -13,31 +13,31 @@ export const ProgressCard = ({
 }) => {
     const theme = useTheme();
     const componentStyles = styles(theme);
-    
+
     return (
-    <Card style={componentStyles.progressCard}>
-        <Card.Content>
-            <View style={componentStyles.badgeContainer}>
-                <Icon name={badgeIcon} size={40} color="#7CD1AA" />
-                <View style={componentStyles.badgeInfo}>
-                    <Text style={componentStyles.badgeTitle}>{badgeTitle}</Text>
-                    <Text style={componentStyles.badgeRank}>{rank}</Text>
+        <Card style={componentStyles.progressCard}>
+            <Card.Content>
+                <View style={componentStyles.badgeContainer}>
+                    <Icon name={badgeIcon} size={40} color="#7CD1AA" />
+                    <View style={componentStyles.badgeInfo}>
+                        <Text style={componentStyles.badgeTitle}>{badgeTitle}</Text>
+                        <Text style={componentStyles.badgeRank}>{rank}</Text>
+                    </View>
                 </View>
-            </View>
-            <Text style={componentStyles.progressLabel}>TU PROGRESO ACTUAL</Text>
-            <Text style={componentStyles.progressText}>
-                Siguiente nivel: Brote Verde
-            </Text>
-            <ProgressBar 
-                progress={progress} 
-                color="#7CD1AA" 
-                style={componentStyles.progressBar}
-            />
-            <View style={componentStyles.pointsContainer}>
-                <Text style={componentStyles.points}>{currentPoints}/{maxPoints} pts</Text>
-            </View>
-        </Card.Content>
-    </Card>
+                <Text style={componentStyles.progressText}>
+                    Siguiente nivel: Brote Verde
+                </Text>
+                <Text style={componentStyles.progressLabel}>TU PROGRESO ACTUAL</Text>
+                <ProgressBar
+                    progress={progress}
+                    color="#7CD1AA"
+                    style={componentStyles.progressBar}
+                />
+                <View style={componentStyles.pointsContainer}>
+                    <Text style={componentStyles.points}>{currentPoints}/{maxPoints} pts</Text>
+                </View>
+            </Card.Content>
+        </Card>
     );
 };
 
@@ -57,7 +57,7 @@ const styles = (theme) => StyleSheet.create({
     },
     badgeTitle: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 18,
     },
     badgeRank: {
         color: '#fff',
@@ -65,15 +65,16 @@ const styles = (theme) => StyleSheet.create({
     },
     progressLabel: {
         color: '#7CD1AA',
-        fontSize: 11,
-        marginTop: 15,
-        marginBottom: 5,
+        fontSize: 14,
+        marginTop: 5,
+        marginBottom: 10,
         fontWeight: '600',
     },
     progressText: {
         color: '#fff',
-        fontSize: 13,
-        marginBottom: 10,
+        fontSize: 14,
+        marginBottom: 5,
+        marginTop: 10,
     },
     progressBar: {
         height: 8,
@@ -87,6 +88,6 @@ const styles = (theme) => StyleSheet.create({
     },
     points: {
         color: '#fff',
-        fontSize: 13,
+        fontSize: 14,
     },
 });

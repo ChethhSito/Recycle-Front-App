@@ -6,9 +6,9 @@ import { Menu } from 'lucide-react-native';
 const { width } = Dimensions.get('window');
 
 // Altura de la parte rectangular del header
-const HEADER_HEIGHT = 100; 
+const HEADER_HEIGHT = 100;
 // Altura adicional que ocupan las curvas de la nube
-const CLOUD_HEIGHT = 50; 
+const CLOUD_HEIGHT = 50;
 
 export const CloudHeader = ({ userName, userType, avatarUrl, onMenuPress }) => {
   return (
@@ -25,9 +25,9 @@ export const CloudHeader = ({ userName, userType, avatarUrl, onMenuPress }) => {
               <Text style={styles.userType}>{userType}</Text>
             </View>
           </View>
-          
-          <Image 
-            source={{ uri: avatarUrl }} 
+
+          <Image
+            source={{ uri: avatarUrl }}
             style={styles.avatar}
           />
         </View>
@@ -56,6 +56,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: 'transparent',
     marginBottom: 10,
+    marginTop: 10,
     zIndex: 10,
   },
   contentContainer: {
@@ -78,7 +79,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   greeting: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#000',
   },
@@ -95,6 +96,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
   },
   svgContainer: {
-    marginTop: -1, 
+    marginTop: -1,
   },
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Modal,
     View,
@@ -8,6 +8,7 @@ import {
     Dimensions,
     Image,
     Animated,
+    Easing,
 } from 'react-native';
 import { Text, Button, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
@@ -15,44 +16,59 @@ import { BlurView } from 'expo-blur';
 
 const { height, width } = Dimensions.get('window');
 
-export const ProgramDetailModal = ({ 
-    visible, 
-    onClose, 
-    program 
+export const ProgramDetailModal = ({
+    visible,
+    onClose,
+    program
 }) => {
+    const [showModal, setShowModal] = useState(visible);
     const theme = useTheme();
     const slideAnim = React.useRef(new Animated.Value(height)).current;
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (visible) {
+            setShowModal(true);
+            slideAnim.setValue(height);
             Animated.spring(slideAnim, {
                 toValue: 0,
                 useNativeDriver: true,
-                tension: 50,
-                friction: 8,
+                damping: 15,    // Menos es más rebote (frenado)
+                mass: 1.2,      // Más masa = más inercia
+                stiffness: 100, // Rigidez del resorte
+                velocity: 8,
             }).start();
         } else {
             Animated.timing(slideAnim, {
                 toValue: height,
-                duration: 300,
+                duration: 800,
                 useNativeDriver: true,
-            }).start();
+                easing: Easing.in(Easing.ease)
+            }).start(({ finished }) => {
+                // SOLO cuando termina la animación, ocultamos el modal real
+                if (finished) {
+                    setShowModal(false);
+                }
+            });
         }
     }, [visible]);
 
-    if (!program) return null;
+    if (!program || !showModal) return null;
 
     return (
         <Modal
-            visible={visible}
+            visible={showModal}
             transparent
-            animationType="fade"
+            animationType="none"
             onRequestClose={onClose}
         >
             <View style={styles.overlay}>
                 <BlurView intensity={20} style={StyleSheet.absoluteFill} />
-                
-                <Animated.View 
+                <TouchableOpacity
+                    style={StyleSheet.absoluteFill}
+                    onPress={onClose} // Cierra al tocar afuera
+                    activeOpacity={1}
+                />
+                <Animated.View
                     style={[
                         styles.modalContent,
                         { transform: [{ translateY: slideAnim }] }
@@ -60,12 +76,12 @@ export const ProgramDetailModal = ({
                 >
                     {/* Header con imagen */}
                     <View style={styles.header}>
-                        <Image 
-                            source={program.image} 
+                        <Image
+                            source={program.image}
                             style={styles.headerImage}
                             resizeMode="cover"
                         />
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.closeButton}
                             onPress={onClose}
                         >
@@ -74,7 +90,7 @@ export const ProgramDetailModal = ({
                     </View>
 
                     {/* Contenido con scroll */}
-                    <ScrollView 
+                    <ScrollView
                         style={styles.scrollContent}
                         showsVerticalScrollIndicator={false}
                     >
@@ -157,8 +173,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
-        height: height * 0.9,
+        height: height * 0.9, // 90% de la pantalla
         overflow: 'hidden',
+        // Sombra para dar efecto de capa superior
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: -3,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
     },
     header: {
         height: 250,

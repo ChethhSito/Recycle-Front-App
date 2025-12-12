@@ -5,11 +5,11 @@ import { Text, useTheme } from 'react-native-paper';
 export const QuoteCard = ({ quote }) => {
     const theme = useTheme();
     const componentStyles = styles(theme);
-    
+
     return (
-    <View style={componentStyles.quoteCard}>
-        <Text style={componentStyles.quote}>{quote}</Text>
-    </View>
+        <View style={componentStyles.quoteCard}>
+            <Text style={componentStyles.quote}>{quote}</Text>
+        </View>
     );
 };
 
@@ -21,7 +21,7 @@ const styles = (theme) => StyleSheet.create({
         borderRadius: 15,
     },
     quote: {
-        fontSize: 14,
+        fontSize: 16,
         color: '#000',
         fontStyle: 'italic',
         textAlign: 'center',
