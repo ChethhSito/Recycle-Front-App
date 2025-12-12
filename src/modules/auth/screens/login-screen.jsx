@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Image,
@@ -10,42 +10,42 @@ import {
     TouchableWithoutFeedback,
     Keyboard
 } from 'react-native';
-import { Text, TextInput, Button, useTheme } from 'react-native-paper';
+import { Text, TextInput, Button, useTheme, HelperText, Snackbar } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
-import Svg, { Path } from 'react-native-svg';
 import { GoogleIcon } from '../../../shared/svgs/google';
 
-
-
 const { width, height } = Dimensions.get('window');
-const os = Platform.OS;
-console.log(os);
 
+export const LoginScreen = ({ navigation }) => {
+    const [showPassword, setShowPassword] = useState(false);
+    const [showEmailError, setShowEmailError] = useState(false);
 
-export const LoginScreen = () => {
-    const theme = useTheme();
     // Configuración del formulario
     const { control, handleSubmit, formState: { errors } } = useForm({
         defaultValues: { email: '', password: '' }
     });
+
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const valid = emailRegex.test(email);
+        setShowEmailError(!valid); // Si no es válido, muestra el error
+        return valid || "Correo inválido";
+    };
 
     const onSubmit = (data) => console.log(data);
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <KeyboardAvoidingView
-                // CAMBIO 1: Quitamos el array y dejamos solo styles.container
-                // El color de fondo lo manejamos en el estilo directo
                 style={styles.container}
                 behavior={Platform.OS === 'android' ? 'padding' : 'height'}
-                // CAMBIO 2: Esto ayuda a ajustar el teclado
                 keyboardVerticalOffset={Platform.OS === 'android' ? 0 : 20}
             >
                 {/* 1. ILUSTRACIÓN SUPERIOR */}
                 <View style={styles.header}>
                     <Image
                         alt='Recycle'
-                        source={require('../../../../assets/reciclaje.png')} // Cambiado a .jpg según tu archivo real
+                        source={require('../../../../assets/reciclaje.png')}
                         style={styles.illustration}
                         resizeMode="contain"
                     />
@@ -55,28 +55,36 @@ export const LoginScreen = () => {
                 <View style={styles.formContainer}>
                     <Text variant="headlineMedium" style={styles.title}>Inicia Sesión</Text>
 
-                    {/* Inputs... (igual que antes) */}
                     <Controller
                         control={control}
                         name="email"
+                        rules={{ validate: validateEmail }}
                         render={({ field: { onChange, value } }) => (
-                            <TextInput
-                                mode="flat"
-                                placeholder="Email:"
-                                placeholderTextColor="#000000"
-                                style={styles.input}
-                                value={value}
-                                onChangeText={onChange}
-                                underlineColor="transparent"
-                                activeUnderlineColor="transparent"
-                                left={<TextInput.Icon icon="email" color="#000000" />}
-                            />
+                            <View>
+                                <TextInput
+
+                                    mode="flat"
+                                    placeholder="Email:"
+                                    placeholderTextColor="#000000"
+                                    style={styles.input}
+                                    value={value}
+                                    onChangeText={(text) => {
+                                        onChange(text);
+                                        if (showEmailError) setShowEmailError(false); // Ocultar error al escribir
+                                    }}
+                                    underlineColor="transparent"
+                                    activeUnderlineColor="transparent"
+                                    left={<TextInput.Icon icon="email" color="#000000" />}
+                                />
+
+                            </View>
                         )}
                     />
 
                     <Controller
                         control={control}
                         name="password"
+                        rules={{ required: true }}
                         render={({ field: { onChange, value } }) => (
                             <TextInput
                                 mode="flat"
@@ -85,11 +93,18 @@ export const LoginScreen = () => {
                                 style={styles.input}
                                 value={value}
                                 onChangeText={onChange}
-                                secureTextEntry
+                                secureTextEntry={!showPassword}
                                 underlineColor="transparent"
                                 activeUnderlineColor="transparent"
                                 left={<TextInput.Icon icon="lock" color="#000000" />}
-                                right={<TextInput.Icon icon="eye" color="#000000" />}
+                                right={
+                                    <TextInput.Icon
+                                        icon={showPassword ? "eye-off" : "eye"}
+                                        color="#000000"
+                                        onPress={() => setShowPassword(!showPassword)}
+                                        forceTextInputFocus={false}
+                                    />
+                                }
                             />
                         )}
                     />
@@ -109,7 +124,7 @@ export const LoginScreen = () => {
 
                     <Button
                         mode="contained"
-                        icon={() => <GoogleIcon />} // Asegúrate de pasar el componente así si es SVG
+                        icon={() => <GoogleIcon />}
                         onPress={() => console.log('Google Login')}
                         style={styles.googleBtn}
                         labelStyle={{ color: '#000000', fontSize: 16 }}
@@ -119,11 +134,24 @@ export const LoginScreen = () => {
 
                     <View style={styles.registerContainer}>
                         <Text style={{ color: '#000000', fontSize: 16 }}>¿Aún no tienes Cuenta? </Text>
-                        <TouchableOpacity>
-                            <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Regístrate</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                            <Text style={{ color: '#fff', fontSize: 16 }}>Regístrate</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
+                <Snackbar
+
+                    visible={showEmailError}
+                    onDismiss={() => setShowEmailError(false)} // <--- IMPORTANTE: Cierra el snackbar
+                    duration={3000} // <--- IMPORTANTE: Dura 3 segundos
+                    style={{ backgroundColor: '#31253B', borderRadius: 12, marginBottom: height * 0.035 }}
+                    action={{
+                        label: 'OK',
+                        onPress: () => setShowEmailError(false),
+                    }}
+                >
+                    Por favor, ingresa un correo válido.
+                </Snackbar>
             </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
     );
@@ -133,31 +161,28 @@ const styles = StyleSheet.create({
     container: {
         fontFamily: 'InclusiveSans-Regular',
         flex: 1,
-        backgroundColor: '#b1eedc', // Tu verde de fondo
+        backgroundColor: '#b1eedc',
     },
     header: {
-        // En vez de flex fijo, le damos una altura basada en la pantalla pero flexible
         height: height * 0.40,
         justifyContent: 'flex-end',
         alignItems: 'center',
         paddingBottom: 0,
-        marginBottom: -30, // El truco para que se monte
+        marginBottom: -30,
         zIndex: 1,
     },
     illustration: {
-        width: width, // 90% del ancho
-        height: '85%', // Ocupa el 85% del header, no más
-        // maxHeight elimina el problema en pantallas muy largas
+        width: width,
+        height: '85%',
         maxHeight: 300,
     },
     formContainer: {
         backgroundColor: '#018f64',
-        flex: 1, // "Toma todo el espacio que sobre" (importante para pantallas largas)
-        paddingHorizontal: 30,
+        flex: 1,
+        paddingHorizontal: 25,
         paddingTop: 25,
         minHeight: height,
         paddingBottom: 20,
-        // justifyContent: 'center', // Opcional: Si quieres centrar verticalmente el form
     },
     title: {
         color: '#000000',
@@ -166,12 +191,12 @@ const styles = StyleSheet.create({
         textAlign: 'left',
     },
     input: {
-        backgroundColor: '#B7ECDD', // Verde clarito input
-        borderRadius: 12,         // Bordes muy redondos como el diseño
+        backgroundColor: '#B7ECDD',
+        borderRadius: 12,
         marginBottom: 15,
         height: 55,
-        borderTopLeftRadius: 12,  // Fix para Paper
-        borderTopRightRadius: 12, // Fix para Paper
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
         overflow: 'hidden',
     },
     forgotPass: {
@@ -182,15 +207,15 @@ const styles = StyleSheet.create({
     },
     loginBtn: {
         fontFamily: 'InclusiveSans-Regular',
-        backgroundColor: '#2D2338', // Color berenjena/oscuro
-        borderRadius: 15,
+        backgroundColor: '#31253B',
+        borderRadius: 12,
         paddingVertical: 4,
         marginBottom: 15,
     },
     googleBtn: {
         fontFamily: 'InclusiveSans-Regular',
-        backgroundColor: '#00C7A1', // Verde brillante
-        borderRadius: 15,
+        backgroundColor: '#00C7A1',
+        borderRadius: 12,
         paddingVertical: 4,
         fontSize: 16,
     },
@@ -198,6 +223,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         marginTop: 20,
-        fontSize: 16,
-    }
+    },
+
 });

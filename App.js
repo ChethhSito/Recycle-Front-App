@@ -9,6 +9,7 @@ import { SplashScreen } from './src/modules/auth/screens/load-screen';
 import * as SplashScreenExpo from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Asset } from 'expo-asset';
+import { AppRoutes } from './src/routes/app-routes';
 
 SplashScreenExpo.preventAutoHideAsync();
 
@@ -69,19 +70,14 @@ export default function App() {
         {/* Configura la barra de estado para que se vea bien sobre tu fondo verde */}
         <StatusBar style="light" backgroundColor={appTheme.colors.background} />
 
-        <View style={{ flex: 1 }}>
+        {/* CAMBIO CLAVE: Renderizamos las rutas, no la pantalla directa */}
+        {showAnimation ? (
+          <View style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>
+            <SplashScreen onFinish={() => setShowAnimation(false)} />
+          </View>
+        ) : null}
 
-          {/* El Login está "esperando" abajo */}
-          <LoginScreen />
-
-          {/* El Splash está tapando todo mientras showAnimation sea true */}
-          {showAnimation && (
-            <View style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>
-              <SplashScreen onFinish={() => setShowAnimation(false)} />
-            </View>
-          )}
-
-        </View>
+        <AppRoutes />
       </PaperProvider>
     </SafeAreaProvider>
   );
