@@ -18,21 +18,24 @@ export const ProgressCard = ({
     <Card style={componentStyles.progressCard}>
         <Card.Content>
             <View style={componentStyles.badgeContainer}>
-                <Icon name={badgeIcon} size={40} color="#fff" />
+                <Icon name={badgeIcon} size={40} color="#7CD1AA" />
                 <View style={componentStyles.badgeInfo}>
                     <Text style={componentStyles.badgeTitle}>{badgeTitle}</Text>
                     <Text style={componentStyles.badgeRank}>{rank}</Text>
                 </View>
             </View>
+            <Text style={componentStyles.progressLabel}>TU PROGRESO ACTUAL</Text>
             <Text style={componentStyles.progressText}>
-                recicla más para subir de rango
+                Siguiente nivel: Brote Verde
             </Text>
             <ProgressBar 
                 progress={progress} 
-                color="#4CAF50" 
+                color="#7CD1AA" 
                 style={componentStyles.progressBar}
             />
-            <Text style={componentStyles.points}>{currentPoints}/{maxPoints} pts</Text>
+            <View style={componentStyles.pointsContainer}>
+                <Text style={componentStyles.points}>{currentPoints}/{maxPoints} pts</Text>
+            </View>
         </Card.Content>
     </Card>
     );
@@ -60,19 +63,30 @@ const styles = (theme) => StyleSheet.create({
         color: '#fff',
         fontSize: 14,
     },
+    progressLabel: {
+        color: '#7CD1AA',
+        fontSize: 11,
+        marginTop: 15,
+        marginBottom: 5,
+        fontWeight: '600',
+    },
     progressText: {
         color: '#fff',
-        fontSize: 12,
-        marginVertical: 10,
+        fontSize: 13,
+        marginBottom: 10,
     },
     progressBar: {
         height: 8,
         borderRadius: 4,
         backgroundColor: '#666',
     },
+    pointsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginTop: 8,
+    },
     points: {
         color: '#fff',
-        textAlign: 'right',
-        marginTop: 5,
+        fontSize: 13,
     },
 });

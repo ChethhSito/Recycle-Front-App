@@ -3,3 +3,4 @@ export { ProgramCard } from './ProgramCard';
 export { ProgressCard } from './ProgressCard';
 export { QuoteCard } from './QuoteCard';
 export { UserHeader } from './UserHeader';
+export { CloudHeader } from './CloudHeader';
