@@ -3,13 +3,13 @@ import { View, StyleSheet } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
-export const StatItem = ({ icon, label, value }) => {
+export const StatItem = ({ icon, label, value, backgroundColor, iconColor }) => {
     const theme = useTheme();
     const componentStyles = styles(theme);
     
     return (
-    <View style={componentStyles.statItem}>
-        <Icon name={icon} size={32} color="#000" />
+    <View style={[componentStyles.statItem, backgroundColor && { backgroundColor }]}>
+        <Icon name={icon} size={32} color={iconColor || '#000'} />
         <Text style={componentStyles.statLabel}>{label}</Text>
         <Text style={componentStyles.statValue}>{value}</Text>
     </View>
