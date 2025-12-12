@@ -4,18 +4,27 @@ import { createStackNavigator, TransitionPresets } from '@react-navigation/stack
 import { LoginScreen } from '../modules/auth/screens/login-screen';
 import { RegisterScreen } from '../modules/auth/screens/register-screen';
 import { HomeScreen } from '../modules/home/home-screen';
+import { RecoverScreen } from '../modules/auth/screens/recover-screen';
 const Stack = createStackNavigator();
 
 export const AppRoutes = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const modalOptions = {
+        ...TransitionPresets.ModalSlideFromBottomIOS,
+        cardOverlayEnabled: true,
+        transitionSpec: {
+            open: { animation: 'timing', config: { duration: 600 } },
+            close: { animation: 'timing', config: { duration: 600 } },
+        }
+    };
     return (
         <NavigationContainer>
             <Stack.Navigator
                 initialRouteName="Login"
                 screenOptions={{
                     headerShown: false,
-                    ...TransitionPresets.ModalSlideFromBottomIOS,
+                    ...TransitionPresets.SlideFromRightIOS,
                     cardOverlayEnabled: true,
                     transitionSpec: {
                         open: { animation: 'timing', config: { duration: 600 } },
@@ -25,7 +34,18 @@ export const AppRoutes = () => {
             >
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Home" component={HomeScreen} />
-                <Stack.Screen name="Register" component={RegisterScreen} />
+                <Stack.Screen
+                    name="Recover" component={RecoverScreen}
+                    options={{
+                        ...modalOptions
+                    }}
+                />
+                <Stack.Screen
+                    name="Register" component={RegisterScreen}
+                    options={{
+                        ...modalOptions
+                    }}
+                />
             </Stack.Navigator>
         </NavigationContainer>
 

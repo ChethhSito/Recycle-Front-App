@@ -14,7 +14,7 @@ export const appTheme = {
         surface: '#FFFFFF',
         accent: '#00C7A1',       // El verde brillante del botón de Google
         text: '#F0F4F5',         // Texto blanco sobre fondo verde
-        inputBackground: '#B7ECDD', // El verde clarito de los inputs
+        inputBackground: '#b1eedc', // El verde clarito de los inputs
         placeholder: '#5A7A70',
     },
 };
