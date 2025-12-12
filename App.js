@@ -11,6 +11,7 @@ import { appTheme } from './src/theme/theme';
 import * as SplashScreenExpo from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Asset } from 'expo-asset';
+import { AppRoutes } from './src/routes/app-routes';
 
 SplashScreenExpo.preventAutoHideAsync();
 
@@ -35,7 +36,7 @@ export default function App() {
         // 2. Pre-cargamos la imagen pesada del Login AQUÍ
         // Así cuando entres al Login, la imagen ya está en memoria RAM
         const imagesToLoad = [
-          require('./assets/reciclaje.jpg'),
+          require('./assets/reciclaje.png'),
         ];
         // Cacheamos las imágenes
         const cacheImages = imagesToLoad.map(image => {
@@ -75,6 +76,14 @@ export default function App() {
         {/* Configura la barra de estado para que se vea bien sobre tu fondo verde */}
         <StatusBar style="light" backgroundColor={appTheme.colors.background} />
 
+        {/* CAMBIO CLAVE: Renderizamos las rutas, no la pantalla directa */}
+        {showAnimation ? (
+          <View style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>
+            <SplashScreen onFinish={() => setShowAnimation(false)} />
+          </View>
+        ) : null}
+
+        <AppRoutes />
         <NavigationContainer>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             {showAnimation ? (

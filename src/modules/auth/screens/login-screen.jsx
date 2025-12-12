@@ -1,21 +1,37 @@
-import React from 'react';
-import { View, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { Text, TextInput, Button, useTheme } from 'react-native-paper';
+import React, { useState } from 'react';
+import {
+    View,
+    Image,
+    StyleSheet,
+    TouchableOpacity,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    TouchableWithoutFeedback,
+    Keyboard
+} from 'react-native';
+import { Text, TextInput, Button, useTheme, HelperText, Snackbar } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
-import Svg, { Path } from 'react-native-svg';
 import { GoogleIcon } from '../../../shared/svgs/google';
 
+const { width, height } = Dimensions.get('window');
 
-const { width } = Dimensions.get('window');
-
-
-
-export const LoginScreen = ({ onLogin }) => {
+export const LoginScreen = ({ navigation, onLogin }) => {
     const theme = useTheme();
+    const [showPassword, setShowPassword] = useState(false);
+    const [showEmailError, setShowEmailError] = useState(false);
+    
     // Configuración del formulario
     const { control, handleSubmit, formState: { errors } } = useForm({
         defaultValues: { email: '', password: '' }
     });
+
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const valid = emailRegex.test(email);
+        setShowEmailError(!valid); // Si no es válido, muestra el error
+        return valid || "Correo inválido";
+    };
 
     const onSubmit = (data) => {
         console.log(data);
@@ -29,99 +45,125 @@ export const LoginScreen = ({ onLogin }) => {
     };
 
     return (
-        <View style={[styles.container, { backgroundColor: '#B7ECDD' }]}>
-
-            {/* 1. ILUSTRACIÓN SUPERIOR */}
-            <View style={styles.header}>
-                {/* Aquí iría tu imagen de los personajes reciclando */}
-                <Image
-                    alt='Recycle'
-                    source={require('../../../../assets/reciclaje.jpg')}
-                    style={styles.illustration}
-                    resizeMode="contain"
-                />
-            </View>
-
-            {/* 2. FORMULARIO */}
-            <View style={styles.formContainer}>
-                <Text variant="headlineMedium" style={styles.title}>Inicia Sesión</Text>
-
-                {/* Input Email */}
-                <Controller
-                    control={control}
-                    name="email"
-                    render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            mode="flat"
-                            placeholder="Email:"
-                            placeholderTextColor="#000000"
-                            placeholderOpacity={0.7}
-                            style={styles.input}
-                            value={value}
-                            onChangeText={onChange}
-                            underlineColor="transparent"
-                            activeUnderlineColor="transparent"
-                            left={<TextInput.Icon icon="email" color="#000000" opacity={0.7} />}
-                        />
-                    )}
-                />
-
-                {/* Input Password */}
-                <Controller
-                    control={control}
-                    name="password"
-                    render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            mode="flat"
-                            placeholder="Contraseña:"
-                            placeholderTextColor="#000000"
-                            placeholderOpacity={0.7}
-                            style={styles.input}
-                            value={value}
-                            onChangeText={onChange}
-                            secureTextEntry
-                            underlineColor="transparent"
-                            activeUnderlineColor="transparent"
-                            left={<TextInput.Icon icon="lock" color="#000000" opacity={0.7} />}
-                            right={<TextInput.Icon icon="eye" color="#000000" opacity={0.7} />}
-                        />
-                    )}
-                />
-
-                <TouchableOpacity>
-                    <Text style={styles.forgotPass}>¿Olvidaste tu contraseña?</Text>
-                </TouchableOpacity>
-
-                {/* Botón Iniciar Sesión (Oscuro) */}
-                <Button
-                    mode="contained"
-                    onPress={handleSubmit(onSubmit)}
-                    style={styles.loginBtn}
-                    labelStyle={{ fontSize: 16 }}
-                >
-                    Iniciar Sesión
-                </Button>
-
-                {/* Botón Google (Verde claro) */}
-                <Button
-                    mode="contained"
-                    icon={GoogleIcon}
-                    onPress={() => console.log('Google Login')}
-                    style={styles.googleBtn}
-                    labelStyle={{ color: '#000000', fontSize: 16 }} // Texto oscuro
-                >
-                    Iniciar sesión con Google
-                </Button>
-
-                <View style={styles.registerContainer}>
-                    <Text style={{ color: '#000000', fontSize: 16 }}>¿Aún no tienes Cuenta? </Text>
-                    <TouchableOpacity>
-                        <Text style={{ color: '#fff', fontSize: 16 }}>Regístrate</Text>
-                    </TouchableOpacity>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <KeyboardAvoidingView
+                style={styles.container}
+                behavior={Platform.OS === 'android' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'android' ? 0 : 20}
+            >
+                {/* 1. ILUSTRACIÓN SUPERIOR */}
+                <View style={styles.header}>
+                    <Image
+                        alt='Recycle'
+                        source={require('../../../../assets/reciclaje.png')}
+                        style={styles.illustration}
+                        resizeMode="contain"
+                    />
                 </View>
 
-            </View>
-        </View>
+                {/* 2. FORMULARIO */}
+                <View style={styles.formContainer}>
+                    <Text variant="headlineMedium" style={styles.title}>Inicia Sesión</Text>
+
+                    <Controller
+                        control={control}
+                        name="email"
+                        rules={{ validate: validateEmail }}
+                        render={({ field: { onChange, value } }) => (
+                            <View>
+                                <TextInput
+
+                                    mode="flat"
+                                    placeholder="Email:"
+                                    placeholderTextColor="#000000"
+                                    style={styles.input}
+                                    value={value}
+                                    onChangeText={(text) => {
+                                        onChange(text);
+                                        if (showEmailError) setShowEmailError(false); // Ocultar error al escribir
+                                    }}
+                                    underlineColor="transparent"
+                                    activeUnderlineColor="transparent"
+                                    left={<TextInput.Icon icon="email" color="#000000" />}
+                                />
+
+                            </View>
+                        )}
+                    />
+
+                    <Controller
+                        control={control}
+                        name="password"
+                        rules={{ required: true }}
+                        render={({ field: { onChange, value } }) => (
+                            <TextInput
+                                mode="flat"
+                                placeholder="Contraseña:"
+                                placeholderTextColor="#000000"
+                                style={styles.input}
+                                value={value}
+                                onChangeText={onChange}
+                                secureTextEntry={!showPassword}
+                                underlineColor="transparent"
+                                activeUnderlineColor="transparent"
+                                left={<TextInput.Icon icon="lock" color="#000000" />}
+                                right={
+                                    <TextInput.Icon
+                                        icon={showPassword ? "eye-off" : "eye"}
+                                        color="#000000"
+                                        onPress={() => setShowPassword(!showPassword)}
+                                        forceTextInputFocus={false}
+                                    />
+                                }
+                            />
+                        )}
+                    />
+
+                    <TouchableOpacity>
+                        <Text style={styles.forgotPass}>¿Olvidaste tu contraseña?</Text>
+                    </TouchableOpacity>
+
+                    <Button
+                        mode="contained"
+                        onPress={handleSubmit(onSubmit)}
+                        style={styles.loginBtn}
+                        labelStyle={{ fontSize: 16 }}
+                    >
+                        Iniciar Sesión
+                    </Button>
+
+                    <Button
+                        mode="contained"
+                        icon={() => <GoogleIcon />}
+                        onPress={() => console.log('Google Login')}
+                        style={styles.googleBtn}
+                        labelStyle={{ color: '#000000', fontSize: 16 }}
+                    >
+                        Iniciar sesión con Google
+                    </Button>
+
+                    <View style={styles.registerContainer}>
+                        <Text style={{ color: '#000000', fontSize: 16 }}>¿Aún no tienes Cuenta? </Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                            <Text style={{ color: '#fff', fontSize: 16 }}>Regístrate</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+                <Snackbar
+
+                    visible={showEmailError}
+                    onDismiss={() => setShowEmailError(false)} // <--- IMPORTANTE: Cierra el snackbar
+                    duration={3000} // <--- IMPORTANTE: Dura 3 segundos
+                    style={{ backgroundColor: '#31253B', borderRadius: 12, marginBottom: height * 0.035 }}
+                    action={{
+                        label: 'OK',
+                        onPress: () => setShowEmailError(false),
+                    }}
+                >
+                    Por favor, ingresa un correo válido.
+                </Snackbar>
+            </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
     );
 };
 
@@ -129,31 +171,28 @@ const styles = StyleSheet.create({
     container: {
         fontFamily: 'InclusiveSans-Regular',
         flex: 1,
-        backgroundColor: '#B7ECDD', // Tu verde de fondo
+        backgroundColor: '#b1eedc',
     },
     header: {
-        flex: 0.45, // Le damos un poco más de espacio al cielo (45%)
-        justifyContent: 'flex-end', // Esto pega la imagen al "pasto" de abajo
+        height: height * 0.40,
+        justifyContent: 'flex-end',
         alignItems: 'center',
         paddingBottom: 0,
-        marginBottom: -30, // Hacemos que la imagen pise un poco el verde (efecto 3D)
-        zIndex: 1, // Asegura que la imagen esté por encima del borde verde
+        marginBottom: -30,
+        zIndex: 1,
     },
     illustration: {
-        // AL HACERLA MÁS PEQUEÑA, BAJARÁ VISUALMENTE
-        width: width, // 85% del ancho (antes era 100%)
-        height: width, // Mantenemos proporción cuadrada
-        maxHeight: 330,
+        width: width,
+        height: '85%',
+        maxHeight: 300,
     },
     formContainer: {
-        backgroundColor: '#00926F',
-        flex: 0.55,
-        // CAMBIO 4: El color VERDE OSCURO ahora va aquí (Pasto)
-        paddingHorizontal: 35,
-        // Añadimos padding superior porque quitamos el espacio del header
+        backgroundColor: '#018f64',
+        flex: 1,
+        paddingHorizontal: 25,
         paddingTop: 25,
-        // CAMBIO 5: Bordes redondeados arriba para efecto "colina"
-
+        minHeight: height,
+        paddingBottom: 20,
     },
     title: {
         color: '#000000',
@@ -162,12 +201,12 @@ const styles = StyleSheet.create({
         textAlign: 'left',
     },
     input: {
-        backgroundColor: '#B7ECDD', // Verde clarito input
-        borderRadius: 12,         // Bordes muy redondos como el diseño
+        backgroundColor: '#B7ECDD',
+        borderRadius: 12,
         marginBottom: 15,
         height: 55,
-        borderTopLeftRadius: 12,  // Fix para Paper
-        borderTopRightRadius: 12, // Fix para Paper
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
         overflow: 'hidden',
     },
     forgotPass: {
@@ -178,15 +217,15 @@ const styles = StyleSheet.create({
     },
     loginBtn: {
         fontFamily: 'InclusiveSans-Regular',
-        backgroundColor: '#2D2338', // Color berenjena/oscuro
-        borderRadius: 15,
+        backgroundColor: '#31253B',
+        borderRadius: 12,
         paddingVertical: 4,
         marginBottom: 15,
     },
     googleBtn: {
         fontFamily: 'InclusiveSans-Regular',
-        backgroundColor: '#00C7A1', // Verde brillante
-        borderRadius: 15,
+        backgroundColor: '#00C7A1',
+        borderRadius: 12,
         paddingVertical: 4,
         fontSize: 16,
     },
@@ -194,6 +233,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         marginTop: 20,
-        fontSize: 16,
-    }
+    },
+
 });

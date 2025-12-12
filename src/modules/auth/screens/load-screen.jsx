@@ -8,7 +8,7 @@ export const SplashScreen = ({ onFinish }) => {
     const theme = useTheme();
 
     return (
-        <View style={[styles.container, { backgroundColor: '#0FA97F' }]}>
+        <View style={[styles.container, { backgroundColor: '#018f64' }]}>
             <View style={styles.contentContainer}>
                 <LottieView
                     autoPlay
