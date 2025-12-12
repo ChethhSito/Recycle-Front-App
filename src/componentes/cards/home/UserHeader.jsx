@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
 import { Text, Avatar, useTheme } from 'react-native-paper';
 
-export const UserHeader = ({ 
+export const UserHeader = ({
     userName = 'Usuario',
     userType = 'Ciudadano',
     avatarUri,
@@ -11,37 +11,37 @@ export const UserHeader = ({
 }) => {
     const theme = useTheme();
     const componentStyles = styles(theme);
-    
+
     return (
-    <ImageBackground 
-        source={require('../../../../assets/header.png')}
-        style={componentStyles.header}
-        resizeMode="cover"
-    >
-        <View style={componentStyles.headerContent}>
-            <View style={componentStyles.headerLeft}>
-                <TouchableOpacity onPress={onMenuPress} style={componentStyles.menuButton}>
-                    <View style={componentStyles.menuLine} />
-                    <View style={componentStyles.menuLine} />
-                    <View style={componentStyles.menuLine} />
-                </TouchableOpacity>
-                <View style={componentStyles.userInfo}>
-                    <Text style={componentStyles.greeting}>Hola, {userName}</Text>
-                    <Text style={componentStyles.userType}>{userType}</Text>
+        <ImageBackground
+            source={require('../../../../assets/header.png')}
+            style={componentStyles.header}
+            resizeMode="cover"
+        >
+            <View style={componentStyles.headerContent}>
+                <View style={componentStyles.headerLeft}>
+                    <TouchableOpacity onPress={onMenuPress} style={componentStyles.menuButton}>
+                        <View style={componentStyles.menuLine} />
+                        <View style={componentStyles.menuLine} />
+                        <View style={componentStyles.menuLine} />
+                    </TouchableOpacity>
+                    <View style={componentStyles.userInfo}>
+                        <Text style={componentStyles.greeting}>Hola, {userName}</Text>
+                        <Text style={componentStyles.userType}>{userType}</Text>
+                    </View>
                 </View>
+                <Avatar.Image
+                    size={50}
+                    source={avatarUri ? { uri: avatarUri } : require('../../../../assets/icon.png')}
+                />
             </View>
-            <Avatar.Image 
-                size={50} 
-                source={avatarUri ? { uri: avatarUri } : require('../../../../assets/icon.png')} 
-            />
-        </View>
-        
-        {quote && (
-            <View style={componentStyles.quoteCard}>
-                <Text style={componentStyles.quote}>{quote}</Text>
-            </View>
-        )}
-    </ImageBackground>
+
+            {quote && (
+                <View style={componentStyles.quoteCard}>
+                    <Text style={componentStyles.quote}>{quote}</Text>
+                </View>
+            )}
+        </ImageBackground>
     );
 };
 
@@ -87,7 +87,7 @@ const styles = (theme) => StyleSheet.create({
         color: '#666',
     },
     quoteCard: {
-        backgroundColor: '#B7ECDC',
+
         marginHorizontal: 20,
         marginTop: 15,
         marginBottom: 55,
@@ -97,7 +97,7 @@ const styles = (theme) => StyleSheet.create({
     quote: {
         fontSize: 15,
         color: '#000',
-      
+
         fontStyle: 'italic',
         textAlign: 'center',
     },

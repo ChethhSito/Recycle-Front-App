@@ -5,8 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PaperProvider } from 'react-native-paper';
 import { SplashScreen } from './src/modules/auth/screens/load-screen';
-import { LoginScreen } from './src/modules/auth/screens/login-screen';
-import { HomeScreen } from './src/modules/home/home-screen';
+import { View, StyleSheet } from 'react-native';
 import { appTheme } from './src/theme/theme';
 import * as SplashScreenExpo from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
@@ -15,14 +14,11 @@ import { AppRoutes } from './src/routes/app-routes';
 
 SplashScreenExpo.preventAutoHideAsync();
 
-const Stack = createNativeStackNavigator();
-
 export default function App() {
 
   const [appIsReady, setAppIsReady] = useState(false); // Estado para controlar la carga de fuentes
   const [showAnimation, setShowAnimation] = useState(true); // Estado para mostrar la animación Lottie
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
 
   const [fontsLoaded] = useFonts({
     'InclusiveSans-Regular': require('./assets/fonts/InclusiveSans-Regular.ttf'),
@@ -84,31 +80,6 @@ export default function App() {
         ) : null}
 
         <AppRoutes />
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {showAnimation ? (
-              <Stack.Screen name="Splash">
-                {props => (
-                  <SplashScreen 
-                    {...props} 
-                    onFinish={() => setShowAnimation(false)} 
-                  />
-                )}
-              </Stack.Screen>
-            ) : !isLoggedIn ? (
-              <Stack.Screen name="Login">
-                {props => (
-                  <LoginScreen 
-                    {...props} 
-                    onLogin={() => setIsLoggedIn(true)} 
-                  />
-                )}
-              </Stack.Screen>
-            ) : (
-              <Stack.Screen name="Home" component={HomeScreen} />
-            )}
-          </Stack.Navigator>
-        </NavigationContainer>
 
       </PaperProvider>
     </SafeAreaProvider>

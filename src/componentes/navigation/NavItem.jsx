@@ -7,14 +7,14 @@ export const NavItem = ({ icon, label, active, onPress }) => {
     const theme = useTheme();
     const componentStyles = styles(theme);
     const activeColor = theme.colors.background;
-    
+
     return (
-    <TouchableOpacity style={componentStyles.navItem} onPress={onPress}>
-        <Icon name={icon} size={28} color={active ? activeColor : '#666'} />
-        <Text style={[componentStyles.navLabel, active && componentStyles.navLabelActive]}>
-            {label}
-        </Text>
-    </TouchableOpacity>
+        <TouchableOpacity style={componentStyles.navItem} onPress={onPress}>
+            <Icon name={icon} size={26} color={active ? activeColor : '#1a1a1aff'} />
+            <Text style={[componentStyles.navLabel, active && componentStyles.navLabelActive]}>
+                {label}
+            </Text>
+        </TouchableOpacity>
     );
 };
 
@@ -23,12 +23,12 @@ const styles = (theme) => StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 8,
-        paddingHorizontal: 12,
+        paddingHorizontal: 0,
         minWidth: 70,
     },
     navLabel: {
-        fontSize: 12,
-        color: '#666',
+        fontSize: 14,
+        color: '#1a1a1aff',
         marginTop: 5,
     },
     navLabelActive: {

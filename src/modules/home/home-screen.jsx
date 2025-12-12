@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { 
-    UserHeader, 
-    QuoteCard, 
-    ProgressCard, 
-    StatItem, 
-    ProgramCard 
+import {
+    UserHeader,
+    QuoteCard,
+    ProgressCard,
+    StatItem,
+    ProgramCard
 } from '../../componentes/cards/home';
 import { NavItem } from '../../componentes/navigation/NavItem';
 
@@ -35,15 +35,15 @@ export const HomeScreen = () => {
     const toggleFilter = () => {
         setFilterType(prev => prev === 'peso' ? 'cantidad' : 'peso');
     };
-    
+
     return (
         <View style={componentStyles.container}>
-            <ScrollView 
+            <ScrollView
                 style={componentStyles.scrollContent}
                 contentContainerStyle={componentStyles.scrollContentContainer}
             >
                 {/* Header con usuario */}
-                <UserHeader 
+                <UserHeader
                     userName="Juan David"
                     userType="Ciudadano"
                     quote="El mejor momento para plantar un árbol fue hace 20 años. El segundo mejor momento es ahora."
@@ -51,7 +51,7 @@ export const HomeScreen = () => {
                 />
 
                 {/* Tarjeta de Progreso */}
-                <ProgressCard 
+                <ProgressCard
                     badgeIcon="seed"
                     badgeTitle="Semilla de Cambio"
                     rank="Rango 1"
@@ -63,9 +63,9 @@ export const HomeScreen = () => {
                 {/* Tu impacto este mes */}
                 <View style={componentStyles.impactSection}>
                     <Text style={componentStyles.sectionTitle}>Tu impacto este mes:</Text>
-                    
+
                     <View style={componentStyles.filterContainer}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[
                                 componentStyles.filterButton,
                                 filterType === 'peso' && componentStyles.filterButtonActive
@@ -80,7 +80,7 @@ export const HomeScreen = () => {
                             </Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[
                                 componentStyles.filterButton,
                                 filterType === 'cantidad' && componentStyles.filterButtonActive
@@ -98,19 +98,19 @@ export const HomeScreen = () => {
 
                     <View style={componentStyles.statsContainer}>
                         {impactData[filterType].map((item, index) => (
-                            <StatItem 
+                            <StatItem
                                 key={index}
-                                icon={item.icon} 
-                                label={item.label} 
-                                value={item.value} 
+                                icon={item.icon}
+                                label={item.label}
+                                value={item.value}
                             />
                         ))}
                     </View>
                 </View>
 
                 {/* Nube decorativa */}
-                <Image 
-                    source={require('../../../assets/nube.png')} 
+                <Image
+                    source={require('../../../assets/nube.png')}
                     style={componentStyles.nubeImage}
                     resizeMode="stretch"
                 />
@@ -118,13 +118,13 @@ export const HomeScreen = () => {
                 {/* Programas Populares */}
                 <View style={componentStyles.programsSection}>
                     <Text style={[componentStyles.sectionTitle, { color: '#31253B', marginTop: 0 }]}>Programas Populares:</Text>
-                    
+
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        <ProgramCard 
+                        <ProgramCard
                             image={require('../../../assets/program1.jpg')}
                             title="Horarios del recojo de basura"
                         />
-                        <ProgramCard 
+                        <ProgramCard
                             image={require('../../../assets/program2.jpg')}
                             title="Reciclaje Comunitario"
                         />
@@ -216,13 +216,12 @@ const styles = (theme) => StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         backgroundColor: theme.colors.inputBackground,
-        paddingVertical: 15,
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
+        paddingVertical: 10,
+        borderRadius: 12,
+        marginHorizontal: 0,
         elevation: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        color: '#000',
+
+
     },
 });

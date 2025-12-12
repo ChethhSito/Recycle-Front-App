@@ -20,7 +20,7 @@ export const LoginScreen = ({ navigation, onLogin }) => {
     const theme = useTheme();
     const [showPassword, setShowPassword] = useState(false);
     const [showEmailError, setShowEmailError] = useState(false);
-    
+
     // Configuración del formulario
     const { control, handleSubmit, formState: { errors } } = useForm({
         defaultValues: { email: '', password: '' }
@@ -35,13 +35,7 @@ export const LoginScreen = ({ navigation, onLogin }) => {
 
     const onSubmit = (data) => {
         console.log(data);
-        // Validación con credenciales hardcodeadas
-        if (data.email === 'admin@gmail.com' && data.password === '123456') {
-            console.log('Login exitoso');
-            if (onLogin) onLogin();
-        } else {
-            alert('Credenciales incorrectas. Use: admin@gmail.com / 123456');
-        }
+        navigation.navigate('Home');
     };
 
     return (
