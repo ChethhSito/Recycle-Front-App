@@ -10,14 +10,23 @@ const { width } = Dimensions.get('window');
 
 
 
-export const LoginScreen = () => {
+export const LoginScreen = ({ onLogin }) => {
     const theme = useTheme();
     // Configuración del formulario
     const { control, handleSubmit, formState: { errors } } = useForm({
         defaultValues: { email: '', password: '' }
     });
 
-    const onSubmit = (data) => console.log(data);
+    const onSubmit = (data) => {
+        console.log(data);
+        // Validación con credenciales hardcodeadas
+        if (data.email === 'admin@gmail.com' && data.password === '123456') {
+            console.log('Login exitoso');
+            if (onLogin) onLogin();
+        } else {
+            alert('Credenciales incorrectas. Use: admin@gmail.com / 123456');
+        }
+    };
 
     return (
         <View style={[styles.container, { backgroundColor: '#B7ECDD' }]}>

@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { LoginScreen } from './src/modules/auth/screens/login-screen';
-import { appTheme } from './src/theme/theme';
-import { Provider as PaperProvider } from 'react-native-paper';
+import { PaperProvider } from 'react-native-paper';
 import { SplashScreen } from './src/modules/auth/screens/load-screen';
+import { LoginScreen } from './src/modules/auth/screens/login-screen';
+import { HomeScreen } from './src/modules/home/home-screen';
+import { appTheme } from './src/theme/theme';
 import * as SplashScreenExpo from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Asset } from 'expo-asset';
 
 SplashScreenExpo.preventAutoHideAsync();
 
+const Stack = createNativeStackNavigator();
+
 export default function App() {
 
   const [appIsReady, setAppIsReady] = useState(false); // Estado para controlar la carga de fuentes
   const [showAnimation, setShowAnimation] = useState(true); // Estado para mostrar la animación Lottie
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [fontsLoaded] = useFonts({
     'InclusiveSans-Regular': require('./assets/fonts/InclusiveSans-Regular.ttf'),
@@ -69,19 +75,32 @@ export default function App() {
         {/* Configura la barra de estado para que se vea bien sobre tu fondo verde */}
         <StatusBar style="light" backgroundColor={appTheme.colors.background} />
 
-        <View style={{ flex: 1 }}>
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {showAnimation ? (
+              <Stack.Screen name="Splash">
+                {props => (
+                  <SplashScreen 
+                    {...props} 
+                    onFinish={() => setShowAnimation(false)} 
+                  />
+                )}
+              </Stack.Screen>
+            ) : !isLoggedIn ? (
+              <Stack.Screen name="Login">
+                {props => (
+                  <LoginScreen 
+                    {...props} 
+                    onLogin={() => setIsLoggedIn(true)} 
+                  />
+                )}
+              </Stack.Screen>
+            ) : (
+              <Stack.Screen name="Home" component={HomeScreen} />
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
 
-          {/* El Login está "esperando" abajo */}
-          <LoginScreen />
-
-          {/* El Splash está tapando todo mientras showAnimation sea true */}
-          {showAnimation && (
-            <View style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>
-              <SplashScreen onFinish={() => setShowAnimation(false)} />
-            </View>
-          )}
-
-        </View>
       </PaperProvider>
     </SafeAreaProvider>
   );
