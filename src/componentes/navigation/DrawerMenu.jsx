@@ -7,6 +7,7 @@ const DRAWER_WIDTH = width * 0.75;
 
 export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, avatarUrl }) => {
     const slideAnim = React.useRef(new Animated.Value(-DRAWER_WIDTH)).current;
+    const [pressedItem, setPressedItem] = React.useState(null);
 
     React.useEffect(() => {
         if (visible) {
@@ -94,19 +95,24 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                         {menuSections.map((section, sectionIndex) => (
                             <View key={sectionIndex} style={styles.menuSection}>
                                 <Text style={styles.sectionTitle}>{section.title}</Text>
-                                {section.items.map((item, itemIndex) => (
-                                    <TouchableOpacity 
-                                        key={itemIndex}
-                                        style={styles.menuItem}
-                                        onPress={() => {
-                                            item.onPress();
-                                            onClose();
-                                        }}
-                                    >
-                                        <Icon name={item.icon} size={20} color="#000" />
-                                        <Text style={styles.menuItemText}>{item.label}</Text>
-                                    </TouchableOpacity>
-                                ))}
+                                {section.items.map((item, itemIndex) => {
+                                    const itemKey = `${sectionIndex}-${itemIndex}`;
+                                    const isHovered = pressedItem === itemKey;
+                                    return (
+                                        <TouchableOpacity 
+                                            key={itemIndex}
+                                            style={styles.menuItem}
+                                            onPressIn={() => setPressedItem(itemKey)}
+                                            onPress={() => {
+                                                item.onPress();
+                                                onClose();
+                                            }}
+                                        >
+                                            <Icon name={item.icon} size={20} color={isHovered ? '#00C6A0' : '#000'} />
+                                            <Text style={[styles.menuItemText, isHovered && styles.menuItemTextPressed]}>{item.label}</Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
                             </View>
                         ))}
 
@@ -217,6 +223,9 @@ const styles = StyleSheet.create({
     menuItemText: {
         fontSize: 15,
         color: '#000',
+    },
+    menuItemTextPressed: {
+        color: '#00C6A0',
     },
     footer: {
         marginTop: 30,

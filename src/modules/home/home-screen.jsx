@@ -169,8 +169,8 @@ export const HomeScreen = () => {
                 {/* Programas Populares */}
                 <View style={componentStyles.programsSection}>
                     <View style={componentStyles.programsHeader}>
-                        <Icon name="seed" size={50} color="#7CD1AA" />
-                        <Text style={[componentStyles.sectionTitle, { color: '#31253B', marginBottom: 0, marginLeft: 10 }]}>Programas Populares</Text>
+                        <Text style={componentStyles.programsTitle}>Programas Populares</Text>
+                        <Icon name="leaf" size={32} color="#7CD1AA" />
                     </View>
 
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -271,7 +271,7 @@ const styles = (theme) => StyleSheet.create({
         justifyContent: 'space-between',
     },
     programsSection: {
-        backgroundColor: '#B7ECDC',
+        backgroundColor: '#31253B',
         paddingHorizontal: 20,
         paddingBottom: 20,
         paddingTop: 20,
@@ -279,7 +279,13 @@ const styles = (theme) => StyleSheet.create({
     programsHeader: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         marginBottom: 15,
+    },
+    programsTitle: {
+        fontSize: 18,
+        color: '#FFFFFF',
+        fontWeight: '600',
     },
     nubeImage: {
         width: '120%',
