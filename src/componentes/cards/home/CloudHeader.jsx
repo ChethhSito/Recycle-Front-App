@@ -56,12 +56,12 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: 'transparent',
     marginBottom: 10,
-    marginTop: 10,
+    paddingTop: 0,
     zIndex: 10,
   },
   contentContainer: {
     backgroundColor: '#B7ECDD',
-    paddingTop: 50,
+    paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 10,
   },

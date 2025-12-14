@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated, Dimensions, Image, ScrollView } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 const DRAWER_WIDTH = width * 0.75;
 
 export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, avatarUrl }) => {
+    const navigation = useNavigation();
     const slideAnim = React.useRef(new Animated.Value(-DRAWER_WIDTH)).current;
 
     React.useEffect(() => {
@@ -30,7 +32,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
             title: 'Principal',
             items: [
                 { icon: 'home', label: 'Inicio', onPress: () => console.log('Inicio') },
-                { icon: 'leaf', label: 'EcoPuntos', onPress: () => console.log('EcoPuntos') },
+                { icon: 'leaf', label: 'EcoPuntos', onPress: () => navigation.navigate('Rank') },
                 { icon: 'sprout', label: 'Tu histerio verde', onPress: () => console.log('Tu histerio verde') },
                 { icon: 'account', label: 'Mi perfil', onPress: () => console.log('Mi perfil') },
             ]
@@ -61,14 +63,14 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
         >
             <View style={styles.modalContainer}>
                 {/* Overlay oscuro */}
-                <TouchableOpacity 
-                    style={styles.overlay} 
-                    activeOpacity={1} 
+                <TouchableOpacity
+                    style={styles.overlay}
+                    activeOpacity={1}
                     onPress={onClose}
                 />
 
                 {/* Drawer */}
-                <Animated.View 
+                <Animated.View
                     style={[
                         styles.drawer,
                         { transform: [{ translateX: slideAnim }] }
@@ -77,8 +79,8 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                     <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                         {/* Header del Drawer */}
                         <View style={styles.drawerHeader}>
-                            <Image 
-                                source={{ uri: avatarUrl }} 
+                            <Image
+                                source={{ uri: avatarUrl }}
                                 style={styles.avatar}
                             />
                             <View style={styles.userInfo}>
@@ -95,7 +97,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                             <View key={sectionIndex} style={styles.menuSection}>
                                 <Text style={styles.sectionTitle}>{section.title}</Text>
                                 {section.items.map((item, itemIndex) => (
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         key={itemIndex}
                                         style={styles.menuItem}
                                         onPress={() => {
@@ -113,14 +115,14 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                         {/* Footer */}
                         <View style={styles.footer}>
                             <Text style={styles.versionText}>Recycle v1.0.0</Text>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={styles.logoutButton}
                                 onPress={() => {
                                     console.log('Cerrar Sesión');
                                     onClose();
                                 }}
                             >
-                                <Icon name="logout" size={18} color="#B7ECDC" />
+                                <Icon name="logout" size={18} color="#0000" />
                                 <Text style={styles.logoutText}>Cerrar Sesión</Text>
                             </TouchableOpacity>
                         </View>
@@ -157,8 +159,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     drawerHeader: {
-        backgroundColor: '#00926F',
-        paddingTop: 50,
+        backgroundColor: '#018f64',
+        paddingTop: 30,
         paddingHorizontal: 20,
         paddingBottom: 20,
         flexDirection: 'row',
@@ -232,17 +234,19 @@ const styles = StyleSheet.create({
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#00926F',
+        backgroundColor: 'transparent',
         paddingHorizontal: 20,
         paddingVertical: 12,
         borderRadius: 8,
         gap: 8,
         width: '100%',
         justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: '#000',
     },
     logoutText: {
         fontSize: 14,
-        color: '#B7ECDC',
+        color: '#000',
         fontWeight: '600',
     },
 });

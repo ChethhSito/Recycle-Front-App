@@ -5,6 +5,7 @@ import { LoginScreen } from '../modules/auth/screens/login-screen';
 import { RegisterScreen } from '../modules/auth/screens/register-screen';
 import { HomeScreen } from '../modules/home/home-screen';
 import { RecoverScreen } from '../modules/auth/screens/recover-screen';
+import { RankScreen } from '../modules/citizen/points-screen';
 const Stack = createStackNavigator();
 
 export const AppRoutes = () => {
@@ -34,6 +35,7 @@ export const AppRoutes = () => {
             >
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Home" component={HomeScreen} />
+                <Stack.Screen name="Rank" component={RankScreen} />
                 <Stack.Screen
                     name="Recover" component={RecoverScreen}
                     options={{

@@ -9,24 +9,35 @@ import {
     Platform,
     TouchableWithoutFeedback,
     Keyboard,
-    ScrollView // <--- Importante para que quepan todos los campos
+    ScrollView,
 } from 'react-native';
-import { Text, TextInput, Button, IconButton, Icon } from 'react-native-paper';
+import { Text, TextInput, Button, IconButton, Icon, Modal, Portal } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 
 
 const { width, height } = Dimensions.get('window');
 
 export const RecoverScreen = ({ navigation }) => {
-    const [showPassword, setShowPassword] = useState(false);
+
+    const [modalVisible, setModalVisible] = useState(false);
     const { control, handleSubmit, watch, formState: { errors } } = useForm({
         defaultValues: {
             email: '',
         }
     });
+
+    const validateEmail = (email) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || "Correo inválido";
+    };
     const onSubmit = (data) => {
         console.log("Datos de recuperar:", data);
         // Aquí iría la lógica de registro (Firebase/Backend)
+        setModalVisible(true);
+    };
+    //funcion para cerrar modal
+    const handleCloseModal = () => {
+        setModalVisible(false);
+        navigation.goBack(); // Opcional: Volver al login automáticamente
     };
 
     return (
@@ -101,6 +112,32 @@ export const RecoverScreen = ({ navigation }) => {
                         </Button>
                     </ScrollView>
                 </View>
+
+                <Portal>
+                    <Modal
+                        visible={modalVisible}
+                        onDismiss={() => setModalVisible(false)}
+                        contentContainerStyle={styles.modalContainer}
+                    >
+                        {/* Icono de Check / Éxito */}
+                        <View style={styles.modalIconContainer}>
+                            <Icon source="check-circle-outline" color="#018f64" size={60} />
+                        </View>
+
+                        <Text style={styles.modalTitle}>¡Correo Enviado!</Text>
+                        <Text style={styles.modalText}>
+                            Revisa tu bandeja de entrada. Hemos enviado un enlace para restablecer tu contraseña.
+                        </Text>
+
+                        <Button
+                            mode="contained"
+                            onPress={handleCloseModal}
+                            style={styles.modalButton}
+                        >
+                            Entendido
+                        </Button>
+                    </Modal>
+                </Portal>
             </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
     );
@@ -199,5 +236,31 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         fontSize: 16,
     },
-
+    modalContainer: {
+        backgroundColor: '#282034',
+        padding: 20,
+        margin: 20,
+        borderRadius: 20,
+        alignItems: 'center',
+    },
+    modalIconContainer: {
+        marginBottom: 15,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#018f64', // Verde oscuro
+        marginBottom: 10,
+    },
+    modalText: {
+        fontSize: 16,
+        textAlign: 'center',
+        color: '#F0F4F5',
+        marginBottom: 20,
+    },
+    modalButton: {
+        backgroundColor: '#018f64',
+        borderRadius: 10,
+        width: '100%',
+    }
 }); 

@@ -103,7 +103,7 @@ export const HomeScreen = () => {
                 <ProgressCard
                     badgeIcon="seed"
                     badgeTitle="Semilla de Cambio"
-                    rank="Rango 1"
+                    rank="Nivel 1"
                     progress={0.3}
                     currentPoints={100}
                     maxPoints={600}
@@ -169,7 +169,7 @@ export const HomeScreen = () => {
                 {/* Programas Populares */}
                 <View style={componentStyles.programsSection}>
                     <View style={componentStyles.programsHeader}>
-                        <Icon name="seed" size={50} color="#7CD1AA" />
+                        <Icon name="leaf" size={50} color="#018f64" />
                         <Text style={[componentStyles.sectionTitle, { color: '#31253B', marginBottom: 0, marginLeft: 10 }]}>Programas Populares</Text>
                     </View>
 

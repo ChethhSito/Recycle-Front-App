@@ -6,7 +6,7 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 export const ProgressCard = ({
     badgeIcon = 'seed',
     badgeTitle = 'Semilla de Cambio',
-    rank = 'Rango 1',
+    rank = 'Nivel 1',
     progress = 0.3,
     currentPoints = 100,
     maxPoints = 600,
@@ -18,7 +18,7 @@ export const ProgressCard = ({
         <Card style={componentStyles.progressCard}>
             <Card.Content>
                 <View style={componentStyles.badgeContainer}>
-                    <Icon name={badgeIcon} size={40} color="#7CD1AA" />
+                    <Icon name={badgeIcon} size={40} color="#5D4037" />
                     <View style={componentStyles.badgeInfo}>
                         <Text style={componentStyles.badgeTitle}>{badgeTitle}</Text>
                         <Text style={componentStyles.badgeRank}>{rank}</Text>
