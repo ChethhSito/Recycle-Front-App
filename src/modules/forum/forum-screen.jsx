@@ -6,7 +6,7 @@ import { ForumDetailView } from '../../componentes/views/ForumDetailView';
 import { CreatePostModal } from '../../componentes/modal/CreatePostModal';
 import { DrawerMenu } from '../../componentes/navigation/DrawerMenu';
 import {
-    CloudHeader,
+  CloudHeader,
 } from '../../componentes/cards/home';
 const { width } = Dimensions.get('window');
 
@@ -80,8 +80,8 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
 
   const categories = ['Todos', 'Dudas', 'Proyectos', 'Eventos', 'Trueque'];
 
-  const filteredPosts = activeCategory === 'Todos' 
-    ? posts 
+  const filteredPosts = activeCategory === 'Todos'
+    ? posts
     : posts.filter(post => post.category === activeCategory);
 
   const handleCreatePost = (newPost) => {
@@ -102,9 +102,9 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
   // Si hay un post seleccionado, mostrar la vista de detalle
   if (selectedPost) {
     return (
-      <ForumDetailView 
-        post={selectedPost} 
-        onBack={() => setSelectedPost(null)} 
+      <ForumDetailView
+        post={selectedPost}
+        onBack={() => setSelectedPost(null)}
       />
     );
   }
@@ -119,11 +119,11 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
           avatarUrl={userAvatar}
           onMenuPress={() => setDrawerVisible(true)}
         />
-        
+
         {/* Categories Filter */}
         <View style={styles.categoriesContainer}>
-          <ScrollView 
-            horizontal 
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categories}
           >
@@ -153,7 +153,7 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
             <View style={styles.bannerContent}>
               <View style={styles.bannerHeader}>
                 <Text style={styles.bannerTitle}>¡Hola, Juan!</Text>
-                <Icon name="leaf" size={20} color="rgba(255,255,255,0.8)" />
+                <Icon name="leaf" size={20} color="#00000" />
               </View>
               <Text style={styles.bannerDescription}>
                 Hay 12 nuevas propuestas en tu zona hoy.
@@ -162,7 +162,7 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
                 <Text style={styles.bannerButtonText}>Ver Novedades</Text>
               </TouchableOpacity>
             </View>
-            
+
             {/* Decorative circles */}
             <View style={[styles.decorativeCircle, styles.decorativeCircle1]} />
             <View style={[styles.decorativeCircle, styles.decorativeCircle2]} />
@@ -171,8 +171,8 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
           {/* Posts List */}
           <View style={styles.postsContainer}>
             {filteredPosts.map((post) => (
-              <PostCard 
-                key={post.id} 
+              <PostCard
+                key={post.id}
                 post={post}
                 onPress={() => setSelectedPost(post)}
               />
@@ -182,7 +182,7 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
       </ScrollView>
 
       {/* Floating Action Button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.fab}
         onPress={() => setShowCreateModal(true)}
         activeOpacity={0.8}
@@ -191,7 +191,7 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
       </TouchableOpacity>
 
       {/* Create Post Modal */}
-      <CreatePostModal 
+      <CreatePostModal
         visible={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreatePost}
@@ -227,16 +227,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#00926F',
+    backgroundColor: '#00C7A1',
     marginRight: 8,
   },
   categoryButtonActive: {
     backgroundColor: '#32243B',
   },
   categoryText: {
-    color: '#FFFFFF',
+    color: '#0000',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'InclusiveSans-Regular',
   },
   categoryTextActive: {
     color: '#FFFFFF',
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#7CD1AA',
   },
   banner: {
-    backgroundColor: '#00C49A',
+    backgroundColor: '#00C7A1',
     borderRadius: 24,
     padding: 20,
     marginBottom: 16,
@@ -262,13 +262,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   bannerTitle: {
-    color: '#FFFFFF',
+    color: '#000000',
     fontSize: 20,
     fontWeight: 'bold',
     marginRight: 8,
   },
   bannerDescription: {
-    color: '#FFFFFF',
+    color: '#000000',
     fontSize: 14,
     marginBottom: 16,
   },
@@ -276,17 +276,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#32243B',
     paddingHorizontal: 24,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 12,
     alignSelf: 'flex-start',
   },
   bannerButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'InclusiveSans-Regular',
   },
   decorativeCircle: {
     position: 'absolute',
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: '#6939393f',
     borderRadius: 999,
   },
   decorativeCircle1: {
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#00C49A',
+    backgroundColor: '#00C7A1',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

@@ -4,9 +4,9 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
 export const PostCard = ({ post, onPress }) => {
   const isAdmin = post.isAdmin || false;
-  
+
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       onPress={onPress}
       style={[styles.card, isAdmin ? styles.cardAdmin : styles.cardNormal]}
       activeOpacity={0.7}
@@ -20,7 +20,7 @@ export const PostCard = ({ post, onPress }) => {
               {post.authorInitials || post.author?.charAt(0) || 'U'}
             </Text>
           </View>
-          
+
           {/* Author Info */}
           <View>
             <Text style={[styles.author, isAdmin && styles.authorAdmin]}>
@@ -67,16 +67,16 @@ export const PostCard = ({ post, onPress }) => {
       {/* Interactions */}
       <View style={styles.interactions}>
         <View style={styles.interaction}>
-          <Icon 
-            name={post.liked ? 'heart' : 'heart-outline'} 
-            size={20} 
-            color="#F96755" 
+          <Icon
+            name={post.liked ? 'heart' : 'heart-outline'}
+            size={20}
+            color="#F96755"
           />
           <Text style={[styles.interactionText, isAdmin && styles.interactionTextAdmin]}>
             {post.likes}
           </Text>
         </View>
-        
+
         <View style={styles.interaction}>
           <Icon name="message-outline" size={20} color={isAdmin ? '#999' : '#32243B'} />
           <Text style={[styles.interactionText, isAdmin && styles.interactionTextAdmin]}>
@@ -124,13 +124,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   avatarNormal: {
-    backgroundColor: '#00C49A',
+    backgroundColor: '#00C7A1',
   },
   avatarAdmin: {
     backgroundColor: '#FFCB4D',
   },
   avatarText: {
-    color: '#FFFFFF',
+    color: '#000000ff',
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -138,8 +138,8 @@ const styles = StyleSheet.create({
     color: '#32243B',
   },
   author: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontFamily: 'InclusiveSans-Regular',
     color: '#32243B',
   },
   authorAdmin: {
@@ -155,16 +155,16 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   categoryBadge: {
-    backgroundColor: '#00C49A',
+    backgroundColor: '#00C7A1',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
     marginRight: 8,
   },
   categoryText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
+    color: '#000000ff',
+    fontSize: 16,
+    fontFamily: 'InclusiveSans-Regular',
   },
   alertContainer: {
     flexDirection: 'row',
@@ -180,14 +180,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   alertText: {
-    color: '#32243B',
-    fontSize: 14,
-    fontWeight: 'bold',
+    color: '#000000ff',
+    fontSize: 16,
+    fontFamily: 'InclusiveSans-Regular',
   },
   title: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#32243B',
+    fontFamily: 'InclusiveSans-Regular',
+    color: '#000000ff',
     marginBottom: 8,
   },
   titleAdmin: {

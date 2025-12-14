@@ -114,7 +114,7 @@ export const InductionScreen = ({ navigation, onOpenDrawer, userAvatar, userName
     };
 
     return (
-        <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
             <StatusBar barStyle="dark-content" backgroundColor="#B7ECDC" />
             <View style={styles.container}>
                 {/* Header */}
@@ -127,8 +127,8 @@ export const InductionScreen = ({ navigation, onOpenDrawer, userAvatar, userName
 
                 {/* Filtros de Categoría */}
                 <View style={styles.filtersSection}>
-                    <ScrollView 
-                        horizontal 
+                    <ScrollView
+                        horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={styles.filtersContainer}
                     >
@@ -153,7 +153,7 @@ export const InductionScreen = ({ navigation, onOpenDrawer, userAvatar, userName
                 </View>
 
                 {/* Lista de Videos */}
-                <ScrollView 
+                <ScrollView
                     style={styles.scrollView}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.scrollContent}
@@ -202,30 +202,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#7CD1AA',
-    },    xpBadge: {
-        position: 'absolute',
-        top: 70,
-        right: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        gap: 6,
-        zIndex: 100,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
     },
-    xpText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#32243B',
-    },    filtersSection: {
-       
+    filtersSection: {
+
         marginBottom: 12,
     },
     filtersContainer: {
