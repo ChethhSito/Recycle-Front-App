@@ -42,7 +42,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
             title: 'Explorar',
             items: [
                 { icon: 'pine-tree', label: 'Programas Ambientales', onPress: () => console.log('Programas Ambientales') },
-                { icon: 'play-circle', label: 'Inducción', onPress: () => console.log('Inducción') },
+                { icon: 'play-circle', label: 'Inducción', onPress: () => navigation.navigate('Induction') },
                 { icon: 'forum', label: 'Foro', onPress: () => navigation.navigate('Forum') },
                 { icon: 'information', label: 'Acerca de Nosotros', onPress: () => console.log('Acerca de Nosotros') },
             ]

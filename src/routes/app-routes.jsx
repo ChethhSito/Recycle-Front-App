@@ -7,6 +7,7 @@ import { HomeScreen } from '../modules/home/home-screen';
 import { RecoverScreen } from '../modules/auth/screens/recover-screen';
 import { RankScreen } from '../modules/citizen/points-screen';
 import { ForumScreen } from '../modules/forum/forum-screen';
+import { InductionScreen } from '../modules/induction/induction-screen';
 import { DrawerMenu } from '../componentes/navigation/DrawerMenu';
 const Stack = createStackNavigator();
 
@@ -58,6 +59,16 @@ export const AppRoutes = () => {
                 <Stack.Screen name="Forum">
                     {props => (
                         <ForumScreen 
+                            {...props} 
+                            onOpenDrawer={() => setDrawerVisible(true)}
+                            userAvatar={userInfo.avatar}
+                            userName={userInfo.name}
+                        />
+                    )}
+                </Stack.Screen>
+                <Stack.Screen name="Induction">
+                    {props => (
+                        <InductionScreen 
                             {...props} 
                             onOpenDrawer={() => setDrawerVisible(true)}
                             userAvatar={userInfo.avatar}

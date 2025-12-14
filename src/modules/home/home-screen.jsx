@@ -88,7 +88,7 @@ export const HomeScreen = ({userAvatar, userName}) => {
             >
                 {/* Header con usuario */}
                 <CloudHeader
-                    userName={userName || 'Juan David'}
+                    userName={`Hola, ${userName}`}
                     userType="Ciudadano"
                     avatarUrl={userAvatar || 'https://i.pravatar.cc/150?img=33'}
                     onMenuPress={() => setDrawerVisible(true)}
