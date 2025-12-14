@@ -2,6 +2,7 @@ import { MD3LightTheme, configureFonts } from 'react-native-paper';
 
 const fontConfig = {
     fontFamily: 'InclusiveSans-Regular',
+    fontWeight: 'InclusiveSans-Bold',
 };
 
 export const appTheme = {
