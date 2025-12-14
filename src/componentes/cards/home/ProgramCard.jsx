@@ -61,7 +61,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 15,
-        gap: 5,
         zIndex: 2,
     },
     badgeActivity: {
@@ -71,6 +70,7 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 13,
         fontWeight: '600',
+        marginLeft: 5,
     },
     overlay: {
         flex: 1,
@@ -94,20 +94,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 5,
-        gap: 5,
     },
     scheduleText: {
         color: '#fff',
         fontSize: 14,
         fontWeight: '500',
+        marginLeft: 5,
     },
     locationContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 5,
     },
     locationText: {
         color: '#fff',
         fontSize: 13,
+        marginLeft: 5,
     },
 });

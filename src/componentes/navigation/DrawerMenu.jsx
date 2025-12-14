@@ -32,7 +32,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
         {
             title: 'Principal',
             items: [
-                { icon: 'home', label: 'Inicio', onPress: () => console.log('Inicio') },
+                { icon: 'home', label: 'Inicio', onPress: () => navigation.navigate('Home') },
                 { icon: 'leaf', label: 'EcoPuntos', onPress: () => navigation.navigate('Rank') },
                 { icon: 'sprout', label: 'Tu histerio verde', onPress: () => console.log('Tu histerio verde') },
                 { icon: 'account', label: 'Mi perfil', onPress: () => console.log('Mi perfil') },
@@ -43,7 +43,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
             items: [
                 { icon: 'pine-tree', label: 'Programas Ambientales', onPress: () => console.log('Programas Ambientales') },
                 { icon: 'play-circle', label: 'Inducción', onPress: () => console.log('Inducción') },
-                { icon: 'forum', label: 'Foro', onPress: () => console.log('Foro') },
+                { icon: 'forum', label: 'Foro', onPress: () => navigation.navigate('Forum') },
                 { icon: 'information', label: 'Acerca de Nosotros', onPress: () => console.log('Acerca de Nosotros') },
             ]
         },
@@ -166,13 +166,13 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 15,
     },
     avatar: {
         width: 80,
         height: 80,
         borderRadius: 40,
         backgroundColor: '#eee',
+        marginRight: 15,
     },
     userInfo: {
         flex: 1,
@@ -215,11 +215,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 12,
-        gap: 15,
     },
     menuItemText: {
         fontSize: 15,
         color: '#000',
+        marginLeft: 15,
     },
     menuItemTextPressed: {
         color: '#00C6A0',
@@ -242,7 +242,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 12,
         borderRadius: 8,
-        gap: 8,
         width: '100%',
         justifyContent: 'center',
         borderWidth: 1,
@@ -252,5 +251,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#000',
         fontWeight: '600',
+        marginLeft: 8,
     },
 });

@@ -60,7 +60,6 @@ const styles = (theme) => StyleSheet.create({
     headerLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 15,
     },
     menuButton: {
         width: 28,

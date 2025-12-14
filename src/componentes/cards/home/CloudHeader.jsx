@@ -21,7 +21,7 @@ export const CloudHeader = ({ userName, userType, avatarUrl, onMenuPress }) => {
               <Menu color="#000" size={28} />
             </TouchableOpacity>
             <View style={styles.textContainer}>
-              <Text style={styles.greeting}>Hola, {userName}</Text>
+              <Text style={styles.greeting}> {userName}</Text>
               <Text style={styles.userType}>{userType}</Text>
             </View>
           </View>
@@ -73,10 +73,9 @@ const styles = StyleSheet.create({
   userInfoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 15,
   },
   textContainer: {
-    marginLeft: 10,
+    marginLeft: 25,
   },
   greeting: {
     fontSize: 20,

@@ -6,11 +6,21 @@ import { RegisterScreen } from '../modules/auth/screens/register-screen';
 import { HomeScreen } from '../modules/home/home-screen';
 import { RecoverScreen } from '../modules/auth/screens/recover-screen';
 import { RankScreen } from '../modules/citizen/points-screen';
+import { ForumScreen } from '../modules/forum/forum-screen';
+import { DrawerMenu } from '../componentes/navigation/DrawerMenu';
 const Stack = createStackNavigator();
 
 export const AppRoutes = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [drawerVisible, setDrawerVisible] = useState(false);
+    const [userInfo] = useState({
+        name: 'Juan David',
+        email: 'juan@ecolloy.pe',
+        points: 1250,
+        avatar: 'https://i.pravatar.cc/150?img=33'
+    });
+    
     const modalOptions = {
         ...TransitionPresets.ModalSlideFromBottomIOS,
         cardOverlayEnabled: true,
@@ -34,8 +44,27 @@ export const AppRoutes = () => {
                 }}
             >
                 <Stack.Screen name="Login" component={LoginScreen} />
-                <Stack.Screen name="Home" component={HomeScreen} />
+                <Stack.Screen name="Home">
+                    {props => (
+                        <HomeScreen 
+                            {...props} 
+                            onOpenDrawer={() => setDrawerVisible(true)}
+                            userAvatar={userInfo.avatar}
+                            userName={userInfo.name}
+                        />
+                    )}
+                </Stack.Screen>
                 <Stack.Screen name="Rank" component={RankScreen} />
+                <Stack.Screen name="Forum">
+                    {props => (
+                        <ForumScreen 
+                            {...props} 
+                            onOpenDrawer={() => setDrawerVisible(true)}
+                            userAvatar={userInfo.avatar}
+                            userName={userInfo.name}
+                        />
+                    )}
+                </Stack.Screen>
                 <Stack.Screen
                     name="Recover" component={RecoverScreen}
                     options={{
@@ -49,11 +78,16 @@ export const AppRoutes = () => {
                     }}
                 />
             </Stack.Navigator>
+            
+            {/* DrawerMenu compartido */}
+            <DrawerMenu
+                visible={drawerVisible}
+                onClose={() => setDrawerVisible(false)}
+                userName={userInfo.name}
+                userEmail={userInfo.email}
+                userPoints={userInfo.points}
+                avatarUrl={userInfo.avatar}
+            />
         </NavigationContainer>
-
-
-
-
-
     );
 };

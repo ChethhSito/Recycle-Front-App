@@ -14,7 +14,7 @@ import { NavItem } from '../../componentes/navigation/NavItem';
 import { DrawerMenu } from '../../componentes/navigation/DrawerMenu';
 import { ProgramDetailModal } from '../../componentes/modal/ProgramDetailModal';
 
-export const HomeScreen = () => {
+export const HomeScreen = ({userAvatar, userName}) => {
     const theme = useTheme();
     const componentStyles = styles(theme);
     const [filterType, setFilterType] = useState('peso'); // 'peso' o 'cantidad'
@@ -88,9 +88,9 @@ export const HomeScreen = () => {
             >
                 {/* Header con usuario */}
                 <CloudHeader
-                    userName="Juan David"
+                    userName={userName || 'Juan David'}
                     userType="Ciudadano"
-                    avatarUrl="https://i.pravatar.cc/150?img=33"
+                    avatarUrl={userAvatar || 'https://i.pravatar.cc/150?img=33'}
                     onMenuPress={() => setDrawerVisible(true)}
                 />
 
@@ -207,10 +207,10 @@ export const HomeScreen = () => {
             <DrawerMenu
                 visible={drawerVisible}
                 onClose={() => setDrawerVisible(false)}
-                userName="Juan David"
+                userName={userName || 'Juan David'}
                 userEmail="jdavidhuay@gmail.com"
                 userPoints="100"
-                avatarUrl="https://i.pravatar.cc/150?img=33"
+                avatarUrl={userAvatar || 'https://i.pravatar.cc/150?img=33'}
             />
         </View>
     );
@@ -252,7 +252,6 @@ const styles = (theme) => StyleSheet.create({
         paddingVertical: 10,
         paddingHorizontal: 12,
         borderRadius: 20,
-        gap: 5,
     },
     filterButtonActive: {
         backgroundColor: '#00C7A1',
@@ -261,6 +260,7 @@ const styles = (theme) => StyleSheet.create({
         color: '#000',
         fontSize: 13,
         fontWeight: '500',
+        marginLeft: 5,
     },
     filterTextActive: {
         color: '#000',
@@ -271,7 +271,7 @@ const styles = (theme) => StyleSheet.create({
         justifyContent: 'space-between',
     },
     programsSection: {
-        backgroundColor: '#31253B',
+        backgroundColor: '#B7ECDC',
         paddingHorizontal: 20,
         paddingBottom: 20,
         paddingTop: 20,
@@ -306,7 +306,5 @@ const styles = (theme) => StyleSheet.create({
         marginHorizontal: 0,
         elevation: 10,
         color: '#000',
-
-
     },
 });
