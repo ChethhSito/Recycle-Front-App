@@ -195,7 +195,7 @@ export const HomeScreen = ({ userAvatar, userName }) => {
             {/* Bottom Navigation - Fijo */}
             <View style={componentStyles.bottomNav}>
                 <NavItem icon="home" label="Inicio" active />
-                <NavItem icon="recycle" label="Reciclar" onPress={() => navigation.navigate('Request')} />
+                <NavItem icon="recycle" label="Reciclar" onPress={() => navigation.navigate('RequestList')} />
                 <NavItem icon="trophy" label="Premios" />
             </View>
 

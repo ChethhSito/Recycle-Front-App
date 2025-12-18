@@ -10,6 +10,7 @@ import { ForumScreen } from '../modules/forum/forum-screen';
 import { InductionScreen } from '../modules/induction/induction-screen';
 import { DrawerMenu } from '../componentes/navigation/DrawerMenu';
 import { CreateRequestScreen } from '../modules/citizen/request-screen';
+import { RequestListScreen } from '../modules/citizen/listrecycle-screen';
 const Stack = createStackNavigator();
 
 export const AppRoutes = () => {
@@ -90,6 +91,7 @@ export const AppRoutes = () => {
                     }}
                 />
                 <Stack.Screen name="Request" component={CreateRequestScreen} />
+                <Stack.Screen name="RequestList" component={RequestListScreen} />
             </Stack.Navigator>
 
             {/* DrawerMenu compartido */}
