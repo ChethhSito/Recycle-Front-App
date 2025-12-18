@@ -13,8 +13,11 @@ import {
 import { NavItem } from '../../componentes/navigation/NavItem';
 import { DrawerMenu } from '../../componentes/navigation/DrawerMenu';
 import { ProgramDetailModal } from '../../componentes/modal/ProgramDetailModal';
+import { useNavigation } from '@react-navigation/native';
 
-export const HomeScreen = ({userAvatar, userName}) => {
+
+export const HomeScreen = ({ userAvatar, userName }) => {
+    const navigation = useNavigation();
     const theme = useTheme();
     const componentStyles = styles(theme);
     const [filterType, setFilterType] = useState('peso'); // 'peso' o 'cantidad'
@@ -192,7 +195,7 @@ export const HomeScreen = ({userAvatar, userName}) => {
             {/* Bottom Navigation - Fijo */}
             <View style={componentStyles.bottomNav}>
                 <NavItem icon="home" label="Inicio" active />
-                <NavItem icon="recycle" label="Reciclar" />
+                <NavItem icon="recycle" label="Reciclar" onPress={() => navigation.navigate('Request')} />
                 <NavItem icon="trophy" label="Premios" />
             </View>
 

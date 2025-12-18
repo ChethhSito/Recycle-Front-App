@@ -9,6 +9,7 @@ import { RankScreen } from '../modules/citizen/points-screen';
 import { ForumScreen } from '../modules/forum/forum-screen';
 import { InductionScreen } from '../modules/induction/induction-screen';
 import { DrawerMenu } from '../componentes/navigation/DrawerMenu';
+import { CreateRequestScreen } from '../modules/citizen/request-screen';
 const Stack = createStackNavigator();
 
 export const AppRoutes = () => {
@@ -21,7 +22,7 @@ export const AppRoutes = () => {
         points: 1250,
         avatar: 'https://i.pravatar.cc/150?img=33'
     });
-    
+
     const modalOptions = {
         ...TransitionPresets.ModalSlideFromBottomIOS,
         cardOverlayEnabled: true,
@@ -47,8 +48,8 @@ export const AppRoutes = () => {
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Home">
                     {props => (
-                        <HomeScreen 
-                            {...props} 
+                        <HomeScreen
+                            {...props}
                             onOpenDrawer={() => setDrawerVisible(true)}
                             userAvatar={userInfo.avatar}
                             userName={userInfo.name}
@@ -58,8 +59,8 @@ export const AppRoutes = () => {
                 <Stack.Screen name="Rank" component={RankScreen} />
                 <Stack.Screen name="Forum">
                     {props => (
-                        <ForumScreen 
-                            {...props} 
+                        <ForumScreen
+                            {...props}
                             onOpenDrawer={() => setDrawerVisible(true)}
                             userAvatar={userInfo.avatar}
                             userName={userInfo.name}
@@ -68,8 +69,8 @@ export const AppRoutes = () => {
                 </Stack.Screen>
                 <Stack.Screen name="Induction">
                     {props => (
-                        <InductionScreen 
-                            {...props} 
+                        <InductionScreen
+                            {...props}
                             onOpenDrawer={() => setDrawerVisible(true)}
                             userAvatar={userInfo.avatar}
                             userName={userInfo.name}
@@ -88,8 +89,9 @@ export const AppRoutes = () => {
                         ...modalOptions
                     }}
                 />
+                <Stack.Screen name="Request" component={CreateRequestScreen} />
             </Stack.Navigator>
-            
+
             {/* DrawerMenu compartido */}
             <DrawerMenu
                 visible={drawerVisible}
