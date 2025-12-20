@@ -11,6 +11,9 @@ import { InductionScreen } from '../modules/induction/induction-screen';
 import { DrawerMenu } from '../componentes/navigation/DrawerMenu';
 import { CreateRequestScreen } from '../modules/citizen/request-screen';
 import { RequestListScreen } from '../modules/citizen/listrecycle-screen';
+import { ProfileScreen } from '../modules/profile/profile-screen';
+import { PersonalDataScreen } from '../modules/profile/personal-data-screen';
+import { HistoryScreen } from '../modules/profile/history-screen';
 const Stack = createStackNavigator();
 
 export const AppRoutes = () => {
@@ -92,6 +95,19 @@ export const AppRoutes = () => {
                 />
                 <Stack.Screen name="Request" component={CreateRequestScreen} />
                 <Stack.Screen name="RequestList" component={RequestListScreen} />
+                <Stack.Screen name="Profile">
+                    {props => (
+                        <ProfileScreen
+                            {...props}
+                            onOpenDrawer={() => setDrawerVisible(true)}
+                            userAvatar={userInfo.avatar}
+                            userName={userInfo.name}
+                            userPoints={userInfo.points}
+                        />
+                    )}
+                </Stack.Screen>
+                <Stack.Screen name="PersonalData" component={PersonalDataScreen} />
+                <Stack.Screen name="History" component={HistoryScreen} />
             </Stack.Navigator>
 
             {/* DrawerMenu compartido */}
