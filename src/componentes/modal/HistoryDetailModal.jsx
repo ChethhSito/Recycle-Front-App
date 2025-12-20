@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Modal,
   View,
@@ -29,13 +29,16 @@ import {
   Package,
   CheckCircle,
 } from 'lucide-react-native';
+import { ShareableReceipt } from '../shared/ShareableReceipt';
 
 const { height, width } = Dimensions.get('window');
 
 export const HistoryDetailModal = ({ visible, onClose, item }) => {
   const [showModal, setShowModal] = React.useState(visible);
+  const [isCapturing, setIsCapturing] = useState(false);
   const slideAnim = React.useRef(new Animated.Value(height)).current;
   const receiptRef = useRef();
+  const shareableReceiptRef = useRef();
 
   useEffect(() => {
     if (visible) {
@@ -125,24 +128,28 @@ export const HistoryDetailModal = ({ visible, onClose, item }) => {
 
   const handleShare = async () => {
     try {
-      // Capturar la imagen del comprobante
+      setIsCapturing(true);
+      
+      // Pequeño delay para asegurar que el componente se renderiza
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Capturar la imagen del comprobante visible
       const uri = await captureRef(receiptRef, {
         format: 'png',
         quality: 1,
         result: 'tmpfile',
       });
 
-      // Compartir la imagen
-      const shareOptions = {
-        title: 'Comprobante Eco',
-        message: `¡He ganado ${item.points} puntos eco! 🌱`,
-        url: `file://${uri}`,
-        type: 'image/png',
-      };
+      setIsCapturing(false);
 
-      await Share.share(shareOptions);
+      // Compartir la imagen
+      await Share.share({
+        message: `¡He ganado ${item.points} puntos eco! 🌱`,
+        url: uri,
+      });
     } catch (error) {
       console.error('Error al compartir:', error);
+      setIsCapturing(false);
       Alert.alert('Error', 'No se pudo compartir. Intenta nuevamente.');
     }
   };
@@ -156,22 +163,31 @@ export const HistoryDetailModal = ({ visible, onClose, item }) => {
           onPress={onClose}
           activeOpacity={1}
         />
+        
+        {/* Componente para captura de imagen - oculto pero renderizado */}
+        <View style={styles.hiddenReceiptContainer}>
+          <ShareableReceipt 
+            ref={shareableReceiptRef}
+            item={item}
+            isPositive={isPositive}
+          />
+        </View>
+
         <Animated.View
           style={[styles.modalContent, { transform: [{ translateY: slideAnim }] }]}
         >
+          {/* Close Button Outside */}
           {/* Close Button Outside */}
           <TouchableOpacity onPress={onClose} style={styles.closeButtonTop}>
             <Icon name="close-circle" size={32} color="#FFFFFF" />
           </TouchableOpacity>
 
           {/* Receipt Container - Capturable */}
-          <View ref={receiptRef} collapsable={false} style={styles.receiptContainerWrapper}>
-            <ScrollView 
-              showsVerticalScrollIndicator={false}
-              bounces={true}
-              style={styles.scrollView}
-            >
-              <View style={styles.receiptContainer}>
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+            bounces={true}
+          >
+            <View ref={receiptRef} collapsable={false} style={styles.receiptContainer}>
             {/* Header - Ticket Style */}
             <View style={styles.ticketHeader}>
               <View style={styles.checkCircle}>
@@ -302,10 +318,10 @@ export const HistoryDetailModal = ({ visible, onClose, item }) => {
               <Icon name="leaf" size={24} color="#018f64" />
               <Text style={styles.footerText}>Nos Planet • Reciclaje Inteligente</Text>
             </View>
-              </View>
-            </ScrollView>
           </View>
+          </ScrollView>
         </Animated.View>
+
       </View>
     </Modal>
   );
@@ -330,17 +346,10 @@ const styles = StyleSheet.create({
     width: width * 0.9,
     maxWidth: 400,
   },
-  receiptContainerWrapper: {
+  receiptContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     overflow: 'hidden',
-    maxHeight: height * 0.75,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  receiptContainer: {
-    backgroundColor: '#FFFFFF',
   },
   // Header - Ticket Style
   ticketHeader: {
@@ -512,5 +521,12 @@ const styles = StyleSheet.create({
     color: '#666',
     fontWeight: '600',
   },
-
+  // Contenedor oculto para captura de imagen
+  hiddenReceiptContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    opacity: 0,
+    zIndex: -1,
+  },
 });

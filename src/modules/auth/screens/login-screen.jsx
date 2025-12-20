@@ -19,23 +19,29 @@ const { width, height } = Dimensions.get('window');
 export const LoginScreen = ({ navigation, onLogin }) => {
     const theme = useTheme();
     const [showPassword, setShowPassword] = useState(false);
-    const [showEmailError, setShowEmailError] = useState(false);
 
     // Configuración del formulario
-    const { control, handleSubmit, formState: { errors } } = useForm({
+    const { control, handleSubmit, formState: { errors }, setValue } = useForm({
         defaultValues: { email: '', password: '' }
     });
 
     const validateEmail = (email) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const valid = emailRegex.test(email);
-        setShowEmailError(!valid); // Si no es válido, muestra el error
-        return valid || "Correo inválido";
+        return emailRegex.test(email) || "Correo inválido";
     };
 
     const onSubmit = (data) => {
         console.log(data);
         navigation.navigate('Home');
+    };
+
+    // Función de acceso rápido para desarrollo
+    const quickLogin = () => {
+        setValue('email', 'admin@gmail.com');
+        setValue('password', '123456');
+        setTimeout(() => {
+            navigation.navigate('Home');
+        }, 300);
     };
 
     return (
@@ -64,24 +70,17 @@ export const LoginScreen = ({ navigation, onLogin }) => {
                         name="email"
                         rules={{ validate: validateEmail }}
                         render={({ field: { onChange, value } }) => (
-                            <View>
-                                <TextInput
-
-                                    mode="flat"
-                                    placeholder="Email:"
-                                    placeholderTextColor="#000000"
-                                    style={styles.input}
-                                    value={value}
-                                    onChangeText={(text) => {
-                                        onChange(text);
-                                        if (showEmailError) setShowEmailError(false); // Ocultar error al escribir
-                                    }}
-                                    underlineColor="transparent"
-                                    activeUnderlineColor="transparent"
-                                    left={<TextInput.Icon icon="email" color="#000000" />}
-                                />
-
-                            </View>
+                            <TextInput
+                                mode="flat"
+                                placeholder="Email:"
+                                placeholderTextColor="#000000"
+                                style={styles.input}
+                                value={value}
+                                onChangeText={onChange}
+                                underlineColor="transparent"
+                                activeUnderlineColor="transparent"
+                                left={<TextInput.Icon icon="email" color="#000000" />}
+                            />
                         )}
                     />
 
@@ -126,6 +125,16 @@ export const LoginScreen = ({ navigation, onLogin }) => {
                         Iniciar Sesión
                     </Button>
 
+                    {/* Botón de Acceso Rápido para Desarrollo */}
+                    <Button
+                        mode="outlined"
+                        onPress={quickLogin}
+                        style={styles.devBtn}
+                        labelStyle={{ color: '#00926F', fontSize: 14 }}
+                    >
+                        ⚡ Acceso Rápido (Dev)
+                    </Button>
+
                     <Button
                         mode="contained"
                         icon={() => <GoogleIcon />}
@@ -143,19 +152,6 @@ export const LoginScreen = ({ navigation, onLogin }) => {
                         </TouchableOpacity>
                     </View>
                 </View>
-                <Snackbar
-
-                    visible={showEmailError}
-                    onDismiss={() => setShowEmailError(false)} // <--- IMPORTANTE: Cierra el snackbar
-                    duration={3000} // <--- IMPORTANTE: Dura 3 segundos
-                    style={{ backgroundColor: '#31253B', borderRadius: 12, marginBottom: height * 0.035 }}
-                    action={{
-                        label: 'OK',
-                        onPress: () => setShowEmailError(false),
-                    }}
-                >
-                    Por favor, ingresa un correo válido.
-                </Snackbar>
             </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
     );
@@ -214,6 +210,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#31253B',
         borderRadius: 12,
         paddingVertical: 4,
+        marginBottom: 15,
+    },
+    devBtn: {
+        marginTop: 10,
+        borderRadius: 12,
+        borderColor: '#00926F',
+        borderWidth: 2,
         marginBottom: 15,
     },
     googleBtn: {
