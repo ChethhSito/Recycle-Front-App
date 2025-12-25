@@ -5,12 +5,12 @@ import {
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   Alert,
   Image
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ModernInput } from '../../componentes/cards/inputs/ModernInput';
 import { User, Mail, Phone, ArrowLeft, Save } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';

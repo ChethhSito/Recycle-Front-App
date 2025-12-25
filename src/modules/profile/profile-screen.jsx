@@ -5,9 +5,9 @@ import {
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
-  SafeAreaView,
   Alert
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { CloudHeader } from '../../componentes/cards/home/CloudHeader';
 import { MemberCard } from '../../componentes/cards/profile/MemberCard';
 import { 
@@ -116,7 +116,7 @@ export const ProfileScreen = ({ navigation, onOpenDrawer, userAvatar, userName, 
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView 
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
