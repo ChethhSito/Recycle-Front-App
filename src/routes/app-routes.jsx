@@ -15,6 +15,7 @@ import { ProfileScreen } from '../modules/profile/profile-screen';
 import { PersonalDataScreen } from '../modules/profile/personal-data-screen';
 import { HistoryScreen } from '../modules/profile/history-screen';
 import { AboutScreen } from '../modules/about/about-screen';
+import { GreenFootprintScreen } from '../modules/greenprint/green-print-screen';
 const Stack = createStackNavigator();
 
 export const AppRoutes = () => {
@@ -118,6 +119,7 @@ export const AppRoutes = () => {
                         />
                     )}
                 </Stack.Screen>
+                <Stack.Screen name="GreenFootprint" component={GreenFootprintScreen} />
             </Stack.Navigator>
 
             {/* DrawerMenu compartido */}
