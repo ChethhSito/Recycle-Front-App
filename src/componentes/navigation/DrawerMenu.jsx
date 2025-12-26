@@ -34,7 +34,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
             items: [
                 { icon: 'home', label: 'Inicio', onPress: () => navigation.navigate('Home') },
                 { icon: 'leaf', label: 'EcoPuntos', onPress: () => navigation.navigate('Rank') },
-                { icon: 'sprout', label: 'Tu historial verde', onPress: () => navigation.navigate('History') },
+                { icon: 'sprout', label: 'Tu huella verde', onPress: () => navigation.navigate('GreenFootprint') },
                 { icon: 'account', label: 'Mi perfil', onPress: () => navigation.navigate('Profile') },
             ]
         },
