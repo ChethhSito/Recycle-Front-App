@@ -29,7 +29,6 @@ import {
   Package,
   CheckCircle,
 } from 'lucide-react-native';
-import { ShareableReceipt } from '../shared/ShareableReceipt';
 
 const { height, width } = Dimensions.get('window');
 
@@ -38,7 +37,6 @@ export const HistoryDetailModal = ({ visible, onClose, item }) => {
   const [isCapturing, setIsCapturing] = useState(false);
   const slideAnim = React.useRef(new Animated.Value(height)).current;
   const receiptRef = useRef();
-  const shareableReceiptRef = useRef();
 
   useEffect(() => {
     if (visible) {
@@ -163,15 +161,6 @@ export const HistoryDetailModal = ({ visible, onClose, item }) => {
           onPress={onClose}
           activeOpacity={1}
         />
-        
-        {/* Componente para captura de imagen - oculto pero renderizado */}
-        <View style={styles.hiddenReceiptContainer}>
-          <ShareableReceipt 
-            ref={shareableReceiptRef}
-            item={item}
-            isPositive={isPositive}
-          />
-        </View>
 
         <Animated.View
           style={[styles.modalContent, { transform: [{ translateY: slideAnim }] }]}
@@ -520,13 +509,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     fontWeight: '600',
-  },
-  // Contenedor oculto para captura de imagen
-  hiddenReceiptContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    opacity: 0,
-    zIndex: -1,
   },
 });
