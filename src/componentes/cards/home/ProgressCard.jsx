@@ -18,7 +18,9 @@ export const ProgressCard = ({
         <Card style={componentStyles.progressCard}>
             <Card.Content>
                 <View style={componentStyles.badgeContainer}>
-                    <Icon name={badgeIcon} size={40} color="#5D4037" />
+                    <View style={componentStyles.circle}>
+                        <Icon name={badgeIcon} size={40} color="#5D4037" />
+                    </View>
                     <View style={componentStyles.badgeInfo}>
                         <Text style={componentStyles.badgeTitle}>{badgeTitle}</Text>
                         <Text style={componentStyles.badgeRank}>{rank}</Text>
@@ -30,7 +32,7 @@ export const ProgressCard = ({
                 <Text style={componentStyles.progressLabel}>TU PROGRESO ACTUAL</Text>
                 <ProgressBar
                     progress={progress}
-                    color="#7CD1AA"
+                    color="#018f64"
                     style={componentStyles.progressBar}
                 />
                 <View style={componentStyles.pointsContainer}>
@@ -43,7 +45,7 @@ export const ProgressCard = ({
 
 const styles = (theme) => StyleSheet.create({
     progressCard: {
-        backgroundColor: '#31253B',
+        backgroundColor: '#e7cec2ff',
         margin: 20,
         borderRadius: 20,
     },
@@ -52,26 +54,34 @@ const styles = (theme) => StyleSheet.create({
         alignItems: 'center',
         marginBottom: 10,
     },
+    circle: {
+        width: 50,
+        height: 50,
+        borderRadius: 40,
+        backgroundColor: '#ffffff99',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     badgeInfo: {
         marginLeft: 15,
     },
     badgeTitle: {
-        color: '#fff',
+        color: '#000000ff',
         fontSize: 18,
     },
     badgeRank: {
-        color: '#fff',
+        color: '#000000ff',
         fontSize: 14,
     },
     progressLabel: {
-        color: '#7CD1AA',
+        color: '#018f64',
         fontSize: 14,
         marginTop: 5,
         marginBottom: 10,
         fontWeight: '600',
     },
     progressText: {
-        color: '#fff',
+        color: '#000000ff',
         fontSize: 14,
         marginBottom: 5,
         marginTop: 10,
@@ -87,7 +97,7 @@ const styles = (theme) => StyleSheet.create({
         marginTop: 8,
     },
     points: {
-        color: '#fff',
+        color: '#000000ff',
         fontSize: 14,
     },
 });

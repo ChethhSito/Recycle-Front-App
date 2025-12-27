@@ -215,12 +215,12 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#7CD1AA',
+    backgroundColor: '#018f64',
   },
   categoriesContainer: {
     paddingHorizontal: 20,
     paddingTop: 8,
-    backgroundColor: '#7CD1AA',
+    backgroundColor: '#018f64',
   },
   categories: {
     flexDirection: 'row',
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: 16,
-    backgroundColor: '#7CD1AA',
+    backgroundColor: '#018f64',
   },
   banner: {
     backgroundColor: '#00C7A1',

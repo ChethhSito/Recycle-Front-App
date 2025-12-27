@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
   TouchableOpacity,
   Alert,
   StatusBar,
@@ -13,16 +13,16 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CloudHeader } from '../../componentes/cards/home/CloudHeader';
 import { MemberCard } from '../../componentes/cards/profile/MemberCard';
-import { 
-  Recycle, 
-  Droplet, 
-  Trophy, 
-  User, 
-  History, 
-  UserPlus, 
-  Settings, 
+import {
+  Recycle,
+  Droplet,
+  Trophy,
+  User,
+  History,
+  UserPlus,
+  Settings,
   LogOut,
-  ChevronRight 
+  ChevronRight
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -40,7 +40,7 @@ const LogoutModal = ({ visible, onClose, onConfirm }) => {
           <View style={styles.modalIconContainer}>
             <LogOut color="#D32F2F" size={40} />
           </View>
-          
+
           <Text style={styles.modalTitle}>Cerrar Sesión</Text>
           <Text style={styles.modalMessage}>
             ¿Estás seguro que deseas cerrar sesión?
@@ -83,28 +83,28 @@ const QuickStat = ({ icon: Icon, value, label, color }) => {
 };
 
 // Componente para las opciones del menú
-const MenuOption = ({ 
-  icon: Icon, 
-  title, 
-  onPress, 
+const MenuOption = ({
+  icon: Icon,
+  title,
+  onPress,
   destructive = false,
-  separator = false 
+  separator = false
 }) => {
   return (
     <>
-      <TouchableOpacity 
-        style={styles.menuItem} 
+      <TouchableOpacity
+        style={styles.menuItem}
         onPress={onPress}
         activeOpacity={0.7}
       >
         <View style={styles.menuItemLeft}>
           <View style={[
-            styles.menuIconContainer, 
+            styles.menuIconContainer,
             destructive && styles.menuIconDestructive
           ]}>
-            <Icon 
-              color={destructive ? '#D32F2F' : '#00926F'} 
-              size={22} 
+            <Icon
+              color={destructive ? '#D32F2F' : '#00926F'}
+              size={22}
             />
           </View>
           <Text style={[
@@ -187,7 +187,7 @@ https://nosplanet.org/app
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       <StatusBar barStyle="dark-content" backgroundColor="#B7ECDC" />
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
@@ -250,10 +250,10 @@ https://nosplanet.org/app
               navigation.navigate('History');
             }}
           />
-          
+
           {/* Separador de sección */}
           <View style={styles.sectionDivider} />
-          
+
           <MenuOption
             icon={UserPlus}
             title="Invitar Amigos"
@@ -265,10 +265,10 @@ https://nosplanet.org/app
             title="Configuración"
             onPress={() => console.log('Settings')}
           />
-          
+
           {/* Separador antes de cerrar sesión */}
           <View style={styles.logoutSeparator} />
-          
+
           <MenuOption
             icon={LogOut}
             title="Cerrar Sesión"
@@ -294,7 +294,7 @@ https://nosplanet.org/app
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#7CD1AA',
+    backgroundColor: '#018f64',
   },
   scrollView: {
     flex: 1,
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
   sectionDivider: {
     height: 1,
     backgroundColor: '#F3F4F6',
-   
+
     marginHorizontal: 12,
   },
   logoutSeparator: {

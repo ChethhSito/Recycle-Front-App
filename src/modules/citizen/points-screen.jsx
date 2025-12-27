@@ -94,7 +94,7 @@ export const RankScreen = () => {
 
                 {/* --- Contenido Principal (Arriba) --- */}
                 <View style={styles.mainContent}>
-                    <View style={[styles.circleBackdrop, { backgroundColor: 'rgba(255,255,255,0.6)' }]}>
+                    <View style={[styles.circleBackdrop, { backgroundColor: '#ffffff99' }]}>
                         <MaterialCommunityIcons name={item.icon} size={140} color={item.color} />
                     </View>
 
