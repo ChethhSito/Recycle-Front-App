@@ -112,10 +112,10 @@ export const RegisterScreen = ({ navigation }) => {
                                     control={control} name="phone" rules={{ required: true }}
                                     render={({ field: { onChange, value } }) => (
                                         <TextInput
-                                            mode="flat" placeholder="Celular (Para contactarte):" placeholderTextColor="#384745"
+                                            mode="flat" placeholder="Numero de documento:" placeholderTextColor="#384745"
                                             style={styles.input} value={value} onChangeText={onChange} keyboardType="phone-pad"
                                             underlineColor="transparent" activeUnderlineColor="transparent"
-                                            left={<TextInput.Icon icon="phone" color="#000000" />}
+                                            left={<TextInput.Icon icon="text-box" color="#000000" />}
                                         />
                                     )}
                                 />

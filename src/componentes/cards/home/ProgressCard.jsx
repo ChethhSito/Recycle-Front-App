@@ -45,7 +45,7 @@ export const ProgressCard = ({
 
 const styles = (theme) => StyleSheet.create({
     progressCard: {
-        backgroundColor: '#e7cec2ff',
+        backgroundColor: '#F5E6D3',
         margin: 20,
         borderRadius: 20,
     },
