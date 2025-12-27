@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, StatusBar, ImageBackground, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { PostCard } from '../../componentes/cards/forum/PostCard';
 import { ForumDetailView } from '../../componentes/views/ForumDetailView';
@@ -110,7 +111,8 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+      <StatusBar barStyle="dark-content" backgroundColor="#B7ECDC" />
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header con CloudHeader */}
         <CloudHeader
@@ -206,7 +208,7 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
         userPoints="100"
         avatarUrl={userAvatar || 'https://i.pravatar.cc/150?img=33'}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

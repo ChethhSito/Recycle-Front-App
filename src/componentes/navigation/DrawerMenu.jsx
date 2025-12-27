@@ -2,14 +2,59 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated, Dimensions, Image, ScrollView } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { LogOut, AlertTriangle } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 const DRAWER_WIDTH = width * 0.75;
+
+// Modal de Confirmación de Cierre de Sesión
+const LogoutModal = ({ visible, onClose, onConfirm }) => {
+    return (
+        <Modal
+            animationType="fade"
+            transparent={true}
+            visible={visible}
+            onRequestClose={onClose}
+        >
+            <View style={styles.logoutModalOverlay}>
+                <View style={styles.logoutModalContent}>
+                    <View style={styles.logoutModalIconContainer}>
+                        <LogOut color="#D32F2F" size={40} />
+                    </View>
+                    
+                    <Text style={styles.logoutModalTitle}>Cerrar Sesión</Text>
+                    <Text style={styles.logoutModalMessage}>
+                        ¿Estás seguro que deseas cerrar sesión?
+                    </Text>
+
+                    <View style={styles.logoutModalButtons}>
+                        <TouchableOpacity
+                            style={[styles.logoutModalButton, styles.logoutCancelButton]}
+                            onPress={onClose}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.logoutCancelButtonText}>Cancelar</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.logoutModalButton, styles.logoutConfirmButton]}
+                            onPress={onConfirm}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.logoutConfirmButtonText}>Cerrar Sesión</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        </Modal>
+    );
+};
 
 export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, avatarUrl }) => {
     const navigation = useNavigation();
     const slideAnim = React.useRef(new Animated.Value(-DRAWER_WIDTH)).current;
     const [pressedItem, setPressedItem] = React.useState(null);
+    const [logoutModalVisible, setLogoutModalVisible] = React.useState(false);
 
     React.useEffect(() => {
         if (visible) {
@@ -27,6 +72,20 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
             }).start();
         }
     }, [visible]);
+
+    const handleLogoutPress = () => {
+        setLogoutModalVisible(true);
+    };
+
+    const confirmLogout = () => {
+        setLogoutModalVisible(false);
+        onClose();
+        // Navegar al Login y resetear la navegación
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'Login' }],
+        });
+    };
 
     const menuSections = [
         {
@@ -118,16 +177,20 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                             <Text style={styles.versionText}>Recycle v1.0.0</Text>
                             <TouchableOpacity
                                 style={styles.logoutButton}
-                                onPress={() => {
-                                    console.log('Cerrar Sesión');
-                                    onClose();
-                                }}
+                                onPress={handleLogoutPress}
                             >
                                 <Icon name="logout" size={18} color="#0000" />
                                 <Text style={styles.logoutText}>Cerrar Sesión</Text>
                             </TouchableOpacity>
                         </View>
                     </ScrollView>
+
+                    {/* Modal de Confirmación de Logout */}
+                    <LogoutModal
+                        visible={logoutModalVisible}
+                        onClose={() => setLogoutModalVisible(false)}
+                        onConfirm={confirmLogout}
+                    />
                 </Animated.View>
             </View>
         </Modal>
@@ -252,5 +315,76 @@ const styles = StyleSheet.create({
         color: '#000',
         fontWeight: '600',
         marginLeft: 8,
+    },
+    // Estilos del Modal de Logout
+    logoutModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    logoutModalContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        padding: 24,
+        width: '100%',
+        maxWidth: 340,
+        alignItems: 'center',
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+    },
+    logoutModalIconContainer: {
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        backgroundColor: '#FFEBEE',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    logoutModalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#32243B',
+        marginBottom: 8,
+    },
+    logoutModalMessage: {
+        fontSize: 15,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 24,
+        lineHeight: 22,
+    },
+    logoutModalButtons: {
+        flexDirection: 'row',
+        gap: 12,
+        width: '100%',
+    },
+    logoutModalButton: {
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    logoutCancelButton: {
+        backgroundColor: '#F3F4F6',
+    },
+    logoutConfirmButton: {
+        backgroundColor: '#D32F2F',
+    },
+    logoutCancelButtonText: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#32243B',
+    },
+    logoutConfirmButtonText: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#FFFFFF',
     },
 });

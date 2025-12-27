@@ -5,7 +5,10 @@ import {
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
-  Alert
+  Alert,
+  StatusBar,
+  Modal,
+  Share
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CloudHeader } from '../../componentes/cards/home/CloudHeader';
@@ -22,6 +25,49 @@ import {
   ChevronRight 
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+
+// Componente Modal de Confirmación de Cierre de Sesión
+const LogoutModal = ({ visible, onClose, onConfirm }) => {
+  return (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalIconContainer}>
+            <LogOut color="#D32F2F" size={40} />
+          </View>
+          
+          <Text style={styles.modalTitle}>Cerrar Sesión</Text>
+          <Text style={styles.modalMessage}>
+            ¿Estás seguro que deseas cerrar sesión?
+          </Text>
+
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.cancelButton]}
+              onPress={onClose}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.modalButton, styles.confirmButton]}
+              onPress={onConfirm}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.confirmButtonText}>Cerrar Sesión</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
 
 // Componente para las estadísticas rápidas
 const QuickStat = ({ icon: Icon, value, label, color }) => {
@@ -76,6 +122,7 @@ const MenuOption = ({
 };
 
 export const ProfileScreen = ({ navigation, onOpenDrawer, userAvatar, userName, userPoints = 1250 }) => {
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [userData] = useState({
     name: userName || "Usuario",
     userType: "Ciudadano Eco",
@@ -98,25 +145,48 @@ export const ProfileScreen = ({ navigation, onOpenDrawer, userAvatar, userName, 
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Cerrar Sesión',
-      '¿Estás seguro que deseas cerrar sesión?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Cerrar Sesión', 
-          style: 'destructive',
-          onPress: () => {
-            // Lógica de cierre de sesión
-            console.log('Logout');
-          }
-        }
-      ]
-    );
+    setLogoutModalVisible(true);
+  };
+
+  const confirmLogout = () => {
+    setLogoutModalVisible(false);
+    // Lógica de cierre de sesión
+    console.log('Logout confirmado');
+    // Navegar al Login y resetear la navegación
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  };
+
+  const handleInviteFriends = async () => {
+    try {
+      const message = `🌱 ¡Únete a Nos Planet!
+
+¿Quieres ganar puntos mientras ayudas al medio ambiente? Con Nos Planet puedes:
+
+✅ Reciclar y ganar puntos eco
+✅ Canjear premios sostenibles
+✅ Ver tu impacto ambiental
+✅ Unirte a una comunidad verde
+
+📲 Descarga la app ahora:
+https://nosplanet.org/app
+
+¡Juntos por un planeta más limpio! 🌍♻️`;
+
+      await Share.share({
+        message: message,
+        title: 'Nos Planet - Reciclaje Inteligente',
+      });
+    } catch (error) {
+      console.error('Error al compartir:', error);
+    }
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+      <StatusBar barStyle="dark-content" backgroundColor="#B7ECDC" />
       <ScrollView 
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -187,7 +257,7 @@ export const ProfileScreen = ({ navigation, onOpenDrawer, userAvatar, userName, 
           <MenuOption
             icon={UserPlus}
             title="Invitar Amigos"
-            onPress={() => console.log('Invite friends')}
+            onPress={handleInviteFriends}
           />
           <View style={styles.sectionDivider} />
           <MenuOption
@@ -210,6 +280,13 @@ export const ProfileScreen = ({ navigation, onOpenDrawer, userAvatar, userName, 
         {/* Espaciado inferior */}
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Modal de Confirmación de Cierre de Sesión */}
+      <LogoutModal
+        visible={logoutModalVisible}
+        onClose={() => setLogoutModalVisible(false)}
+        onConfirm={confirmLogout}
+      />
     </SafeAreaView>
   );
 };
@@ -320,6 +397,77 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#F3F4F6',
     marginHorizontal: 12,
+  },
+  // Modal de Logout
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 340,
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+  modalIconContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#FFEBEE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#32243B',
+    marginBottom: 8,
+  },
+  modalMessage: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#F3F4F6',
+  },
+  confirmButton: {
+    backgroundColor: '#D32F2F',
+  },
+  cancelButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#32243B',
+  },
+  confirmButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
 
