@@ -1,289 +1,226 @@
 import React, { useState } from 'react';
 import {
-    View,
-    Image,
-    StyleSheet,
-    TouchableOpacity,
-    Dimensions,
-    KeyboardAvoidingView,
-    Platform,
-    TouchableWithoutFeedback,
-    Keyboard,
-    ScrollView // <--- Importante para que quepan todos los campos
+    View, Image, StyleSheet, TouchableOpacity, Dimensions, KeyboardAvoidingView,
+    Platform, TouchableWithoutFeedback, Keyboard, ScrollView
 } from 'react-native';
 import { Text, TextInput, Button, IconButton } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
-import { GoogleIcon } from '../../../shared/svgs/google'; // Asegúrate de tener este componente o quítalo si da error
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { GoogleIcon } from '../../../shared/svgs/google';
 
 const { width, height } = Dimensions.get('window');
 
 export const RegisterScreen = ({ navigation }) => {
+    const [role, setRole] = useState('citizen');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
     const { control, handleSubmit, watch, formState: { errors } } = useForm({
         defaultValues: {
             fullName: '',
             email: '',
+            phone: '',
             password: '',
             confirmPassword: ''
         }
     });
+
     const validateEmail = (email) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     };
 
     const onSubmit = (data) => {
-        console.log("Datos de registro:", data);
-        // Aquí iría la lógica de registro (Firebase/Backend)
+        const registrationData = { ...data, role };
+        console.log("Datos de registro:", registrationData);
+        // Lógica de backend...
     };
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <KeyboardAvoidingView
-                style={styles.container}
-                behavior={Platform.OS === 'android' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'android' ? -100 : 0}
-            >
-                {/* 1. HEADER CON BOTÓN VOLVER */}
-                <View style={styles.header}>
-                    {/* Botón flotante para volver */}
-                    <TouchableOpacity
-                        style={styles.backButton}
-                        onPress={() => navigation.goBack()}
+            {/* Usamos un View normal como contenedor principal */}
+            <View style={styles.mainContainer}>
+
+                {/* Botón Volver Flotante (Fijo arriba) */}
+                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                    <IconButton icon="arrow-left" iconColor="#000" size={24} />
+                    <Text style={styles.backText}>Volver</Text>
+                </TouchableOpacity>
+
+                <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                >
+                    <ScrollView
+                        style={{ flex: 1 }}
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                        bounces={false}
                     >
-                        <IconButton icon="arrow-left" iconColor="#000" size={24} />
-                        <Text style={styles.backText}>Volver</Text>
-                    </TouchableOpacity>
+                        {/* 1. ILUSTRACIÓN (Ahora dentro del scroll) */}
+                        <View style={styles.illustrationContainer}>
+                            <Image
+                                source={require('../../../../assets/reciclaje.png')}
+                                style={styles.illustration}
+                                resizeMode="contain"
+                            />
+                        </View>
 
-                    <Image
-                        source={require('../../../../assets/reciclaje.png')} // Puedes usar otra imagen si tienes
-                        style={styles.illustration}
-                        resizeMode="contain"
-                    />
-                </View>
+                        {/* 2. FORMULARIO */}
+                        <View style={styles.formSection}>
+                            <Text variant="headlineMedium" style={styles.title}>Crea tu cuenta</Text>
+                            <Text style={styles.subtitle}>
+                                {role === 'citizen'
+                                    ? "Ayúdanos a limpiar un poco el planeta"
+                                    : "Únete a la red y genera ingresos reciclando"}
+                            </Text>
 
-                {/* 2. FORMULARIO DE REGISTRO */}
-                <View style={styles.formContainer}>
-                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }} bounces={false}>
+                            {/* SELECTOR DE ROL */}
+                            <View style={styles.roleContainer}>
+                                <TouchableOpacity
+                                    style={[styles.roleButton, role === 'citizen' && styles.roleButtonActive]}
+                                    onPress={() => setRole('citizen')}
+                                >
+                                    <MaterialCommunityIcons name="human-greeting" size={20} color={role === 'citizen' ? '#FFF' : '#31253B'} />
+                                    <Text style={[styles.roleText, role === 'citizen' && styles.roleTextActive]}>Ciudadano</Text>
+                                </TouchableOpacity>
 
-                        <Text variant="headlineMedium" style={styles.title}>Crea tu cuenta</Text>
-                        <Text style={styles.subtitle}>Ayúdanos a limpiar un poco el planeta</Text>
+                                <TouchableOpacity
+                                    style={[styles.roleButton, role === 'recycler' && styles.roleButtonActive]}
+                                    onPress={() => setRole('recycler')}
+                                >
+                                    <MaterialCommunityIcons name="truck-delivery" size={20} color={role === 'recycler' ? '#FFF' : '#31253B'} />
+                                    <Text style={[styles.roleText, role === 'recycler' && styles.roleTextActive]}>Reciclador</Text>
+                                </TouchableOpacity>
+                            </View>
 
-                        {/* Input Nombre */}
-                        <Controller
-                            control={control}
-                            name="fullName"
-                            rules={{ required: true }}
-                            render={({ field: { onChange, value } }) => (
-                                <TextInput
-                                    mode="flat"
-                                    placeholder="Nombres Completos:"
-                                    placeholderTextColor="#384745"
+                            {/* Inputs */}
+                            <Controller
+                                control={control} name="fullName" rules={{ required: true }}
+                                render={({ field: { onChange, value } }) => (
+                                    <TextInput
+                                        mode="flat" placeholder={role === 'citizen' ? "Nombres Completos:" : "Nombres Completos:"}
+                                        placeholderTextColor="#384745" style={styles.input} value={value} onChangeText={onChange}
+                                        underlineColor="transparent" activeUnderlineColor="transparent"
+                                        left={<TextInput.Icon icon="account" color="#000000" />}
+                                    />
+                                )}
+                            />
 
-                                    style={styles.input}
-                                    value={value}
-                                    onChangeText={onChange}
-                                    underlineColor="transparent"
-                                    activeUnderlineColor="transparent"
-                                    left={<TextInput.Icon icon="account" color="#000000" />}
-                                />
-                            )}
-                        />
-
-                        {/* Input Email */}
-                        <Controller
-                            control={control}
-                            name="email"
-                            rules={{ required: true, validate: (val) => validateEmail(val) }}
-                            render={({ field: { onChange, value } }) => (
-                                <TextInput
-                                    mode="flat"
-                                    placeholder="Email:"
-                                    placeholderTextColor="#384745"
-
-                                    style={styles.input}
-                                    value={value}
-                                    onChangeText={onChange}
-                                    underlineColor="transparent"
-                                    activeUnderlineColor="transparent"
-                                    left={<TextInput.Icon icon="email" color="#000000" />}
-                                />
-                            )}
-                        />
-
-                        {/* Input Password */}
-                        <Controller
-                            control={control}
-                            name="password"
-                            rules={{ required: true }}
-                            render={({ field: { onChange, value } }) => (
-                                <TextInput
-                                    mode="flat"
-                                    placeholder="Contraseña:"
-                                    placeholderTextColor="#384745"
-                                    secureTextEntry={!showPassword}
-                                    style={styles.input}
-                                    value={value}
-                                    onChangeText={onChange}
-
-                                    underlineColor="transparent"
-                                    activeUnderlineColor="transparent"
-                                    left={<TextInput.Icon icon="lock" color="#000000" />}
-                                    right={
-                                        <TextInput.Icon
-                                            icon={showPassword ? "eye-off" : "eye"}
-                                            color="#000000"
-                                            onPress={() => setShowPassword(!showPassword)}
-                                            forceTextInputFocus={false}
+                            {role === 'recycler' && (
+                                <Controller
+                                    control={control} name="phone" rules={{ required: true }}
+                                    render={({ field: { onChange, value } }) => (
+                                        <TextInput
+                                            mode="flat" placeholder="Celular (Para contactarte):" placeholderTextColor="#384745"
+                                            style={styles.input} value={value} onChangeText={onChange} keyboardType="phone-pad"
+                                            underlineColor="transparent" activeUnderlineColor="transparent"
+                                            left={<TextInput.Icon icon="phone" color="#000000" />}
                                         />
-                                    }
+                                    )}
                                 />
                             )}
-                        />
 
-                        {/* Input Confirm Password */}
-                        <Controller
-                            control={control}
-                            name="confirmPassword"
-                            rules={{
-                                required: true,
-                                validate: (val) => {
-                                    if (watch('password') != val) {
-                                        return "Las contraseñas no coinciden";
-                                    }
-                                }
-                            }}
-                            render={({ field: { onChange, value } }) => (
-                                <TextInput
-                                    mode="flat"
-                                    placeholder="Confirmar Contraseña:"
-                                    placeholderTextColor="#384745"
-                                    style={styles.input}
-                                    value={value}
-                                    onChangeText={onChange}
-                                    secureTextEntry={!showConfirmPassword}
-                                    underlineColor="transparent"
-                                    activeUnderlineColor="transparent"
-                                    left={<TextInput.Icon icon="lock-check" color="#000000" />}
-                                    right={
-                                        <TextInput.Icon
-                                            icon={showConfirmPassword ? "eye-off" : "eye"}
-                                            color="#000000"
-                                            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            forceTextInputFocus={false}
-                                        />
-                                    }
-                                />
-                            )}
-                        />
+                            <Controller
+                                control={control} name="email" rules={{ required: true, validate: validateEmail }}
+                                render={({ field: { onChange, value } }) => (
+                                    <TextInput
+                                        mode="flat" placeholder="Email:" placeholderTextColor="#384745" style={styles.input}
+                                        value={value} onChangeText={onChange} underlineColor="transparent" activeUnderlineColor="transparent"
+                                        left={<TextInput.Icon icon="email" color="#000000" />}
+                                    />
+                                )}
+                            />
 
-                        {/* Botón Registrarse */}
-                        <Button
-                            mode="contained"
-                            onPress={handleSubmit(onSubmit)}
-                            style={styles.registerBtn}
-                            labelStyle={{ fontSize: 16 }}
-                        >
-                            Registrarse
-                        </Button>
+                            <Controller
+                                control={control} name="password" rules={{ required: true }}
+                                render={({ field: { onChange, value } }) => (
+                                    <TextInput
+                                        mode="flat" placeholder="Contraseña:" placeholderTextColor="#384745" secureTextEntry={!showPassword}
+                                        style={styles.input} value={value} onChangeText={onChange} underlineColor="transparent" activeUnderlineColor="transparent"
+                                        left={<TextInput.Icon icon="lock" color="#000000" />}
+                                        right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} color="#000000" onPress={() => setShowPassword(!showPassword)} />}
+                                    />
+                                )}
+                            />
 
-                        {/* Botón Google */}
-                        <Button
-                            mode="contained"
-                            icon={() => <GoogleIcon />}
-                            onPress={() => console.log('Google Register')}
-                            style={styles.googleBtn}
-                            labelStyle={{ color: '#000000', fontSize: 16 }}
-                        >
-                            Regístrate con Google
-                        </Button>
+                            <Controller
+                                control={control} name="confirmPassword"
+                                rules={{ required: true, validate: (val) => watch('password') === val || "Las contraseñas no coinciden" }}
+                                render={({ field: { onChange, value } }) => (
+                                    <TextInput
+                                        mode="flat" placeholder="Confirmar Contraseña:" placeholderTextColor="#384745" style={styles.input}
+                                        value={value} onChangeText={onChange} secureTextEntry={!showConfirmPassword}
+                                        underlineColor="transparent" activeUnderlineColor="transparent"
+                                        left={<TextInput.Icon icon="lock-check" color="#000000" />}
+                                        right={<TextInput.Icon icon={showConfirmPassword ? "eye-off" : "eye"} color="#000000" onPress={() => setShowConfirmPassword(!showConfirmPassword)} />}
+                                    />
+                                )}
+                            />
 
+                            {/* Botones */}
+                            <View style={{ marginTop: 10, paddingBottom: 30 }}>
+                                <Button mode="contained" onPress={handleSubmit(onSubmit)} style={styles.registerBtn} labelStyle={{ fontSize: 16 }}>
+                                    {role === 'citizen' ? 'Registrarse' : 'Registrarme como Reciclador'}
+                                </Button>
+                                <Button mode="contained" icon={() => <GoogleIcon />} onPress={() => console.log('Google')} style={styles.googleBtn} labelStyle={{ color: '#000000', fontSize: 16 }}>
+                                    Regístrate con Google
+                                </Button>
+                            </View>
+                        </View>
                     </ScrollView>
-                </View>
-            </KeyboardAvoidingView>
+                </KeyboardAvoidingView>
+            </View>
         </TouchableWithoutFeedback>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        fontFamily: 'InclusiveSans-Regular',
+    mainContainer: {
         flex: 1,
-        backgroundColor: '#b1eedc', // Cielo
-    },
-    header: {
-        height: height * 0.43, // Un poco más corto que el login para dar espacio a los campos
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        marginBottom: -height * 0.045,
-        zIndex: 1,
-        position: 'relative',
+        backgroundColor: '#b1eedc', // Fondo cielo
     },
     backButton: {
-        position: 'absolute',
-        top: 50, // Ajustar según safe area
-        left: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        zIndex: 10,
+        position: 'absolute', top: 50, left: 10,
+        flexDirection: 'row', alignItems: 'center', zIndex: 10,
     },
     backText: {
-        fontSize: 16,
-        fontFamily: 'InclusiveSans-Regular',
-        color: '#000',
-        marginLeft: -10,
+        fontSize: 16, fontFamily: 'InclusiveSans-Regular', color: '#000', marginLeft: -10,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'flex-end', // Empuja el contenido hacia abajo
+        paddingTop: 80, // Espacio para el botón de volver
+    },
+    illustrationContainer: {
+        alignItems: 'center',
+        marginBottom: -30, // Superposición con el formulario
+        zIndex: 1,
     },
     illustration: {
-        width: width,
-        height: '80%',
-        maxHeight: 300,
+        width: width * 1,
+        height: height * 0.3, // Altura proporcional
+        maxHeight: 280,
     },
-    formContainer: {
-        backgroundColor: '#018f64', // Pasto
-        flex: 1,
+    formSection: {
+        backgroundColor: '#018f64', // Fondo pasto
+
         paddingHorizontal: 25,
-        paddingTop: 25,
-        paddingBottom: 25,
-        minHeight: height * 0.7, // Asegura que cubra el fondo
+        paddingTop: 20,
+        paddingBottom: 20,
+        width: '100%',
     },
-    title: {
-        color: '#000000',
-        fontSize: 22,
-        fontFamily: 'InclusiveSans-Regular',
-        marginBottom: 5,
-        textAlign: 'left',
-    },
-    subtitle: {
-        color: '#000000',
-        fontSize: 16,
-        marginBottom: 20,
-    },
-    input: {
-        backgroundColor: '#B7ECDD',
-        borderRadius: 12,
-        marginBottom: 12,
-        height: 50,
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
-        overflow: 'hidden',
+    title: { color: '#000', fontSize: 24, fontFamily: 'InclusiveSans-Bold', marginBottom: 5 },
+    subtitle: { color: '#000', fontSize: 14, marginBottom: 20, opacity: 0.8 },
 
-    },
+    // SELECTOR ROL (Igual que antes)
+    roleContainer: { flexDirection: 'row', backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: 12, padding: 4, marginBottom: 20 },
+    roleButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 10, gap: 8 },
+    roleButtonActive: { backgroundColor: '#31253B', elevation: 5 },
+    roleText: { color: '#31253B', fontWeight: 'bold', fontSize: 14 },
+    roleTextActive: { color: '#FFF' },
 
-    registerBtn: {
-        fontFamily: 'InclusiveSans-Regular',
-        backgroundColor: '#31253B',
-        borderRadius: 12,
-        paddingVertical: 4,
-        marginTop: 10,
-        marginBottom: 10,
-        fontSize: 16,
-    },
-    googleBtn: {
-        fontFamily: 'InclusiveSans-Regular',
-        backgroundColor: '#00C7A1',
-        borderRadius: 12,
-        paddingVertical: 4,
-        fontSize: 16,
-    },
+    input: { backgroundColor: '#B7ECDD', borderRadius: 12, marginBottom: 12, height: 50, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' },
+    registerBtn: { backgroundColor: '#31253B', borderRadius: 12, paddingVertical: 6, marginBottom: 15 },
+    googleBtn: { backgroundColor: '#00C7A1', borderRadius: 12, paddingVertical: 6 },
 });

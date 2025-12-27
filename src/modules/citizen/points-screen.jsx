@@ -1,73 +1,61 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, Dimensions, FlatList, Animated, Share } from 'react-native';
+import { View, StyleSheet, Dimensions, FlatList, Animated, Share, Platform } from 'react-native';
 import { Text, Button, ProgressBar } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
-// 1. ACTUALIZAMOS LOS DATOS: Agregamos 'longDesc' para más texto
+// 1. DATA DE LOS 7 NIVELES (Colores y Textos actualizados)
 const LEVELS = [
     {
-        id: '1',
-        level: 1,
-        title: 'Semilla de Cambio',
-        icon: 'seed',
-        color: '#5D4037',
-        bg: '#e7cec2ff',
+        id: '1', level: 1, title: 'Semilla de Cambio', icon: 'seed',
+        color: '#5D4037', bg: '#F5E6D3', // Beige Tierra
         desc: 'Todo gran cambio comienza pequeño.',
-        longDesc: 'Como Semilla de Cambio, estás dando el primer paso vital. Cada pequeño acto de reciclaje es una promesa de un futuro más verde. ¡Sigue así para ver cómo tus esfuerzos germinan!', // NUEVO TEXTO
-        currentPoints: 150,
-        targetPoints: 500
+        longDesc: 'Estás dando el primer paso vital. Como una semilla, llevas dentro el potencial de un futuro más verde. ¡Sigue reciclando para germinar!',
+        currentPoints: 150, targetPoints: 300
     },
     {
-        id: '2',
-        level: 2,
-        title: 'Brote Verde',
-        icon: 'sprout',
-        color: '#558B2F',
-        bg: '#d3ebb7ff',
-        desc: 'Tus acciones están echando raíces.',
-        longDesc: 'Ya se ven los primeros resultados. Tus hábitos sostenibles están empezando a crecer y a fortalecerse, mostrando un compromiso real con el planeta.',
-        currentPoints: 620,
-        targetPoints: 1000
-    },
-    // ... Agrega 'longDesc' a los demás niveles ...
-    {
-        id: '3',
-        level: 3,
-        title: 'Tallo Robusto',
-        icon: 'flower',
-        color: '#2E7D32',
-        bg: '#bce4bdff',
-        desc: 'Creciendo fuerte con cada reciclaje.',
-        longDesc: 'Nada te detiene. Tu constancia te ha convertido en un pilar fundamental del cambio. Tu tallo es fuerte y capaz de soportar grandes desafíos.',
-        currentPoints: 1250,
-        targetPoints: 2500
+        id: '2', level: 2, title: 'Raíz Profunda', icon: 'grass',
+        color: '#4E342E', bg: '#E6D0B3', // Tierra Oscura
+        desc: 'Tus valores se están afianzando.',
+        longDesc: 'Antes de crecer hacia arriba, creces hacia adentro. Tus hábitos de reciclaje están creando una base sólida y resistente.',
+        currentPoints: 420, targetPoints: 800
     },
     {
-        id: '4',
-        level: 4,
-        title: 'Árbol Joven',
-        icon: 'tree-outline',
-        color: '#00695C',
-        bg: '#B2DFDB',
-        desc: 'Tu impacto genera sombra y protección.',
-        longDesc: 'Tu influencia se expande. Como un árbol joven, empiezas a dar cobijo y ejemplo a otros, inspirando a tu comunidad a seguir tus pasos.',
-        currentPoints: 3100,
-        targetPoints: 5000
+        id: '3', level: 3, title: 'Brote Verde', icon: 'sprout',
+        color: '#33691E', bg: '#D9F2C3', // Verde Lima
+        desc: 'Tus acciones salen a la luz.',
+        longDesc: '¡Ya eres visible! Tus primeros esfuerzos han roto la superficie. Tu compromiso con el planeta empieza a ser notorio.',
+        currentPoints: 950, targetPoints: 1500
     },
     {
-        id: '5',
-        level: 5,
-        title: 'Bosque Viviente',
-        icon: 'forest',
-        color: '#1B5E20',
-        bg: '#A5D6A7',
-        desc: 'Eres un ecosistema completo de cambio.',
-        longDesc: 'Has alcanzado la cima. Eres un líder, un ecosistema en sí mismo que nutre y sostiene la vida a su alrededor. ¡Tu legado es un mundo más verde!',
-        currentPoints: 8900,
-        targetPoints: 10000
+        id: '4', level: 4, title: 'Tallo Robusto', icon: 'flower-tulip',
+        color: '#1B5E20', bg: '#B8E6C9', // Verde Menta
+        desc: 'Resiliencia y constancia.',
+        longDesc: 'Nada te detiene. Tu constancia te ha convertido en un pilar fundamental. Tu tallo es fuerte y capaz de soportar desafíos.',
+        currentPoints: 1800, targetPoints: 2500
+    },
+    {
+        id: '5', level: 5, title: 'Rama Fuerte', icon: 'spa',
+        color: '#004D40', bg: '#8CD4B6', // Verde Medio
+        desc: 'Tu influencia se expande.',
+        longDesc: 'Empiezas a ramificarte. Tu ejemplo alcanza a amigos y familiares, extendiendo la cultura del reciclaje más allá de ti mismo.',
+        currentPoints: 2900, targetPoints: 4000
+    },
+    {
+        id: '6', level: 6, title: 'Árbol Guardián', icon: 'tree',
+        color: '#006064', bg: '#5CB8A7', // Verde Azulado
+        desc: 'Das sombra y protección.',
+        longDesc: 'Has madurado. Eres un referente en tu comunidad, ofreciendo protección al medio ambiente y enseñando con el ejemplo.',
+        currentPoints: 4500, targetPoints: 6000
+    },
+    {
+        id: '7', level: 7, title: 'Bosque Viviente', icon: 'pine-tree',
+        color: '#00332C', bg: '#408573', // Verde Bosque Profundo
+        desc: 'Eres un ecosistema de cambio.',
+        longDesc: 'Has alcanzado la cima. Eres un líder, un ecosistema en sí mismo que nutre y sostiene la vida a su alrededor. ¡Eres leyenda!',
+        currentPoints: 7500, targetPoints: 10000
     },
 ];
 
@@ -76,10 +64,37 @@ export const RankScreen = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
     const navigation = useNavigation();
 
-    const onShare = async (title, level) => {
+    // 2. FUNCIÓN DE COMPARTIR MEJORADA (Mensaje Largo y Estético)
+    const onShare = async (item) => {
+        const percentage = Math.round((item.currentPoints / item.targetPoints) * 100);
+
+        // Creamos una "Barra de progreso" con texto para WhatsApp
+        const barLength = 10;
+        const filled = Math.round((percentage / 100) * barLength);
+        const empty = barLength - filled;
+        const progressBarText = '🟩'.repeat(filled) + '⬜'.repeat(empty);
+
+        // Mensaje largo estructurado
+        const message =
+            `🌿 *¡Mi Progreso en EcoRecicla!* 🌿
+
+🏆 *Rango Actual:* ${item.title} (Nivel ${item.level})
+✨ _"${item.desc}"_
+
+📊 *Estadísticas:*
+${progressBarText} ${percentage}%
+Puntos: ${item.currentPoints} / ${item.targetPoints} XP
+
+💬 *Mi Estado:*
+${item.longDesc}
+
+♻️ ¡Ayúdame a salvar el planeta! Descarga la app y únete al cambio. #Reciclaje #EcoLloy #HuellaVerde`;
+
         try {
             await Share.share({
-                message: `¡He alcanzado el rango de ${title} (Nivel ${level}) en mi App de Reciclaje! 🌿♻️`,
+                message: message,
+                // En iOS, el título a veces se usa como asunto de correo o preview
+                title: `Soy ${item.title} en EcoRecicla`,
             });
         } catch (error) {
             console.log(error.message);
@@ -92,31 +107,28 @@ export const RankScreen = () => {
         return (
             <View style={[styles.slideContainer, { backgroundColor: item.bg }]}>
 
-                {/* --- Contenido Principal (Arriba) --- */}
+                {/* --- Contenido Principal (Icono y Textos) --- */}
                 <View style={styles.mainContent}>
-                    <View style={[styles.circleBackdrop, { backgroundColor: '#ffffff99' }]}>
-                        <MaterialCommunityIcons name={item.icon} size={140} color={item.color} />
+                    <View style={[styles.circleBackdrop, { backgroundColor: 'rgba(255,255,255,0.6)' }]}>
+                        <MaterialCommunityIcons name={item.icon} size={130} color={item.color} />
                     </View>
 
                     <View style={styles.textContainer}>
                         <Text variant="displaySmall" style={[styles.title, { color: item.color }]}>
                             {item.title}
                         </Text>
-
-                        <Text variant="bodyLarge" style={styles.desc}>
+                        <Text style={[styles.desc, { color: '#1d1d1d' }]}>
                             {item.desc}
                         </Text>
-
-                        {/* NUEVO: Texto adicional sobre el rango */}
-                        <Text variant="bodyMedium" style={styles.longDesc}>
+                        <View style={styles.divider} />
+                        <Text style={styles.longDesc}>
                             {item.longDesc}
                         </Text>
                     </View>
                 </View>
 
-                {/* --- Sección Inferior (Progreso y Botones) --- */}
+                {/* --- Sección Inferior (Stats y Botones) --- */}
                 <View style={styles.bottomSection}>
-                    {/* Estadísticas y Barra de Progreso */}
                     <View style={styles.statsContainer}>
                         <View style={styles.statsRow}>
                             <View style={[styles.badgePill, { backgroundColor: item.color }]}>
@@ -133,7 +145,7 @@ export const RankScreen = () => {
                         />
                     </View>
 
-                    {/* Botones de Acción (Volver y Compartir) - Extremo a Extremo */}
+                    {/* Botones */}
                     <View style={styles.bottomButtonsAction}>
                         <Button
                             mode="text"
@@ -144,11 +156,12 @@ export const RankScreen = () => {
                             Volver
                         </Button>
                         <Button
-                            mode="contained" // Usamos 'contained' para resaltar la acción de compartir
+                            mode="contained"
                             buttonColor={item.color}
                             icon="share-variant"
-                            onPress={() => onShare(item.title, item.level)}
-                            labelStyle={{ fontSize: 16 }}
+                            onPress={() => onShare(item)}
+                            labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
+                            contentStyle={{ paddingHorizontal: 10 }}
                         >
                             Compartir
                         </Button>
@@ -158,7 +171,6 @@ export const RankScreen = () => {
         );
     };
 
-    // Indicadores (Puntitos)
     const Pagination = () => {
         return (
             <View style={styles.paginationContainer}>
@@ -167,7 +179,10 @@ export const RankScreen = () => {
                         key={i}
                         style={[
                             styles.dot,
-                            { backgroundColor: i === activeIndex ? '#333' : 'rgba(0,0,0,0.2)', width: i === activeIndex ? 20 : 8 }
+                            {
+                                backgroundColor: i === activeIndex ? '#333' : 'rgba(0,0,0,0.1)',
+                                width: i === activeIndex ? 20 : 8
+                            }
                         ]}
                     />
                 ))}
@@ -195,118 +210,61 @@ export const RankScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    slideContainer: {
-        width: width,
-        height: '100%',
-    },
+    container: { flex: 1 },
+    slideContainer: { width: width, height: '100%' },
+
     mainContent: {
-        // CAMBIO 1: Reducimos el flex de 0.9 a 0.6 para que no ocupe tanta pantalla innecesaria
-        flex: 0.8,
-        // CAMBIO 2: Cambiamos 'center' por 'flex-end'. Esto empuja el logo y texto hacia ABAJO.
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        paddingHorizontal: 40,
-        // Agregamos un pequeño padding abajo para que no se pegue totalmente a la siguiente sección
-        paddingBottom: 20,
-    },
-    circleBackdrop: {
-        width: 220, // Ligeramente más pequeño para dar espacio al texto extra
-        height: 220,
-        borderRadius: 110,
+        flex: 0.75, // Ocupa el 75% superior
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 25,
+        paddingHorizontal: 30,
     },
-    textContainer: {
-        alignItems: 'start',
-        width: '100%',
+    circleBackdrop: {
+        width: 200, height: 200, borderRadius: 100,
+        justifyContent: 'center', alignItems: 'center',
+        marginBottom: 30,
+        elevation: 5, // Sombra suave en Android
     },
+    textContainer: { width: '100%', alignItems: 'center' },
     title: {
-        fontSize: 32,
-        fontFamily: 'InclusiveSans-Bold',
-        marginBottom: 10,
-        textAlign: 'center',
-        fontWeight: 'bold',
+        fontSize: 30, fontFamily: 'InclusiveSans-Bold', fontWeight: 'bold',
+        textAlign: 'center', marginBottom: 5,
     },
     desc: {
-        textAlign: 'center',
-        color: '#1d1d1dff',
-        fontSize: 20,
-        fontWeight: '500',
-        marginBottom: 10,
-        maxWidth: '100%',
-        paddingVertical: 10,
+        fontSize: 18, fontWeight: '600', textAlign: 'center',
+        opacity: 0.8, marginBottom: 15,
     },
-    // Estilo para el nuevo texto largo
+    divider: {
+        width: 50, height: 4, backgroundColor: 'rgba(0,0,0,0.1)',
+        borderRadius: 2, marginBottom: 15,
+    },
     longDesc: {
-        textAlign: 'center',
-        color: '#1d1d1dff',
-        fontSize: 18,
-        lineHeight: 25,
-        maxWidth: '100%',
-        opacity: 1,
-        paddingVertical: 10,
+        fontSize: 16, textAlign: 'center', color: '#333',
+        lineHeight: 24, fontFamily: 'InclusiveSans-Regular',
     },
 
-    // --- ESTILOS DE LA NUEVA SECCIÓN INFERIOR ---
     bottomSection: {
-
-        width: '100%',
-        paddingHorizontal: 40,
-        paddingBottom: 0, // Espacio suficiente para los puntitos y margen
-        justifyContent: 'flex-end',
-        paddingTop: 20,
+        flex: 0.25, // Ocupa el 25% inferior
+        justifyContent: 'flex-start',
+        paddingHorizontal: 30,
+        paddingTop: 10,
     },
-    statsContainer: {
-        width: '100%',
-        marginBottom: 25, // Separación entre la barra y los botones
-    },
+    statsContainer: { width: '100%', marginBottom: 20 },
     statsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8,
     },
     badgePill: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 12,
-        marginVertical: 4,
+        paddingHorizontal: 12, paddingVertical: 4, borderRadius: 10,
     },
-    badgeText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 12
-    },
-    pointsText: {
-        fontWeight: 'bold',
-        fontSize: 14,
-        marginVertical: 4,
-    },
-    progressBar: {
-        height: 10,
-        borderRadius: 5,
-        backgroundColor: '#ffffff80',
-    },
-    // Contenedor para los botones de extremo a extremo
+    badgeText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
+    pointsText: { fontWeight: 'bold', fontSize: 14 },
+    progressBar: { height: 12, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.7)' },
+
     bottomButtonsAction: {
-        flexDirection: 'row',
-        justifyContent: 'space-between', // Separa los elementos a los extremos
-        alignItems: 'center',
-        width: '100%',
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%',
     },
     paginationContainer: {
-        flexDirection: 'row',
-        position: 'absolute',
-        bottom: 20, // Posición cerca del borde inferior
-        alignSelf: 'center',
+        flexDirection: 'row', position: 'absolute', bottom: 20, alignSelf: 'center',
     },
-    dot: {
-        height: 10,
-        borderRadius: 5,
-        marginHorizontal: 8,
-    },
+    dot: { height: 8, borderRadius: 4, marginHorizontal: 4 },
 });
