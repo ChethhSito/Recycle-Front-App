@@ -12,14 +12,8 @@ const LEVELS = [
         id: '1', level: 1, title: 'Semilla de Cambio', icon: 'seed',
         color: '#5D4037', bg: '#F5E6D3', // Beige Tierra
         desc: 'Todo gran cambio comienza pequeño.',
-<<<<<<< HEAD
         longDesc: 'Estás dando el primer paso vital. Como una semilla, llevas dentro el potencial de un futuro más verde. ¡Sigue reciclando para germinar!',
         currentPoints: 150, targetPoints: 300
-=======
-        longDesc: 'Como Semilla de Cambio, estás dando el primer paso vital. Cada pequeño acto de reciclaje es una promesa de un futuro más verde. ¡Sigue así para ver cómo tus esfuerzos germinan!', // NUEVO TEXTO
-        currentPoints: 330,
-        targetPoints: 500
->>>>>>> origin/raul
     },
     {
         id: '2', level: 2, title: 'Raíz Profunda', icon: 'grass',

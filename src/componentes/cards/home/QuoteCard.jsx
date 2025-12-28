@@ -9,6 +9,7 @@ export const QuoteCard = ({ quote }) => {
     return (
         <View style={componentStyles.quoteCard}>
             <Text style={componentStyles.quote}>{quote}</Text>
+
         </View>
     );
 };
@@ -23,7 +24,7 @@ const styles = (theme) => StyleSheet.create({
     quote: {
         fontSize: 16,
         color: '#000',
-        fontStyle: 'italic',
+
         textAlign: 'center',
     },
 });
