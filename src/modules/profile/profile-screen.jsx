@@ -121,16 +121,16 @@ const MenuOption = ({
   );
 };
 
-export const ProfileScreen = ({ navigation, onOpenDrawer, userAvatar, userName, userPoints = 1250 }) => {
+export const ProfileScreen = ({ navigation, onOpenDrawer, userAvatar, userName, userPoints = 330 }) => {
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [userData] = useState({
     name: userName || "Usuario",
     userType: "Ciudadano Eco",
-    level: "Bosque Verde 🌲",
+    level: "Semilla de Cambio 🌱",
     avatarUrl: userAvatar || "https://i.pravatar.cc/150?img=33",
-    progress: 0.65,
-    currentPoints: userPoints || 650,
-    nextLevelPoints: 1000,
+    progress: 0.66,
+    currentPoints: userPoints || 330,
+    nextLevelPoints: 500,
     stats: {
       recycled: '45.2kg',
       water: '120L',
