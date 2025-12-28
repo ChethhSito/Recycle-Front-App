@@ -150,7 +150,7 @@ export const GreenFootprintScreen = ({ navigation }) => {
                     {/* --- BOTÓN PRESUMIR (Share) --- */}
                     <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
                         <View style={styles.shareContent}>
-                            <Icon name="instagram" size={24} color="#FFF" />
+
                             <Text style={styles.shareText}>Presumir mi Logro</Text>
                         </View>
                         <Text style={styles.shareSubtext}>Generar imagen para Stories</Text>

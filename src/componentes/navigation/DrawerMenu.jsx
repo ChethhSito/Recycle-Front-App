@@ -21,7 +21,7 @@ const LogoutModal = ({ visible, onClose, onConfirm }) => {
                     <View style={styles.logoutModalIconContainer}>
                         <LogOut color="#D32F2F" size={40} />
                     </View>
-                    
+
                     <Text style={styles.logoutModalTitle}>Cerrar Sesión</Text>
                     <Text style={styles.logoutModalMessage}>
                         ¿Estás seguro que deseas cerrar sesión?
@@ -103,7 +103,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                 { icon: 'pine-tree', label: 'Programas Ambientales', onPress: () => console.log('Programas Ambientales') },
                 { icon: 'play-circle', label: 'Inducción', onPress: () => navigation.navigate('Induction') },
                 { icon: 'forum', label: 'Foro', onPress: () => navigation.navigate('Forum') },
-                { icon: 'information', label: 'Acerca de Nosotros', onPress: () => navigation.navigate('AboutUs') },
+                { icon: 'information', label: 'Acerca de Nos Planét', onPress: () => navigation.navigate('AboutUs') },
             ]
         },
         {

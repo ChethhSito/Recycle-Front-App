@@ -211,7 +211,7 @@ export const AboutScreen = ({ navigation, onOpenDrawer, userAvatar }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#7CD1AA',
+    backgroundColor: '#018f64',
   },
   scrollView: {
     flex: 1,
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#32243B',
+    color: '#ffffffff',
     marginBottom: 16,
   },
 

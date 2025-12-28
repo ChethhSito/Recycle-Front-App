@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#7CD1AA',
+        backgroundColor: '#018f64',
     },
     filtersSection: {
 
