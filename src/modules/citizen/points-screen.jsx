@@ -17,7 +17,7 @@ const LEVELS = [
         bg: '#e7cec2ff',
         desc: 'Todo gran cambio comienza pequeño.',
         longDesc: 'Como Semilla de Cambio, estás dando el primer paso vital. Cada pequeño acto de reciclaje es una promesa de un futuro más verde. ¡Sigue así para ver cómo tus esfuerzos germinan!', // NUEVO TEXTO
-        currentPoints: 150,
+        currentPoints: 330,
         targetPoints: 500
     },
     {

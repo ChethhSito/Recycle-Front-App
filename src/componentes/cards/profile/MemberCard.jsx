@@ -8,11 +8,11 @@ const { width } = Dimensions.get('window');
 
 export const MemberCard = ({ 
   userName = "Usuario", 
-  level = "Bosque Verde 🌲", 
+  level = "Semilla de Cambio 🌱", 
   avatarUrl = "https://via.placeholder.com/80",
-  progress = 0.65,
-  currentPoints = 650,
-  nextLevelPoints = 1000
+  progress = 0.66,
+  currentPoints = 330,
+  nextLevelPoints = 500
 }) => {
   return (
     <LinearGradient

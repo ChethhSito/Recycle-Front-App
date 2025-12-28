@@ -107,9 +107,9 @@ export const HomeScreen = ({ userAvatar, userName }) => {
                     badgeIcon="seed"
                     badgeTitle="Semilla de Cambio"
                     rank="Nivel 1"
-                    progress={0.3}
-                    currentPoints={100}
-                    maxPoints={600}
+                    progress={0.66}
+                    currentPoints={330}
+                    maxPoints={500}
                 />
 
                 {/* Tu impacto este mes */}
@@ -212,7 +212,7 @@ export const HomeScreen = ({ userAvatar, userName }) => {
                 onClose={() => setDrawerVisible(false)}
                 userName={userName || 'Juan David'}
                 userEmail="jdavidhuay@gmail.com"
-                userPoints="100"
+                userPoints={330}
                 avatarUrl={userAvatar || 'https://i.pravatar.cc/150?img=33'}
             />
         </View>

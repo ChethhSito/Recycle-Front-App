@@ -166,6 +166,9 @@ export const HistoryScreen = ({ navigation }) => {
     .filter(item => item.points < 0)
     .reduce((sum, item) => sum + item.points, 0));
 
+  // Calcular total de puntos disponibles
+  const totalPoints = totalEarned - totalRedeemed;
+
   const handleItemPress = (item) => {
     setSelectedItem(item);
     setShowDetailModal(true);
@@ -200,6 +203,24 @@ export const HistoryScreen = ({ navigation }) => {
         onSelect={setSelectedFilter}
         title="FILTRAR POR"
       />
+
+      {/* Total de Puntos Disponibles */}
+      <View style={styles.totalPointsContainer}>
+        <View style={styles.totalPointsCard}>
+          {/* Semicírculo decorativo derecho */}
+          <View style={styles.semiCircleRight}>
+            <Text style={styles.semiCircleText}>¡Juntos{'\n'}Salvamos{'\n'}el Planeta!</Text>
+            <Icon name="earth" size={28} color="#00926E" style={{ opacity: 0.7, marginTop: 4, top: 20, right: -25 }} />
+          </View>
+          
+          <Icon name="leaf" size={32} color="#00926E" />
+          <View style={styles.totalPointsContent}>
+            <Text style={styles.totalPointsLabel}>Mis Puntos Eco</Text>
+            <Text style={styles.totalPointsValue}>{totalPoints}</Text>
+            <Text style={styles.totalPointsSubtitle}>Puntos disponibles</Text>
+          </View>
+        </View>
+      </View>
 
       {/* Resumen de doble columna */}
       <View style={styles.summaryContainer}>
@@ -279,6 +300,71 @@ const styles = StyleSheet.create({
   },
   filterButton: {
     padding: 8,
+  },
+  // Total de Puntos
+  totalPointsContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  totalPointsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    elevation: 6,
+    shadowColor: '#00926F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    borderWidth: 2,
+    borderColor: '#B7ECDC',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  semiCircleRight: {
+    position: 'absolute',
+    right: -120,
+    top: '50%',
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: '#B7ECDC',
+    opacity: 0.4,
+    transform: [{ translateY: -120 }],
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: 20,
+  },
+  semiCircleText: {
+    fontSize: 16,
+    top: 20,
+    fontWeight: 'bold',
+    color: '#00926F',
+    textAlign: 'center',
+    opacity: 0.7,
+    lineHeight: 20,
+  },
+  totalPointsContent: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  totalPointsLabel: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  totalPointsValue: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#00926F',
+    marginBottom: 2,
+  },
+  totalPointsSubtitle: {
+    fontSize: 12,
+    color: '#999',
   },
   // Resumen
   summaryContainer: {

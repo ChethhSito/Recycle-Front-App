@@ -9,13 +9,15 @@ import {
   Platform,
   Alert,
   Image,
-  StatusBar
+  StatusBar,
+  Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ModernInput } from '../../componentes/cards/inputs/ModernInput';
 import { User, Mail, Phone, ArrowLeft, Save } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 
 export const PersonalDataScreen = ({ navigation, route }) => {
   const userName = route?.params?.userName || 'Usuario';
@@ -29,7 +31,32 @@ export const PersonalDataScreen = ({ navigation, route }) => {
     dni: '72345678'
   });
 
+  const [avatarUri, setAvatarUri] = useState(userAvatar);
   const [isEditing, setIsEditing] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const pickImage = async () => {
+    // Pedir permisos
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permiso denegado', 'Se necesita permiso para acceder a la galería de fotos');
+      return;
+    }
+
+    // Abrir selector de imágenes
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setAvatarUri(result.assets[0].uri);
+    }
+  };
 
   const handleSave = () => {
     // Validación básica
@@ -38,21 +65,24 @@ export const PersonalDataScreen = ({ navigation, route }) => {
       return;
     }
 
+    // Mostrar modal de confirmación
+    setShowSaveModal(true);
+  };
+
+  const confirmSave = () => {
+    // Cerrar modal de confirmación
+    setShowSaveModal(false);
+    
     // Aquí iría la lógica para guardar en el backend
-    Alert.alert(
-      'Éxito',
-      'Tus datos han sido actualizados correctamente',
-      [
-        {
-          text: 'OK',
-          onPress: () => {
-            setIsEditing(false);
-            // Opcionalmente navegar hacia atrás
-            // navigation.goBack();
-          }
-        }
-      ]
-    );
+    
+    // Mostrar modal de éxito
+    setShowSuccessModal(true);
+    
+    // Cerrar el modal de éxito y salir del modo edición después de 2 segundos
+    setTimeout(() => {
+      setShowSuccessModal(false);
+      setIsEditing(false);
+    }, 2000);
   };
 
   const updateField = (field, value) => {
@@ -96,11 +126,11 @@ export const PersonalDataScreen = ({ navigation, route }) => {
           {/* Avatar Section */}
           <View style={styles.avatarSection}>
             <Image
-              source={{ uri: userAvatar }}
+              source={{ uri: avatarUri }}
               style={styles.avatarCircle}
             />
             {isEditing && (
-              <TouchableOpacity style={styles.changePhotoButton}>
+              <TouchableOpacity style={styles.changePhotoButton} onPress={pickImage}>
                 <Text style={styles.changePhotoText}>Cambiar Foto</Text>
               </TouchableOpacity>
             )}
@@ -179,6 +209,61 @@ export const PersonalDataScreen = ({ navigation, route }) => {
           <View style={{ height: 40 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Modal de Confirmación */}
+      <Modal
+        transparent
+        visible={showSaveModal}
+        animationType="fade"
+        onRequestClose={() => setShowSaveModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalIcon}>
+              <Icon name="help-circle" size={60} color="#00926F" />
+            </View>
+            <Text style={styles.modalTitle}>¿Guardar cambios?</Text>
+            <Text style={styles.modalMessage}>
+              ¿Estás seguro de que deseas guardar estos cambios en tu perfil?
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowSaveModal(false)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={confirmSave}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.confirmButtonText}>Guardar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de Éxito */}
+      <Modal
+        transparent
+        visible={showSuccessModal}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={[styles.modalIcon, { backgroundColor: '#E8F5E9' }]}>
+              <Icon name="check-circle" size={60} color="#00926F" />
+            </View>
+            <Text style={styles.modalTitle}>¡Éxito!</Text>
+            <Text style={styles.modalMessage}>
+              Tus datos han sido actualizados correctamente
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -306,6 +391,76 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  // Modales
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    width: '85%',
+    maxWidth: 400,
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  modalIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#B7ECDC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#32243B',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#F5F5F5',
+  },
+  confirmButton: {
+    backgroundColor: '#00926F',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  confirmButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
 

@@ -205,7 +205,7 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
         onClose={() => setDrawerVisible(false)}
         userName={userName || 'Juan David'}
         userEmail="jdavidhuay@gmail.com"
-        userPoints="100"
+        userPoints={330}
         avatarUrl={userAvatar || 'https://i.pravatar.cc/150?img=33'}
       />
     </SafeAreaView>

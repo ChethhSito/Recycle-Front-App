@@ -25,7 +25,7 @@ export const AppRoutes = () => {
     const [userInfo] = useState({
         name: 'Juan David',
         email: 'juan@ecolloy.pe',
-        points: 1250,
+        points: 330,
         avatar: 'https://i.pravatar.cc/150?img=33'
     });
 
