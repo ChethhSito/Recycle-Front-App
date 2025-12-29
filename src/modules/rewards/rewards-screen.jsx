@@ -6,8 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 import { RewardHeader } from '../../componentes/cards/rewards/RewardHeader';
 import { RewardCard } from '../../componentes/cards/rewards/RewardCard';
 import { PartnerRewardCard } from '../../componentes/cards/rewards/PartnerRewardCard';
-import { RewardDetailModal } from '../../componentes/modal/RewardDetailModal';
-import { RedeemConfirmModal } from '../../componentes/modal/RedeemConfirmModal';
+import { RewardDetailModal } from '../../componentes/modal/rewards/RewardDetailModal';
+import { RedeemConfirmModal } from '../../componentes/modal/rewards/RedeemConfirmModal';
 
 export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     const navigation = useNavigation();

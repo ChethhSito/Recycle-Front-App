@@ -22,7 +22,7 @@ import {
 } from 'lucide-react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { FilterDropdown } from '../../componentes/cards/profile/FilterDropdown';
-import { HistoryDetailModal } from '../../componentes/modal/HistoryDetailModal';
+import { HistoryDetailModal } from '../../componentes/modal/profile/HistoryDetailModal';
 
 // Componente para cada ítem del historial
 const HistoryItem = ({ type, title, date, points, category, onPress }) => {

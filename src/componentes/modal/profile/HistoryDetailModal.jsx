@@ -15,8 +15,8 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import ViewShot from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
-import { LoadingOverlay } from '../shared/LoadingOverlay';
-import { ReceiptCard } from '../cards/ReceiptCard';
+import { LoadingOverlay } from '../../shared/LoadingOverlay';
+import { ReceiptCard } from '../../cards/ReceiptCard';
 
 const { height, width } = Dimensions.get('window');
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, TextInput, ScrollView, Image, Alert, Animated, Easing, Dimensions } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { ImagePreview } from '../shared/ImagePreview';
+import { ImagePreview } from '../../shared/ImagePreview';
 
 const { height } = Dimensions.get('window');
 

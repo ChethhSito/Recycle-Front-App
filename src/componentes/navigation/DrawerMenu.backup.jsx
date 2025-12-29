@@ -103,7 +103,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
             title: 'Explorar',
             items: [
                 { icon: 'handshake', label: 'Convenios', onPress: () => navigation.navigate('Partners') },
-                { icon: 'pine-tree', label: 'Programas Ambientales', onPress: () => navigation.navigate('EnvironmentalPrograms') },
+                { icon: 'pine-tree', label: 'Programas Ambientales', onPress: () => console.log('Programas Ambientales') },
                 { icon: 'play-circle', label: 'Inducción', onPress: () => navigation.navigate('Induction') },
                 { icon: 'forum', label: 'Foro', onPress: () => navigation.navigate('Forum') },
                 { icon: 'information', label: 'Acerca de Nos Planét', onPress: () => navigation.navigate('AboutUs') },
@@ -140,53 +140,105 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                     ]}
                 >
                     <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-                        {/* Header del Drawer */}
-                        <View style={styles.drawerHeader}>
-                            <Image
-                                source={{ uri: avatarUrl }}
-                                style={styles.avatar}
-                            />
-                            <View style={styles.userInfo}>
-                                <Text style={styles.userName}>{userName}</Text>
-                                <Text style={styles.userEmail}>{userEmail}</Text>
-                                <View style={styles.pointsBadge}>
-                                    <Text style={styles.pointsText}>{userPoints} puntos</Text>
+                        {/* Header del Drawer con gradiente mejorado */}
+                        <LinearGradient
+                            colors={['#018f64', '#00C7A1', '#018f64']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.drawerHeader}
+                        >
+                            {/* Elementos decorativos */}
+                            <View style={styles.decorCircle1} />
+                            <View style={styles.decorCircle2} />
+                            
+                            <View style={styles.headerContent}>
+                                {/* Avatar con glow effect */}
+                                <View style={styles.avatarContainer}>
+                                    <View style={styles.avatarGlow}>
+                                        <Image
+                                            source={{ uri: avatarUrl }}
+                                            style={styles.avatar}
+                                        />
+                                    </View>
+                                </View>
+                                
+                                <View style={styles.userInfo}>
+                                    <Text style={styles.userName}>{userName}</Text>
+                                    <Text style={styles.userEmail}>{userEmail}</Text>
+                                    
+                                    {/* Points badge mejorado */}
+                                    <View style={styles.pointsBadge}>
+                                        <LinearGradient
+                                            colors={['rgba(255, 255, 255, 0.95)', 'rgba(183, 236, 220, 0.95)']}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 0 }}
+                                            style={styles.pointsGradient}
+                                        >
+                                            <Icon name="star" size={14} color="#FFD700" />
+                                            <Text style={styles.pointsText}>{userPoints} EcoPuntos</Text>
+                                        </LinearGradient>
+                                    </View>
                                 </View>
                             </View>
-                        </View>
+                        </LinearGradient>
 
-                        {/* Secciones del Menú */}
+                        {/* Secciones del Menú con diseño mejorado */}
                         {menuSections.map((section, sectionIndex) => (
                             <View key={sectionIndex} style={styles.menuSection}>
-                                <Text style={styles.sectionTitle}>{section.title}</Text>
+                                <View style={styles.sectionHeaderContainer}>
+                                    <View style={styles.sectionLine} />
+                                    <Text style={styles.sectionTitle}>{section.title}</Text>
+                                    <View style={styles.sectionLine} />
+                                </View>
+                                
                                 {section.items.map((item, itemIndex) => (
                                     <TouchableOpacity
                                         key={itemIndex}
-                                        style={styles.menuItem}
+                                        style={[
+                                            styles.menuItem,
+                                            pressedItem === `${sectionIndex}-${itemIndex}` && styles.menuItemPressed
+                                        ]}
                                         onPress={() => {
-                                            item.onPress();
-                                            onClose();
+                                            setPressedItem(`${sectionIndex}-${itemIndex}`);
+                                            setTimeout(() => {
+                                                item.onPress();
+                                                onClose();
+                                                setPressedItem(null);
+                                            }, 200);
                                         }}
+                                        activeOpacity={0.7}
                                     >
-                                        <Icon name={item.icon} size={20} color="#000" />
+                                        <View style={styles.menuItemIconContainer}>
+                                            <Icon name={item.icon} size={22} color="#018f64" />
+                                        </View>
                                         <Text style={styles.menuItemText}>{item.label}</Text>
+                                        <Icon name="chevron-right" size={18} color="#CCC" />
                                     </TouchableOpacity>
                                 ))}
                             </View>
                         ))}
 
-                        {/* Footer */}
+                        {/* Footer mejorado */}
                         <View style={styles.footer}>
-                            <Text style={styles.versionText}>Recycle App v1.0.0</Text>
+                            <View style={styles.footerCard}>
+                                <Icon name="information-outline" size={20} color="#018f64" />
+                                <Text style={styles.versionText}>Recycle App v1.0.0</Text>
+                            </View>
                             
                             <TouchableOpacity
                                 style={styles.logoutButton}
                                 onPress={handleLogoutPress}
                                 activeOpacity={0.8}
                             >
-                                <Icon name="logout" size={20} color="#000" />
-                                <Text style={styles.logoutText}>Cerrar Sesión</Text>
-
+                                <LinearGradient
+                                    colors={['#D32F2F', '#F44336']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={styles.logoutGradient}
+                                >
+                                    <Icon name="logout" size={20} color="#FFF" />
+                                    <Text style={styles.logoutText}>Cerrar Sesión</Text>
+                                </LinearGradient>
                             </TouchableOpacity>
                         </View>
                     </ScrollView>
@@ -218,7 +270,7 @@ const styles = StyleSheet.create({
         top: 0,
         bottom: 0,
         width: DRAWER_WIDTH,
-        backgroundColor: '#B7ECDC',
+        backgroundColor: '#FFFFFF',
         shadowColor: '#000',
         shadowOffset: { width: 4, height: 0 },
         shadowOpacity: 0.3,
@@ -229,95 +281,196 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     drawerHeader: {
-        backgroundColor: '#018f64',
-        paddingTop: 30,
+        paddingTop: 40,
         paddingHorizontal: 20,
         paddingBottom: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
+        position: 'relative',
+        overflow: 'hidden',
     },
-    avatar: {
+    decorCircle1: {
+        position: 'absolute',
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: '#eee',
-        marginRight: 15,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        top: -25,
+        right: -15,
+    },
+    decorCircle2: {
+        position: 'absolute',
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        bottom: -15,
+        left: 15,
+    },
+    headerContent: {
+        alignItems: 'center',
+        zIndex: 1,
+    },
+    avatarContainer: {
+        marginBottom: 12,
+    },
+    avatarGlow: {
+        width: 76,
+        height: 76,
+        borderRadius: 38,
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#FFF',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+        elevation: 6,
+    },
+    avatar: {
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        borderWidth: 2.5,
+        borderColor: '#FFF',
     },
     userInfo: {
-        flex: 1,
-        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
     },
     userName: {
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: 'bold',
-        color: '#FFFFFF',
-        marginBottom: 2,
+        color: '#FFF',
+        marginBottom: 3,
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 3,
     },
     userEmail: {
         fontSize: 12,
-        color: '#FFFFFF',
-        marginBottom: 8,
+        color: 'rgba(255, 255, 255, 0.95)',
+        marginBottom: 10,
     },
     pointsBadge: {
-        backgroundColor: '#B7ECDC',
+        borderRadius: 16,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.15,
+        shadowRadius: 3,
+        elevation: 3,
+    },
+    pointsGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 12,
-        alignSelf: 'flex-start',
+        paddingVertical: 6,
+        gap: 5,
     },
     pointsText: {
         fontSize: 12,
-        color: '#000',
-        fontWeight: '600',
+        color: '#018f64',
+        fontWeight: '700',
     },
     menuSection: {
-        marginTop: 20,
-        paddingHorizontal: 20,
+        marginTop: 18,
+        paddingHorizontal: 14,
+    },
+    sectionHeaderContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    sectionLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: '#E0E0E0',
     },
     sectionTitle: {
-        fontSize: 12,
-        color: '#666',
-        marginBottom: 10,
-        fontWeight: '600',
+        fontSize: 11,
+        color: '#018f64',
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginHorizontal: 10,
     },
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 12,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+        marginBottom: 6,
+        backgroundColor: '#F8F9FA',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#E8E8E8',
+    },
+    menuItemPressed: {
+        backgroundColor: '#E8F5F1',
+        borderColor: '#B7ECDC',
+        transform: [{ scale: 0.98 }],
+    },
+    menuItemIconContainer: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#FFF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.08,
+        shadowRadius: 2,
+        elevation: 2,
     },
     menuItemText: {
-        fontSize: 15,
-        color: '#000',
-        marginLeft: 15,
+        flex: 1,
+        fontSize: 14,
+        color: '#32243B',
+        fontWeight: '500',
     },
     footer: {
-        marginTop: 30,
-        paddingHorizontal: 20,
-        paddingBottom: 40,
-        alignItems: 'center',
+        marginTop: 24,
+        paddingHorizontal: 16,
+        paddingBottom: 32,
     },
-    versionText: {
-        fontSize: 12,
-        color: '#666',
-        marginBottom: 15,
-    },
-    logoutButton: {
+    footerCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'transparent',
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderRadius: 8,
-        width: '100%',
         justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: '#000',
+        backgroundColor: '#F8F9FA',
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderRadius: 10,
+        marginBottom: 12,
+        gap: 6,
+    },
+    versionText: {
+        fontSize: 11,
+        color: '#666',
+        fontWeight: '500',
+    },
+    logoutButton: {
+        borderRadius: 12,
+        overflow: 'hidden',
+        shadowColor: '#D32F2F',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    logoutGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 13,
+        paddingHorizontal: 16,
+        gap: 8,
     },
     logoutText: {
         fontSize: 14,
-        color: '#000',
-        fontWeight: '600',
-        marginLeft: 8,
+        color: '#FFF',
+        fontWeight: '700',
     },
     // Estilos del Modal de Logout mejorado
     logoutModalOverlay: {

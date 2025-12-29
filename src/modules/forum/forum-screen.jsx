@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { PostCard } from '../../componentes/cards/forum/PostCard';
 import { ForumDetailView } from '../../componentes/views/ForumDetailView';
-import { CreatePostModal } from '../../componentes/modal/CreatePostModal';
+import { CreatePostModal } from '../../componentes/modal/forum/CreatePostModal';
 import { DrawerMenu } from '../../componentes/navigation/DrawerMenu';
 import {
   CloudHeader,

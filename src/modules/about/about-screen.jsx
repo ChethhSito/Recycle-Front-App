@@ -22,7 +22,7 @@ import {
 } from 'lucide-react-native';
 import { CloudHeader } from '../../componentes/cards/home/CloudHeader';
 import { ValueCard } from '../../componentes/cards/about/ValueCard';
-import { TeamModal } from '../../componentes/modal/TeamModal';
+import { TeamModal } from '../../componentes/modal/profile/TeamModal';
 
 // ============================================
 // COMPONENTE PRINCIPAL: AboutScreen

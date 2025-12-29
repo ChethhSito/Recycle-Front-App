@@ -5,8 +5,8 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { PartnerHeader } from '../../componentes/cards/partners/PartnerHeader';
 import { PartnerCard } from '../../componentes/cards/partners/PartnerCard';
-import { ContactModal } from '../../componentes/modal/ContactModal';
-import { PartnerDetailModal } from '../../componentes/modal/PartnerDetailModal';
+import { ContactModal } from '../../componentes/modal/partners/ContactModal';
+import { PartnerDetailModal } from '../../componentes/modal/partners/PartnerDetailModal';
 
 export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     const navigation = useNavigation();

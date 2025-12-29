@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CloudHeader } from '../../componentes/cards/home/CloudHeader';
 import { VideoCard } from '../../componentes/cards/VideoCard';
-import { VideoPlayerModal } from '../../componentes/modal/VideoPlayerModal';
+import { VideoPlayerModal } from '../../componentes/modal/shared/VideoPlayerModal';
 
 // Datos de videos educativos con URLs reales de YouTube
 const VIDEOS = [

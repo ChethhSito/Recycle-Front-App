@@ -12,7 +12,7 @@ import {
 } from '../../componentes/cards/home';
 import { NavItem } from '../../componentes/navigation/NavItem';
 import { DrawerMenu } from '../../componentes/navigation/DrawerMenu';
-import { ProgramDetailModal } from '../../componentes/modal/ProgramDetailModal';
+import { ProgramDetailModal } from '../../componentes/modal/shared/ProgramDetailModal';
 import { useNavigation } from '@react-navigation/native';
 
 
