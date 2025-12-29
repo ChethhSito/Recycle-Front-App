@@ -196,7 +196,7 @@ export const HomeScreen = ({ userAvatar, userName }) => {
             <View style={componentStyles.bottomNav}>
                 <NavItem icon="home" label="Inicio" active />
                 <NavItem icon="recycle" label="Reciclar" onPress={() => navigation.navigate('RequestList')} />
-                <NavItem icon="trophy" label="Premios" />
+                <NavItem icon="trophy" label="Premios" onPress={() => navigation.navigate('Rewards')} />
             </View>
 
             {/* Modal de detalle */}

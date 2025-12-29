@@ -16,6 +16,8 @@ import { PersonalDataScreen } from '../modules/profile/personal-data-screen';
 import { HistoryScreen } from '../modules/profile/history-screen';
 import { AboutScreen } from '../modules/about/about-screen';
 import { GreenFootprintScreen } from '../modules/greenprint/green-print-screen';
+import { RewardsScreen } from '../modules/rewards/rewards-screen';
+import { PartnersScreen } from '../modules/partners/partners-screen';
 const Stack = createStackNavigator();
 
 export const AppRoutes = () => {
@@ -120,6 +122,26 @@ export const AppRoutes = () => {
                     )}
                 </Stack.Screen>
                 <Stack.Screen name="GreenFootprint" component={GreenFootprintScreen} />
+                <Stack.Screen name="Rewards">
+                    {props => (
+                        <RewardsScreen
+                            {...props}
+                            onOpenDrawer={() => setDrawerVisible(true)}
+                            userAvatar={userInfo.avatar}
+                            userName={userInfo.name}
+                        />
+                    )}
+                </Stack.Screen>
+                <Stack.Screen name="Partners">
+                    {props => (
+                        <PartnersScreen
+                            {...props}
+                            onOpenDrawer={() => setDrawerVisible(true)}
+                            userAvatar={userInfo.avatar}
+                            userName={userInfo.name}
+                        />
+                    )}
+                </Stack.Screen>
             </Stack.Navigator>
 
             {/* DrawerMenu compartido */}
