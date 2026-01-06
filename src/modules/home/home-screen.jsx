@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, useWindowDimensions } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import {
@@ -19,8 +19,9 @@ import { useNavigation } from '@react-navigation/native';
 export const HomeScreen = ({ userAvatar, userName }) => {
     const navigation = useNavigation();
     const theme = useTheme();
+    const { height } = useWindowDimensions(); // <--- 1. OBTENEMOS LA ALTURA DE LA PANTALLA
     const componentStyles = styles(theme);
-    const [filterType, setFilterType] = useState('peso'); // 'peso' o 'cantidad'
+    const [filterType, setFilterType] = useState('peso');
     const [selectedProgram, setSelectedProgram] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
@@ -84,10 +85,16 @@ export const HomeScreen = ({ userAvatar, userName }) => {
     };
 
     return (
-        <View style={componentStyles.container}>
+        // 2. APLICAMOS LA ALTURA FORZADA SI ES WEB
+        <View style={[
+            componentStyles.container, 
+            Platform.OS === 'web' && { height: height, overflow: 'hidden' } 
+        ]}>
             <ScrollView
                 style={componentStyles.scrollContent}
                 contentContainerStyle={componentStyles.scrollContentContainer}
+                showsVerticalScrollIndicator={false}
+                nestedScrollEnabled={true} 
             >
                 {/* Header con usuario */}
                 <CloudHeader
@@ -171,12 +178,19 @@ export const HomeScreen = ({ userAvatar, userName }) => {
 
                 {/* Programas Populares */}
                 <View style={componentStyles.programsSection}>
-                    <View style={componentStyles.programsHeader}>
+                    <View style={[componentStyles.programsHeader, { paddingHorizontal: 20 }]}>
                         <Icon name="leaf" size={50} color="#018f64" />
-                        <Text style={[componentStyles.sectionTitle, { color: '#31253B', marginBottom: 0, marginLeft: 10 }]}>Programas Populares</Text>
+                        <Text style={[componentStyles.sectionTitle, { color: '#31253B', marginBottom: 0, marginLeft: 10 }]}>
+                            Programas Populares
+                        </Text>
                     </View>
 
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <ScrollView 
+                        horizontal 
+                        showsHorizontalScrollIndicator={false}
+                        nestedScrollEnabled={true}
+                        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 10 }}
+                    >
                         {programsData.map((program) => (
                             <ProgramCard
                                 key={program.id}
@@ -192,21 +206,20 @@ export const HomeScreen = ({ userAvatar, userName }) => {
                 </View>
             </ScrollView>
 
-            {/* Bottom Navigation - Fijo */}
+            {/* Bottom Navigation */}
             <View style={componentStyles.bottomNav}>
                 <NavItem icon="home" label="Inicio" active />
                 <NavItem icon="recycle" label="Reciclar" onPress={() => navigation.navigate('RequestList')} />
                 <NavItem icon="trophy" label="Premios" onPress={() => navigation.navigate('Rewards')} />
             </View>
 
-            {/* Modal de detalle */}
+            {/* Modales */}
             <ProgramDetailModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 program={selectedProgram}
             />
 
-            {/* Drawer Menu */}
             <DrawerMenu
                 visible={drawerVisible}
                 onClose={() => setDrawerVisible(false)}
@@ -226,9 +239,11 @@ const styles = (theme) => StyleSheet.create({
     },
     scrollContent: {
         flex: 1,
+        width: '100%',
     },
     scrollContentContainer: {
-        paddingBottom: 100,
+        flexGrow: 1, // Fundamental para que el scroll se active
+        paddingBottom: 100, // Espacio para el nav de abajo
     },
     impactSection: {
         backgroundColor: theme.colors.background,
@@ -275,14 +290,13 @@ const styles = (theme) => StyleSheet.create({
     },
     programsSection: {
         backgroundColor: '#B7ECDC',
-        paddingHorizontal: 20,
-        paddingBottom: 20,
         paddingTop: 20,
+        paddingBottom: 20,
     },
     programsHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         marginBottom: 15,
     },
     programsTitle: {
