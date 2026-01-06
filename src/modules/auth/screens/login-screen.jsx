@@ -13,10 +13,12 @@ import {
 import { Text, TextInput, Button, useTheme, HelperText, Snackbar } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 import { GoogleIcon } from '../../../shared/svgs/google';
+import { handleGoogleLogin } from '../../../api/auth/google';
 
 const { width, height } = Dimensions.get('window');
 
 export const LoginScreen = ({ navigation, onLogin }) => {
+    const [googleLoading, setGoogleLoading] = useState(false);
     const theme = useTheme();
     const [showPassword, setShowPassword] = useState(false);
 
@@ -33,6 +35,32 @@ export const LoginScreen = ({ navigation, onLogin }) => {
     const onSubmit = (data) => {
         console.log(data);
         navigation.navigate('Home');
+    };
+
+    const onGooglePress = async () => {
+        // 1. Evitar que el usuario spamee el botón
+        if (googleLoading) return;
+
+        setGoogleLoading(true); // Bloqueamos el botón
+        console.log("Iniciando proceso de Google..."); // Log para verificar que el botón responde
+
+        try {
+            const token = await handleGoogleLogin();
+
+            if (token) {
+                console.log("Login exitoso");
+                // Guardar token y navegar...
+                navigation.replace('Home');
+            } else {
+                console.log("Usuario canceló el login");
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert("Error", "Inténtalo de nuevo.");
+        } finally {
+            // 2. IMPORTANTE: Desbloquear el botón SIEMPRE, haya error o éxito
+            setGoogleLoading(false);
+        }
     };
 
     // Función de acceso rápido para desarrollo
@@ -138,7 +166,9 @@ export const LoginScreen = ({ navigation, onLogin }) => {
                     <Button
                         mode="contained"
                         icon={() => <GoogleIcon />}
-                        onPress={() => console.log('Google Login')}
+                        loading={googleLoading}
+                        disabled={googleLoading}
+                        onPress={onGooglePress}
                         style={styles.googleBtn}
                         labelStyle={{ color: '#000000', fontSize: 16 }}
                     >
