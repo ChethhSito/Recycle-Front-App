@@ -112,7 +112,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
         {
             title: 'Cuenta',
             items: [
-                { icon: 'cog', label: 'Configuración', onPress: () => console.log('Configuración') },
+                { icon: 'cog', label: 'Configuración', onPress: () => navigation.navigate('Settings') },
             ]
         }
     ];

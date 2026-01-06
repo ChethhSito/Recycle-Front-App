@@ -14,6 +14,8 @@ import { RequestListScreen } from '../modules/citizen/listrecycle-screen';
 import { ProfileScreen } from '../modules/profile/profile-screen';
 import { PersonalDataScreen } from '../modules/profile/personal-data-screen';
 import { HistoryScreen } from '../modules/profile/history-screen';
+import { SettingsScreen } from '../modules/settings/settings-screen';
+import { TwoFactorAuthScreen } from '../modules/settings/two-factor-auth-screen';
 import { AboutScreen } from '../modules/about/about-screen';
 import { GreenFootprintScreen } from '../modules/greenprint/green-print-screen';
 import { RewardsScreen } from '../modules/rewards/rewards-screen';
@@ -113,6 +115,17 @@ export const AppRoutes = () => {
                 </Stack.Screen>
                 <Stack.Screen name="PersonalData" component={PersonalDataScreen} />
                 <Stack.Screen name="History" component={HistoryScreen} />
+                <Stack.Screen name="Settings">
+                    {props => (
+                        <SettingsScreen
+                            {...props}
+                            onOpenDrawer={() => setDrawerVisible(true)}
+                            userAvatar={userInfo.avatar}
+                            userName={userInfo.name}
+                        />
+                    )}
+                </Stack.Screen>
+                <Stack.Screen name="TwoFactorAuth" component={TwoFactorAuthScreen} />
                 <Stack.Screen name="AboutUs">
                     {props => (
                         <AboutScreen
