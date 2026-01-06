@@ -7,6 +7,7 @@ import { Text, TextInput, Button, IconButton } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { GoogleIcon } from '../../../shared/svgs/google';
+import { handleGoogleLogin } from '../../../api/auth/google';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,6 +15,38 @@ export const RegisterScreen = ({ navigation }) => {
     const [role, setRole] = useState('citizen');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
+    const [googleUser, setGoogleUser] = useState(null);
+    const [googleError, setGoogleError] = useState(null);
+    const [googleToken, setGoogleToken] = useState(null);
+
+    const onGooglePress = async () => {
+        // 1. Evitar que el usuario spamee el botón
+        if (googleLoading) return;
+
+        setGoogleLoading(true); // Bloqueamos el botón
+        console.log("Iniciando proceso de Google..."); // Log para verificar que el botón responde
+
+        try {
+            const token = await handleGoogleLogin();
+
+            if (token) {
+                console.log("Login exitoso");
+                // Guardar token y navegar...
+                navigation.replace('Home');
+            } else {
+                console.log("Usuario canceló el login");
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert("Error", "Inténtalo de nuevo.");
+        } finally {
+            // 2. IMPORTANTE: Desbloquear el botón SIEMPRE, haya error o éxito
+            setGoogleLoading(false);
+        }
+    };
+
 
     const { control, handleSubmit, watch, formState: { errors } } = useForm({
         defaultValues: {
@@ -163,7 +196,7 @@ export const RegisterScreen = ({ navigation }) => {
                                 <Button mode="contained" onPress={handleSubmit(onSubmit)} style={styles.registerBtn} labelStyle={{ fontSize: 16 }}>
                                     {role === 'citizen' ? 'Registrarse' : 'Registrarme como Reciclador'}
                                 </Button>
-                                <Button mode="contained" icon={() => <GoogleIcon />} onPress={() => console.log('Google')} style={styles.googleBtn} labelStyle={{ color: '#000000', fontSize: 16 }}>
+                                <Button mode="contained" icon={() => <GoogleIcon />} onPress={onGooglePress} loading={googleLoading} disabled={googleLoading} style={styles.googleBtn} labelStyle={{ color: '#000000', fontSize: 16 }}>
                                     Regístrate con Google
                                 </Button>
                             </View>

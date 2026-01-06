@@ -97,6 +97,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                 { icon: 'gift', label: 'Premios', onPress: () => navigation.navigate('Rewards') },
                 { icon: 'sprout', label: 'Tu huella verde', onPress: () => navigation.navigate('GreenFootprint') },
                 { icon: 'account', label: 'Mi perfil', onPress: () => navigation.navigate('Profile') },
+                { icon: 'map', label: 'Mapa', onPress: () => navigation.navigate('Map') },
             ]
         },
         {
@@ -178,7 +179,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                         {/* Footer */}
                         <View style={styles.footer}>
                             <Text style={styles.versionText}>Recycle App v1.0.0</Text>
-                            
+
                             <TouchableOpacity
                                 style={styles.logoutButton}
                                 onPress={handleLogoutPress}

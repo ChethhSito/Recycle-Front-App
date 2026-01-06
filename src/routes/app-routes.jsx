@@ -21,6 +21,7 @@ import { GreenFootprintScreen } from '../modules/greenprint/green-print-screen';
 import { RewardsScreen } from '../modules/rewards/rewards-screen';
 import { PartnersScreen } from '../modules/partners/partners-screen';
 import { EnvironmentalProgramsScreen } from '../modules/programs/environmental-programs-screen';
+import { MapScreen } from '../modules/recycler/Map-screen';
 const Stack = createStackNavigator();
 
 export const AppRoutes = () => {
@@ -159,6 +160,16 @@ export const AppRoutes = () => {
                 <Stack.Screen name="EnvironmentalPrograms">
                     {props => (
                         <EnvironmentalProgramsScreen
+                            {...props}
+                            onOpenDrawer={() => setDrawerVisible(true)}
+                            userAvatar={userInfo.avatar}
+                            userName={userInfo.name}
+                        />
+                    )}
+                </Stack.Screen>
+                <Stack.Screen name="Map">
+                    {props => (
+                        <MapScreen
                             {...props}
                             onOpenDrawer={() => setDrawerVisible(true)}
                             userAvatar={userInfo.avatar}

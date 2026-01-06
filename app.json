@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "ecorecicla",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -27,7 +28,8 @@
     },
     "plugins": [
       "expo-font",
-      "expo-asset"
+      "expo-asset",
+      "expo-web-browser"
     ]
   }
 }
