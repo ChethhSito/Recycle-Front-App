@@ -1,0 +1,485 @@
+import React, { useState } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    ScrollView,
+    TouchableOpacity,
+    Switch,
+    Image,
+    Animated,
+    Modal,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { SupportModal } from '../../componentes/modal/settings/SupportModal';
+import { DeleteAccountModal } from '../../componentes/modal/settings/DeleteAccountModal';
+import { TermsModal } from '../../componentes/modal/settings/TermsModal';
+import { ChangePasswordModal } from '../../componentes/modal/settings/ChangePasswordModal';
+import { ToggleConfirmModal } from '../../componentes/modal/settings/ToggleConfirmModal';
+
+// Componente ToggleSwitch personalizado
+const ToggleSwitch = ({ value, onValueChange, disabled = false }) => {
+    return (
+        <Switch
+            value={value}
+            onValueChange={onValueChange}
+            trackColor={{ false: '#D1D5DB', true: '#6EE7B7' }}
+            thumbColor={value ? '#018f64' : '#F3F4F6'}
+            ios_backgroundColor="#D1D5DB"
+            disabled={disabled}
+        />
+    );
+};
+
+// Componente SettingsSection para agrupar opciones
+const SettingsSection = ({ title, children, style }) => {
+    return (
+        <View style={[styles.section, style]}>
+            <Text style={styles.sectionTitle}>{title}</Text>
+            <View style={styles.sectionContent}>
+                {children}
+            </View>
+        </View>
+    );
+};
+
+// Componente SettingsItem para cada opción
+const SettingsItem = ({ 
+    icon, 
+    iconColor = '#018f64', 
+    label, 
+    value, 
+    onPress, 
+    rightComponent, 
+    status,
+    isDanger = false 
+}) => {
+    const isDisabled = !!status;
+
+    return (
+        <TouchableOpacity
+            style={[
+                styles.settingsItem,
+                isDisabled && styles.settingsItemDisabled,
+                isDanger && styles.settingsItemDanger
+            ]}
+            onPress={onPress}
+            disabled={isDisabled}
+            activeOpacity={0.7}
+        >
+            <View style={styles.settingsItemLeft}>
+                <View style={[
+                    styles.iconContainer,
+                    isDanger && styles.iconContainerDanger,
+                    isDisabled && styles.iconContainerDisabled
+                ]}>
+                    <Icon 
+                        name={icon} 
+                        size={22} 
+                        color={isDisabled ? '#9CA3AF' : (isDanger ? '#DC2626' : iconColor)} 
+                    />
+                </View>
+                <View style={styles.settingsItemTextContainer}>
+                    <Text style={[
+                        styles.settingsItemLabel,
+                        isDisabled && styles.settingsItemLabelDisabled,
+                        isDanger && styles.settingsItemLabelDanger
+                    ]}>
+                        {label}
+                    </Text>
+                    {value && (
+                        <Text style={[
+                            styles.settingsItemValue,
+                            isDisabled && styles.settingsItemValueDisabled
+                        ]}>
+                            {value}
+                        </Text>
+                    )}
+                </View>
+            </View>
+
+            <View style={styles.settingsItemRight}>
+                {status ? (
+                    <View style={styles.statusBadge}>
+                        <Text style={styles.statusBadgeText}>{status}</Text>
+                    </View>
+                ) : rightComponent ? (
+                    rightComponent
+                ) : (
+                    <Icon name="chevron-right" size={20} color="#9CA3AF" />
+                )}
+            </View>
+        </TouchableOpacity>
+    );
+};
+
+export const SettingsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
+    const navigation = useNavigation();
+    
+    // Estados
+    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+    const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+    
+    // Estados de modales
+    const [supportModalVisible, setSupportModalVisible] = useState(false);
+    const [deleteAccountModalVisible, setDeleteAccountModalVisible] = useState(false);
+    const [termsModalVisible, setTermsModalVisible] = useState(false);
+    const [changePasswordModalVisible, setChangePasswordModalVisible] = useState(false);
+    const [toggleModalVisible, setToggleModalVisible] = useState(false);
+    const [toggleModalConfig, setToggleModalConfig] = useState(null);
+
+    const handleBack = () => {
+        navigation.goBack();
+    };
+
+    const handleLanguagePress = () => {
+        // Deshabilitado por estado "Próximamente"
+    };
+
+    const handleNotificationsToggle = (value) => {
+        setToggleModalConfig({
+            title: value ? 'Activar Notificaciones' : 'Desactivar Notificaciones',
+            message: value 
+                ? '¿Deseas recibir notificaciones sobre tus actividades de reciclaje, premios disponibles y novedades?'
+                : '¿Estás seguro que deseas desactivar las notificaciones? Podrías perderte actualizaciones importantes.',
+            icon: 'bell',
+            iconColor: value ? '#10B981' : '#F59E0B',
+            onConfirm: () => {
+                setNotificationsEnabled(value);
+                setToggleModalVisible(false);
+            }
+        });
+        setToggleModalVisible(true);
+    };
+
+    const handleDarkModePress = () => {
+        // Deshabilitado por estado "En desarrollo"
+    };
+
+    const handleChangePassword = () => {
+        setChangePasswordModalVisible(true);
+    };
+
+    const handleTwoFactorPress = () => {
+        // Navegación a pantalla de verificación en 2 pasos
+        navigation.navigate('TwoFactorAuth', { enabled: twoFactorEnabled });
+    };
+
+    const handleHelpCenter = () => {
+        setSupportModalVisible(true);
+    };
+
+    const handleTermsPress = () => {
+        setTermsModalVisible(true);
+    };
+
+    const handleDeleteAccount = () => {
+        setDeleteAccountModalVisible(true);
+    };
+
+    return (
+        <View style={styles.container}>
+            {/* Header */}
+            <View style={styles.header}>
+                <TouchableOpacity 
+                    style={styles.backButton} 
+                    onPress={handleBack}
+                    activeOpacity={0.7}
+                >
+                    <Icon name="arrow-left" size={24} color="#FFF" />
+                </TouchableOpacity>
+                
+                <View style={styles.headerTextContainer}>
+                    <Text style={styles.headerTitle}>Configuración</Text>
+                    <Text style={styles.headerSubtitle}>Personaliza tu experiencia</Text>
+                </View>
+            </View>
+
+            <ScrollView 
+                style={styles.scrollView}
+                showsVerticalScrollIndicator={false}
+            >
+                {/* Sección Preferencias */}
+                <SettingsSection title="PREFERENCIAS">
+                    <SettingsItem
+                        icon="web"
+                        label="Idioma"
+                        value="Español"
+                        status="Próximamente"
+                        onPress={handleLanguagePress}
+                    />
+                    
+                    <SettingsItem
+                        icon="bell"
+                        label="Notificaciones"
+                        value={notificationsEnabled ? "Activadas" : "Desactivadas"}
+                        rightComponent={
+                            <ToggleSwitch
+                                value={notificationsEnabled}
+                                onValueChange={handleNotificationsToggle}
+                            />
+                        }
+                    />
+                    
+                    <SettingsItem
+                        icon="weather-night"
+                        label="Modo Oscuro"
+                        status="En desarrollo"
+                        onPress={handleDarkModePress}
+                    />
+                </SettingsSection>
+
+                {/* Sección Seguridad */}
+                <SettingsSection title="SEGURIDAD">
+                    <SettingsItem
+                        icon="lock"
+                        label="Cambiar Contraseña"
+                        onPress={handleChangePassword}
+                    />
+                    
+                    <SettingsItem
+                        icon="shield-check"
+                        label="Verificación en 2 pasos"
+                        value={twoFactorEnabled ? "Activado" : "Desactivado"}
+                        onPress={handleTwoFactorPress}
+                    />
+                </SettingsSection>
+
+                {/* Sección Soporte */}
+                <SettingsSection title="SOPORTE">
+                    <SettingsItem
+                        icon="help-circle"
+                        label="Centro de Ayuda"
+                        onPress={handleHelpCenter}
+                    />
+                    
+                    <SettingsItem
+                        icon="file-document"
+                        label="Términos y Privacidad"
+                        onPress={handleTermsPress}
+                    />
+                </SettingsSection>
+
+                {/* Zona de Peligro */}
+                <SettingsSection title="ZONA DE PELIGRO" style={styles.dangerSection}>
+                    <SettingsItem
+                        icon="delete"
+                        iconColor="#DC2626"
+                        label="Eliminar Cuenta"
+                        isDanger={true}
+                        onPress={handleDeleteAccount}
+                    />
+                </SettingsSection>
+
+                {/* Versión */}
+                <View style={styles.versionContainer}>
+                    <Text style={styles.versionText}>Recycle App v1.0.0</Text>
+                    <Text style={styles.versionSubtext}>© 2026 Nos Planét SAC</Text>
+                </View>
+
+                <View style={styles.bottomSpacing} />
+            </ScrollView>
+
+            {/* Modales */}
+            <SupportModal
+                visible={supportModalVisible}
+                onClose={() => setSupportModalVisible(false)}
+            />
+
+            <DeleteAccountModal
+                visible={deleteAccountModalVisible}
+                onClose={() => setDeleteAccountModalVisible(false)}
+                onConfirm={() => {
+                    setDeleteAccountModalVisible(false);
+                    // Lógica para eliminar cuenta
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Login' }],
+                    });
+                }}
+            />
+
+            <TermsModal
+                visible={termsModalVisible}
+                onClose={() => setTermsModalVisible(false)}
+            />
+
+            <ChangePasswordModal
+                visible={changePasswordModalVisible}
+                onClose={() => setChangePasswordModalVisible(false)}
+            />
+
+            {toggleModalConfig && (
+                <ToggleConfirmModal
+                    visible={toggleModalVisible}
+                    title={toggleModalConfig.title}
+                    message={toggleModalConfig.message}
+                    icon={toggleModalConfig.icon}
+                    iconColor={toggleModalConfig.iconColor}
+                    onClose={() => setToggleModalVisible(false)}
+                    onConfirm={toggleModalConfig.onConfirm}
+                />
+            )}
+        </View>
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#F5F5F5',
+    },
+    header: {
+        backgroundColor: '#018f64',
+        paddingTop: 50,
+        paddingBottom: 20,
+        paddingHorizontal: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    backButton: {
+        padding: 4,
+        marginRight: 15,
+    },
+    headerTextContainer: {
+        flex: 1,
+    },
+    headerTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    headerSubtitle: {
+        fontSize: 13,
+        color: '#fff',
+        opacity: 0.9,
+        marginTop: 2,
+    },
+    scrollView: {
+        flex: 1,
+    },
+    section: {
+        marginTop: 24,
+        paddingHorizontal: 16,
+    },
+    sectionTitle: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#6B7280',
+        marginBottom: 12,
+        marginLeft: 4,
+        letterSpacing: 0.5,
+    },
+    sectionContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
+    },
+    settingsItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    settingsItemDisabled: {
+        opacity: 0.5,
+        backgroundColor: '#F9FAFB',
+    },
+    settingsItemDanger: {
+        backgroundColor: '#FEF2F2',
+    },
+    settingsItemLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    iconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#E8F5F1',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    iconContainerDisabled: {
+        backgroundColor: '#F3F4F6',
+    },
+    iconContainerDanger: {
+        backgroundColor: '#FEE2E2',
+    },
+    settingsItemTextContainer: {
+        flex: 1,
+    },
+    settingsItemLabel: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#1F2937',
+        marginBottom: 2,
+    },
+    settingsItemLabelDisabled: {
+        color: '#9CA3AF',
+    },
+    settingsItemLabelDanger: {
+        color: '#DC2626',
+    },
+    settingsItemValue: {
+        fontSize: 13,
+        color: '#6B7280',
+        marginTop: 2,
+    },
+    settingsItemValueDisabled: {
+        color: '#9CA3AF',
+    },
+    settingsItemRight: {
+        marginLeft: 12,
+    },
+    statusBadge: {
+        backgroundColor: '#FEF3C7',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#FCD34D',
+    },
+    statusBadgeText: {
+        fontSize: 11,
+        fontWeight: '600',
+        color: '#92400E',
+    },
+    dangerSection: {
+        marginTop: 32,
+    },
+    versionContainer: {
+        alignItems: 'center',
+        paddingVertical: 32,
+        paddingHorizontal: 16,
+    },
+    versionText: {
+        fontSize: 13,
+        color: '#9CA3AF',
+        fontWeight: '500',
+    },
+    versionSubtext: {
+        fontSize: 11,
+        color: '#D1D5DB',
+        marginTop: 4,
+    },
+    bottomSpacing: {
+        height: 20,
+    },
+});
