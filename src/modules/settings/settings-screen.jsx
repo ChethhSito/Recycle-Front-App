@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -10,7 +10,7 @@ import {
     Animated,
     Modal,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { SupportModal } from '../../componentes/modal/settings/SupportModal';
 import { DeleteAccountModal } from '../../componentes/modal/settings/DeleteAccountModal';
@@ -116,6 +116,7 @@ const SettingsItem = ({
 
 export const SettingsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     const navigation = useNavigation();
+    const route = useRoute();
     
     // Estados
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -128,6 +129,15 @@ export const SettingsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     const [changePasswordModalVisible, setChangePasswordModalVisible] = useState(false);
     const [toggleModalVisible, setToggleModalVisible] = useState(false);
     const [toggleModalConfig, setToggleModalConfig] = useState(null);
+
+    // Escuchar cuando regresa de TwoFactorAuth con activación exitosa
+    useEffect(() => {
+        if (route.params?.twoFactorActivated) {
+            setTwoFactorEnabled(true);
+            // Limpiar el parámetro
+            navigation.setParams({ twoFactorActivated: undefined });
+        }
+    }, [route.params?.twoFactorActivated]);
 
     const handleBack = () => {
         navigation.goBack();
@@ -161,9 +171,24 @@ export const SettingsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
         setChangePasswordModalVisible(true);
     };
 
-    const handleTwoFactorPress = () => {
-        // Navegación a pantalla de verificación en 2 pasos
-        navigation.navigate('TwoFactorAuth', { enabled: twoFactorEnabled });
+    const handleTwoFactorToggle = (value) => {
+        if (value) {
+            // Si se activa, navegar al flujo de configuración
+            navigation.navigate('TwoFactorInfo');
+        } else {
+            // Si se desactiva, mostrar modal de confirmación
+            setToggleModalConfig({
+                title: 'Desactivar Verificación en 2 Pasos',
+                message: '¿Estás seguro? Tu cuenta será menos segura sin esta capa adicional de protección.',
+                icon: 'shield-off',
+                iconColor: '#EF4444',
+                onConfirm: () => {
+                    setTwoFactorEnabled(false);
+                    setToggleModalVisible(false);
+                }
+            });
+            setToggleModalVisible(true);
+        }
     };
 
     const handleHelpCenter = () => {
@@ -242,7 +267,12 @@ export const SettingsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                         icon="shield-check"
                         label="Verificación en 2 pasos"
                         value={twoFactorEnabled ? "Activado" : "Desactivado"}
-                        onPress={handleTwoFactorPress}
+                        rightComponent={
+                            <ToggleSwitch
+                                value={twoFactorEnabled}
+                                onValueChange={handleTwoFactorToggle}
+                            />
+                        }
                     />
                 </SettingsSection>
 

@@ -15,7 +15,10 @@ import { ProfileScreen } from '../modules/profile/profile-screen';
 import { PersonalDataScreen } from '../modules/profile/personal-data-screen';
 import { HistoryScreen } from '../modules/profile/history-screen';
 import { SettingsScreen } from '../modules/settings/settings-screen';
-import { TwoFactorAuthScreen } from '../modules/settings/two-factor-auth-screen';
+import { TwoFactorInfoScreen } from '../modules/settings/two-factor-auth/two-factor-info-screen';
+import { TwoFactorMethodScreen } from '../modules/settings/two-factor-auth/two-factor-method-screen';
+import { TwoFactorVerifyScreen } from '../modules/settings/two-factor-auth/two-factor-verify-screen';
+import { TwoFactorSuccessScreen } from '../modules/settings/two-factor-auth/two-factor-success-screen';
 import { AboutScreen } from '../modules/about/about-screen';
 import { GreenFootprintScreen } from '../modules/greenprint/green-print-screen';
 import { RewardsScreen } from '../modules/rewards/rewards-screen';
@@ -126,7 +129,10 @@ export const AppRoutes = () => {
                         />
                     )}
                 </Stack.Screen>
-                <Stack.Screen name="TwoFactorAuth" component={TwoFactorAuthScreen} />
+                <Stack.Screen name="TwoFactorInfo" component={TwoFactorInfoScreen} />
+                <Stack.Screen name="TwoFactorMethod" component={TwoFactorMethodScreen} />
+                <Stack.Screen name="TwoFactorVerify" component={TwoFactorVerifyScreen} />
+                <Stack.Screen name="TwoFactorSuccess" component={TwoFactorSuccessScreen} />
                 <Stack.Screen name="AboutUs">
                     {props => (
                         <AboutScreen
