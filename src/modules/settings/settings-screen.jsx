@@ -10,6 +10,7 @@ import {
     Animated,
     Modal,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { SupportModal } from '../../componentes/modal/settings/SupportModal';
@@ -206,20 +207,44 @@ export const SettingsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     return (
         <View style={styles.container}>
             {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity 
-                    style={styles.backButton} 
-                    onPress={handleBack}
-                    activeOpacity={0.7}
-                >
-                    <Icon name="arrow-left" size={24} color="#FFF" />
-                </TouchableOpacity>
-                
-                <View style={styles.headerTextContainer}>
-                    <Text style={styles.headerTitle}>Configuración</Text>
-                    <Text style={styles.headerSubtitle}>Personaliza tu experiencia</Text>
+            <LinearGradient
+                colors={['#018f64', '#00C7A1', '#018f64']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.header}
+            >
+                {/* Elementos decorativos */}
+                <View style={styles.decorativeIconLeft}>
+                    <Icon name="cog-outline" size={60} color="rgba(255, 255, 255, 0.1)" />
                 </View>
-            </View>
+                <View style={styles.decorativeIconRight}>
+                    <Icon name="shield-check-outline" size={40} color="rgba(255, 255, 255, 0.1)" />
+                </View>
+
+                {/* Top Bar con Avatar y Menu */}
+                <View style={styles.topBar}>
+                    <TouchableOpacity onPress={onOpenDrawer} style={styles.menuButton}>
+                        <Icon name="menu" size={28} color="#FFF" />
+                    </TouchableOpacity>
+
+                    <View style={styles.avatarContainer}>
+                        <Image source={{ uri: userAvatar }} style={styles.avatar} />
+                        <View style={styles.avatarBorder} />
+                    </View>
+                </View>
+
+                {/* Contenido Principal */}
+                <View style={styles.content}>
+                    <View style={styles.titleSection}>
+                        <Icon name="cog" size={32} color="#FFD700" />
+                        <View style={styles.titleTextContainer}>
+                            <Text style={styles.greeting}>Hola, {userName}</Text>
+                            <Text style={styles.headerTitle}>Configuración</Text>
+                            <Text style={styles.headerSubtitle}>Personaliza tu experiencia</Text>
+                        </View>
+                    </View>
+                </View>
+            </LinearGradient>
 
             <ScrollView 
                 style={styles.scrollView}
@@ -361,35 +386,85 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5F5F5',
     },
     header: {
-        backgroundColor: '#018f64',
         paddingTop: 50,
         paddingBottom: 20,
         paddingHorizontal: 20,
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    decorativeIconLeft: {
+        position: 'absolute',
+        top: -10,
+        left: -20,
+        transform: [{ rotate: '-15deg' }],
+    },
+    decorativeIconRight: {
+        position: 'absolute',
+        top: 30,
+        right: -10,
+        transform: [{ rotate: '15deg' }],
+    },
+    topBar: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+        zIndex: 1,
+    },
+    menuButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    avatarContainer: {
+        position: 'relative',
+    },
+    avatar: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        borderWidth: 3,
+        borderColor: '#FFF',
+    },
+    avatarBorder: {
+        position: 'absolute',
+        width: 58,
+        height: 58,
+        borderRadius: 29,
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.3)',
+        top: -4,
+        left: -4,
+    },
+    content: {
+        zIndex: 1,
+    },
+    titleSection: {
         flexDirection: 'row',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 4,
     },
-    backButton: {
-        padding: 4,
-        marginRight: 15,
-    },
-    headerTextContainer: {
+    titleTextContainer: {
+        marginLeft: 12,
         flex: 1,
     },
+    greeting: {
+        fontSize: 14,
+        color: '#B7ECDC',
+        marginBottom: 2,
+    },
     headerTitle: {
-        fontSize: 22,
+        fontSize: 26,
         fontWeight: 'bold',
-        color: '#fff',
+        color: '#FFF',
+        marginBottom: 2,
     },
     headerSubtitle: {
-        fontSize: 13,
-        color: '#fff',
-        opacity: 0.9,
-        marginTop: 2,
+        fontSize: 14,
+        color: '#FFD700',
+        fontWeight: '600',
     },
     scrollView: {
         flex: 1,

@@ -263,7 +263,7 @@ https://nosplanet.org/app
           <MenuOption
             icon={Settings}
             title="Configuración"
-            onPress={() => console.log('Settings')}
+            onPress={() => navigation.navigate('Settings')}
           />
 
           {/* Separador antes de cerrar sesión */}

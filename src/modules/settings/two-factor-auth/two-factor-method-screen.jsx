@@ -12,6 +12,7 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { generateSecureOTP, storeOTP } from './otpManager';
 import { sendOTPEmail } from './resendService';
 import { TestingModeModal } from '../../../componentes/modal/settings/TestingModeModal';
+import { EmailSelectionModal } from '../../../componentes/modal/settings/EmailSelectionModal';
 
 export const TwoFactorMethodScreen = () => {
     const navigation = useNavigation();
@@ -19,12 +20,23 @@ export const TwoFactorMethodScreen = () => {
     const [showTestingModal, setShowTestingModal] = useState(false);
     const [testingCode, setTestingCode] = useState('');
     const [testingMethod, setTestingMethod] = useState('email');
+    const [showEmailSelectionModal, setShowEmailSelectionModal] = useState(false);
 
     const handleBack = () => {
         navigation.goBack();
     };
 
     const handleMethodSelect = async (method) => {
+        if (method === 'email') {
+            // Para email, mostrar modal de selección primero
+            setShowEmailSelectionModal(true);
+        } else {
+            // Para SMS, flujo normal
+            await sendOTPToMethod('sms', '+51 982 109 407');
+        }
+    };
+
+    const sendOTPToMethod = async (method, destination) => {
         setIsSending(true);
         
         // Generar código OTP seguro
@@ -34,7 +46,6 @@ export const TwoFactorMethodScreen = () => {
         console.log(`[2FA] Método: ${method === 'sms' ? 'SMS' : 'Email'}`);
         
         // Guardar OTP con expiración
-        const destination = method === 'email' ? 'raulquintanazinc@gmail.com' : '+51 982 109 407';
         await storeOTP(verificationCode, destination);
         
         let sentSuccessfully = false;
@@ -90,6 +101,11 @@ export const TwoFactorMethodScreen = () => {
             method,
             destination
         });
+    };
+
+    const handleEmailSelected = async (email) => {
+        setShowEmailSelectionModal(false);
+        await sendOTPToMethod('email', email);
     };
 
     return (
@@ -171,6 +187,13 @@ export const TwoFactorMethodScreen = () => {
                 onClose={handleModalClose}
                 code={testingCode}
                 method={testingMethod}
+            />
+
+            {/* Email Selection Modal */}
+            <EmailSelectionModal
+                visible={showEmailSelectionModal}
+                onClose={() => setShowEmailSelectionModal(false)}
+                onSelectEmail={handleEmailSelected}
             />
         </View>
     );

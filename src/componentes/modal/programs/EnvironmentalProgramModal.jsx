@@ -1,11 +1,35 @@
 import React from 'react';
-import { View, Text, StyleSheet, Modal, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, Modal, ScrollView, TouchableOpacity, Image, Share, Alert } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export const EnvironmentalProgramModal = ({ visible, onClose, program }) => {
     if (!program) return null;
 
+    const handleShare = async () => {
+        try {
+            const message = `🌱 ¡Únete al programa ambiental "${program.title}"!\n\n` +
+                `📍 ${program.location}\n` +
+                `👥 ${program.participants} participantes ya lo apoyan\n` +
+                `⭐ Gana ${program.points} EcoPuntos participando\n\n` +
+                `📱 Descarga Nos Planét y participa en este programa:\n` +
+                `🔗 https://nosplanet.pe/app\n\n` +
+                `💚 Organizado por: ${program.organization}\n` +
+                `🌍 Juntos por un planeta más verde`;
+
+            const result = await Share.share({
+                message: message,
+                title: `Programa: ${program.title}`,
+            });
+
+            if (result.action === Share.sharedAction) {
+                console.log('[Share] Programa compartido exitosamente');
+            }
+        } catch (error) {
+            console.error('[Share] Error:', error);
+            Alert.alert('Error', 'No se pudo compartir el programa');
+        }
+    };
 
     const getOrgColor = () => {
         switch(program.organizationType) {
@@ -164,6 +188,16 @@ export const EnvironmentalProgramModal = ({ visible, onClose, program }) => {
                                 <Icon name="hand-heart" size={22} color="#fff" />
                                 <Text style={styles.participateText}>Quiero Participar</Text>
                             </LinearGradient>
+                        </TouchableOpacity>
+
+                        {/* Botón Compartir */}
+                        <TouchableOpacity 
+                            style={styles.shareButton}
+                            activeOpacity={0.8}
+                            onPress={handleShare}
+                        >
+                            <Icon name="share-variant" size={20} color="#018f64" />
+                            <Text style={styles.shareText}>Compartir Programa</Text>
                         </TouchableOpacity>
 
                         <View style={styles.bottomPadding} />
@@ -348,6 +382,24 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
+        marginLeft: 8,
+    },
+    shareButton: {
+        marginHorizontal: 20,
+        marginTop: 12,
+        borderRadius: 12,
+        backgroundColor: '#E8F5F1',
+        borderWidth: 1.5,
+        borderColor: '#018f64',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 14,
+    },
+    shareText: {
+        color: '#018f64',
+        fontSize: 15,
+        fontWeight: '600',
         marginLeft: 8,
     },
     bottomPadding: {
