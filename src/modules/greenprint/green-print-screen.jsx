@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
 
     // CO2 CARD
     co2Card: {
-        backgroundColor: '#018f64',
+        backgroundColor: '#0d6e51ff',
         borderRadius: 20,
         padding: 25,
         flexDirection: 'row',

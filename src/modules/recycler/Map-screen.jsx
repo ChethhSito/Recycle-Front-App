@@ -9,12 +9,30 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Datos de prueba (MOCK)
 const MOCK_REQUESTS = [
-    { id: '1', title: 'Botellas Plásticas', user: 'Juan Pérez', distance: '200m' },
-    { id: '2', title: 'Cartón y Papel', user: 'María Lopez', distance: '500m' },
+    {
+        id: '1',
+        title: 'Botellas Plásticas',
+        user: 'Juan Pérez',
+        distance: '200m',
+        quantity: '3 Kg aprox',
+        description: 'Son dos bolsas grandes llenas de botellas de gaseosa lavadas y aplastadas.',
+        image: 'https://images.unsplash.com/photo-1595278069441-2cf29f525a3c?auto=format&fit=crop&q=80'
+    },
+    {
+        id: '2',
+        title: 'Cartón y Papel',
+        user: 'María Lopez',
+        distance: '500m',
+        quantity: '5 Kg',
+        description: 'Cajas de mudanza desarmadas y periódicos viejos.',
+        image: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80'
+    },
 ];
 
 export const MapScreen = () => {
     const navigation = useNavigation();
+
+
 
     // Estado para guardar la ubicación del usuario
     const [location, setLocation] = useState(null);
@@ -89,12 +107,21 @@ export const MapScreen = () => {
     // Render de Items (Igual que antes)
     const renderRequestItem = ({ item }) => (
         <View style={styles.card}>
-            <View style={styles.cardIcon}><Ionicons name="cube-outline" size={24} color="#018f64" /></View>
+            <View style={styles.cardIcon}>
+                <Ionicons name="cube-outline" size={24} color="#018f64" />
+            </View>
             <View style={styles.cardContent}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
                 <Text style={styles.cardSubtitle}>{item.user}</Text>
             </View>
-            <TouchableOpacity style={styles.actionButton}><Text style={styles.actionText}>Ver</Text></TouchableOpacity>
+
+            {/* AQUÍ ESTÁ EL CAMBIO: NAVEGACIÓN */}
+            <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => navigation.navigate('RequestDetail', { request: item })} // <--- ESTO
+            >
+                <Text style={styles.actionText}>Ver</Text>
+            </TouchableOpacity>
         </View>
     );
 
@@ -137,21 +164,21 @@ export const MapScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' },
+    container: { flex: 1, backgroundColor: '#018f64' },
     map: { flex: 1 },
     loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' }, // Nuevo estilo para carga
 
     backButton: {
         position: 'absolute', top: Platform.OS === 'android' ? 70 : 60, left: 20,
-        backgroundColor: '#fff', padding: 10, borderRadius: 25, elevation: 5, zIndex: 10,
+        backgroundColor: '#b1eedc', padding: 10, borderRadius: 25, elevation: 5, zIndex: 10,
     },
     bottomSheet: {
         position: 'absolute', bottom: 0, left: 0, right: 0, height: SCREEN_HEIGHT * 0.35,
-        backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, elevation: 10,
+        backgroundColor: '#018f64', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, elevation: 10,
     },
     dragHandle: { width: 40, height: 5, backgroundColor: '#ddd', borderRadius: 3, alignSelf: 'center', marginBottom: 15 },
-    sheetTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 15, color: '#333' },
-    card: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f5f9f8', padding: 12, borderRadius: 12, marginBottom: 10 },
+    sheetTitle: { fontSize: 18, marginBottom: 15, color: '#ffffffff' },
+    card: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#b1eedc', padding: 12, borderRadius: 12, marginBottom: 10 },
     cardIcon: { width: 40, height: 40, backgroundColor: '#e0f2ec', borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
     cardContent: { flex: 1 },
     cardTitle: { fontWeight: 'bold', color: '#333', fontSize: 14 },

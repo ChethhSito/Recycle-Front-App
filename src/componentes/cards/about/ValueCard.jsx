@@ -16,7 +16,7 @@ export const ValueCard = ({ icon: Icon, title, description, color }) => {
 const styles = StyleSheet.create({
   valueCard: {
     width: '48%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#b1eedc',
     borderRadius: 20,
     padding: 16,
     alignItems: 'center',

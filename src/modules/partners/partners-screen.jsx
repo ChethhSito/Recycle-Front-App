@@ -202,9 +202,9 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
 
     const handleViewRewards = () => {
         if (selectedPartner) {
-            navigation.navigate('Rewards', { 
-                partnerId: selectedPartner.id, 
-                partnerName: selectedPartner.name 
+            navigation.navigate('Rewards', {
+                partnerId: selectedPartner.id,
+                partnerName: selectedPartner.name
             });
         }
     };
@@ -285,7 +285,7 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                             ¿Eres una empresa u organización interesada en formar parte de nuestros convenios?
                         </Text>
                     </View>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.contactButton}
                         onPress={() => setContactModalVisible(true)}
                     >
@@ -316,19 +316,19 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
+        backgroundColor: '#b1eedc',
     },
     filtersSection: {
-        backgroundColor: '#FFF',
+        backgroundColor: '#b1eedc',
         paddingVertical: 16,
         paddingHorizontal: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+        borderBottomColor: '#018f64',
     },
     filtersTitle: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#666',
+        color: '#000000ff',
         marginBottom: 12,
     },
     filtersContainer: {
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     filterText: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#018f64',
+        color: '#000000ff',
     },
     filterTextActive: {
         color: '#FFF',

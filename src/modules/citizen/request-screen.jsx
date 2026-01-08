@@ -13,22 +13,70 @@ import { Svg, Path } from 'react-native-svg';
 const { width } = Dimensions.get('window');
 
 // Materiales (Igual que antes)
-const MATERIALS = [
-    { id: 'plastic', label: 'Plástico', icon: 'bottle-soda', color: '#3B82F6', bg: '#D4E7FF' },
-    { id: 'cardboard', label: 'Cartón', icon: 'package-variant', color: '#F97316', bg: '#FFE4CC' },
-
-    { id: 'metal', label: 'Metal', icon: 'screw-machine-flat-top', color: '#6B7280', bg: '#E5E7EB' },
-
-    { id: 'electronics', label: 'RAEE', icon: 'monitor', color: '#EF4444', bg: '#FFDDDD' },
+const CATEGORIES = [
+    {
+        id: 'plastic',
+        label: 'Plástico',
+        icon: 'bottle-soda',
+        color: '#3B82F6',
+        bg: '#D4E7FF',
+        subcategories: [
+            { id: 'pet', label: 'PET (Botellas)', icon: 'bottle-soda-classic-outline' },
+            { id: 'hdpe', label: 'Envases Duros', icon: 'pail-outline' },
+            { id: 'pvc', label: 'Tubos / PVC', icon: 'pipe' },
+            { id: 'other_plastic', label: 'Otros Plásticos', icon: 'recycle-variant' }
+        ]
+    },
+    {
+        id: 'cardboard',
+        label: 'Papel/Cartón',
+        icon: 'package-variant',
+        color: '#F97316',
+        bg: '#FFE4CC',
+        subcategories: [
+            { id: 'box', label: 'Cajas Cartón', icon: 'package-variant-closed' },
+            { id: 'paper', label: 'Papel Blanco', icon: 'file-document-outline' },
+            { id: 'newspaper', label: 'Periódico', icon: 'newspaper-variant-outline' },
+            { id: 'mixed', label: 'Mixto', icon: 'folder-open-outline' }
+        ]
+    },
+    {
+        id: 'metal',
+        label: 'Metal',
+        icon: 'screw-machine-flat-top',
+        color: '#6B7280',
+        bg: '#E5E7EB',
+        subcategories: [
+            { id: 'copper', label: 'Cobre / Cables', icon: 'cable-data' },
+            { id: 'aluminum', label: 'Latas Alum.', icon: 'beer-outline' },
+            { id: 'steel', label: 'Fierro / Acero', icon: 'girder' },
+            { id: 'scrap', label: 'Chatarra', icon: 'wrench-outline' }
+        ]
+    },
+    {
+        id: 'electronics',
+        label: 'RAEE',
+        icon: 'monitor',
+        color: '#EF4444',
+        bg: '#FFDDDD',
+        subcategories: [
+            { id: 'pc', label: 'Computadoras', icon: 'laptop' },
+            { id: 'phone', label: 'Celulares', icon: 'cellphone' },
+            { id: 'appliance', label: 'Electrodom.', icon: 'washing-machine' }
+        ]
+    },
 ];
-
 export const CreateRequestScreen = ({ navigation }) => {
     const theme = useTheme();
+    // ... (Tus estados anteriores se mantienen) ...
     const [loadingLocation, setLoadingLocation] = useState(false);
     const [addressText, setAddressText] = useState("Toca para localizarte");
     const [imageUri, setImageUri] = useState(null);
-    const [selectedMaterial, setSelectedMaterial] = useState(null);
     const [measureType, setMeasureType] = useState('peso');
+
+    // NUEVOS ESTADOS PARA LA LÓGICA DE CATEGORÍAS
+    const [activeCategory, setActiveCategory] = useState(null); // La categoría padre seleccionada (ej. Metal)
+    const [selectedSubMaterial, setSelectedSubMaterial] = useState(null); // El material final (ej. Cobre)
 
     const { control, handleSubmit, setValue } = useForm({
         defaultValues: { quantity: '', description: '', locationCoords: null }
@@ -73,10 +121,25 @@ export const CreateRequestScreen = ({ navigation }) => {
     };
 
     const onSubmit = (data) => {
-        if (!selectedMaterial) return Alert.alert('Falta dato', 'Selecciona un material.');
+        if (!selectedSubMaterial) return Alert.alert('Falta dato', 'Selecciona un tipo de material específico.');
         if (!imageUri) return Alert.alert('Falta evidencia', 'Debes tomar una foto.');
-        console.log("Enviando...", { ...data, selectedMaterial, imageUri });
+
+        // Ahora enviamos tanto la categoría como el sub-material
+        const finalData = {
+            ...data,
+            category: activeCategory.id,
+            materialType: selectedSubMaterial.id,
+            materialLabel: selectedSubMaterial.label,
+            imageUri
+        };
+
+        console.log("Enviando...", finalData);
         navigation.goBack();
+    };
+
+    const resetSelection = () => {
+        setActiveCategory(null);
+        setSelectedSubMaterial(null);
     };
 
     return (
@@ -117,23 +180,67 @@ export const CreateRequestScreen = ({ navigation }) => {
                 <View style={styles.contentContainer}>
 
                     {/* SECCIÓN 1: ¿QUÉ RECICLAS? */}
-                    <Text style={styles.sectionTitle}>1. ¿Qué vas a reciclar?</Text>
-                    <View style={styles.materialsGrid}>
-                        {MATERIALS.map((mat) => (
-                            <TouchableOpacity
-                                key={mat.id}
-                                style={[
-                                    styles.materialCard,
-                                    { backgroundColor: selectedMaterial === mat.id ? '#31253B' : '#F0F4F5', }
-                                ]}
-                                onPress={() => setSelectedMaterial(mat.id)}
-                            >
-                                <Icon source={mat.icon} size={28} color={selectedMaterial === mat.id ? '#FFF' : mat.color} />
-                                <Text style={[styles.materialLabel, { color: selectedMaterial === mat.id ? '#FFF' : '#31253B' }]}>
-                                    {mat.label}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
+                    <View style={styles.contentContainer}>
+
+                        {/* SECCIÓN 1: LÓGICA DE CATEGORÍAS Y SUBCATEGORÍAS */}
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Text style={styles.sectionTitle}>
+                                {activeCategory ? `1. Tipo de ${activeCategory.label}` : "1. ¿Qué vas a reciclar?"}
+                            </Text>
+                            {/* Botón pequeño para volver atrás si ya elegí categoría */}
+                            {activeCategory && (
+                                <TouchableOpacity onPress={resetSelection}>
+                                    <Text style={{ color: '#FAC96E', fontWeight: 'bold', textDecorationLine: 'underline' }}>Cambiar</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+
+                        <View style={styles.materialsGrid}>
+                            {/* CASO A: NO HAY CATEGORÍA SELECCIONADA (Muestra Generales) */}
+                            {!activeCategory && CATEGORIES.map((cat) => (
+                                <TouchableOpacity
+                                    key={cat.id}
+                                    style={[styles.materialCard, { backgroundColor: cat.bg }]} // Usamos el color pastel de fondo
+                                    onPress={() => setActiveCategory(cat)}
+                                >
+                                    <Icon source={cat.icon} size={32} color={cat.color} />
+                                    <Text style={[styles.materialLabel, { color: '#31253B' }]}>{cat.label}</Text>
+                                    <Icon source="chevron-right" size={20} color={cat.color} style={{ marginTop: 5, opacity: 0.5 }} />
+                                </TouchableOpacity>
+                            ))}
+
+                            {/* CASO B: HAY CATEGORÍA SELECCIONADA (Muestra Subcategorías) */}
+                            {activeCategory && activeCategory.subcategories.map((sub) => {
+                                const isSelected = selectedSubMaterial?.id === sub.id;
+
+                                return (
+                                    <TouchableOpacity
+                                        key={sub.id}
+                                        style={[
+                                            styles.materialCard, // Mantienes el tamaño de tarjeta
+                                            {
+                                                backgroundColor: isSelected ? '#31253B' : '#F5F5F5',
+                                                height: 60, // Hacemos la tarjeta más bajita (tipo botón)
+                                                flexDirection: 'row', // Texto al lado, no abajo
+                                                width: '48%', // 2 columnas
+                                                marginBottom: 10,
+                                                paddingHorizontal: 10
+                                            }
+                                        ]}
+                                        onPress={() => setSelectedSubMaterial(sub)}
+                                    >
+                                        <Text style={{
+                                            color: isSelected ? '#FFF' : '#333',
+                                            fontWeight: '600',
+                                            textAlign: 'center',
+                                            fontSize: 13
+                                        }}>
+                                            {sub.label}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
                     </View>
 
                     {/* SECCIÓN 2: CANTIDAD */}
@@ -252,7 +359,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         color: '#000', // Texto negro para contrastar con verde claro
         fontSize: 24,
-        fontWeight: 'bold',
+
         fontFamily: 'InclusiveSans-Bold',
     },
     headerSubtitle: {
@@ -267,10 +374,10 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 16,
         color: '#FFFFFF', // Blanco para que resalte en el fondo verde oscuro
-        fontWeight: 'bold',
+
         marginBottom: 10, // Menos espacio debajo del título
         marginTop: 15,    // Menos espacio encima del título (antes era 20)
-        fontFamily: 'InclusiveSans-Bold'
+        fontFamily: 'InclusiveSans-Regular'
     },
     materialsGrid: {
         flexDirection: 'row',
@@ -289,17 +396,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5F5F5', // Blanco humo para que no sea tan brillante
     },
     materialLabel: { fontSize: 12, marginTop: 5, fontWeight: '600', fontFamily: 'InclusiveSans-Regular', textAlign: 'center' },
-    filterContainer: { flexDirection: 'row', marginBottom: 15, backgroundColor: '#ffffffff', borderRadius: 20, padding: 4 },
+    filterContainer: { flexDirection: 'row', marginBottom: 15, backgroundColor: '#b1eedc', borderRadius: 20, padding: 4 },
     filterButton: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 20 },
     filterButtonActive: { backgroundColor: '#00C7A1' },
     filterText: { fontSize: 13, fontWeight: '500', color: '#555' },
-    filterTextActive: { color: '#000', fontWeight: 'bold' },
-    input: { backgroundColor: '#B7ECDD', borderRadius: 12, height: 50, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden', fontSize: 16 },
-    cameraButton: { width: '100%', height: 150, backgroundColor: '#FFF', borderRadius: 20, borderWidth: 2, borderColor: '#B7ECDD', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
+    filterTextActive: { color: '#000' },
+    input: { backgroundColor: '#b1eedc', borderRadius: 12, height: 50, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden', fontSize: 16 },
+    cameraButton: { width: '100%', height: 150, backgroundColor: '#b1eedc', borderRadius: 20, borderWidth: 2, borderColor: '#B7ECDD', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
     cameraPlaceholder: { alignItems: 'center' },
     cameraText: { color: '#000000ff', fontWeight: 'bold', marginTop: 10 },
     previewImage: { width: '100%', height: '100%' },
-    locationCard: { flexDirection: 'row', backgroundColor: '#FFF', borderRadius: 15, padding: 15, alignItems: 'center', elevation: 2 },
+    locationCard: { flexDirection: 'row', backgroundColor: '#b1eedc', borderRadius: 15, padding: 15, alignItems: 'center', elevation: 2 },
     locationIcon: { width: 40, alignItems: 'center' },
     locationInfo: { flex: 1, paddingHorizontal: 10 },
     locationLabel: { fontSize: 12, color: '#999', fontWeight: 'bold' },

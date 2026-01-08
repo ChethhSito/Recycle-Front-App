@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
 
     // Card Styles
     card: {
-        backgroundColor: '#FFF',
+        backgroundColor: '#b1eedc',
         borderRadius: 15,
         padding: 15,
         marginBottom: 15,
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     cardContent: { flex: 1 },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
     materialTitle: { fontSize: 16, fontWeight: 'bold', color: '#333' },
-    dateText: { fontSize: 12, color: '#888' },
+    dateText: { fontSize: 12, color: '#020202ff' },
     quantityText: { fontSize: 14, color: '#555' },
 
     // Empty State
