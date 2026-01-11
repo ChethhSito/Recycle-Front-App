@@ -26,6 +26,7 @@ import { PartnersScreen } from '../modules/partners/partners-screen';
 import { EnvironmentalProgramsScreen } from '../modules/programs/environmental-programs-screen';
 import { MapScreen } from '../modules/recycler/Map-screen';
 import { RequestDetailScreen } from '../modules/recycler/Detail-recycle-screen';
+import { ResetPasswordScreen } from '../modules/auth/screens/reset-password-screen';
 const Stack = createStackNavigator();
 
 export const AppRoutes = () => {
@@ -187,6 +188,16 @@ export const AppRoutes = () => {
                 <Stack.Screen name="RequestDetail">
                     {props => (
                         <RequestDetailScreen
+                            {...props}
+                            onOpenDrawer={() => setDrawerVisible(true)}
+                            userAvatar={userInfo.avatar}
+                            userName={userInfo.name}
+                        />
+                    )}
+                </Stack.Screen>
+                <Stack.Screen name="ResetPassword">
+                    {props => (
+                        <ResetPasswordScreen
                             {...props}
                             onOpenDrawer={() => setDrawerVisible(true)}
                             userAvatar={userInfo.avatar}

@@ -14,10 +14,12 @@ import { Text, TextInput, Button, useTheme, HelperText, Snackbar } from 'react-n
 import { useForm, Controller } from 'react-hook-form';
 import { GoogleIcon } from '../../../shared/svgs/google';
 import { handleGoogleLogin } from '../../../api/auth/google';
+import { handleManualLogin } from '../../../api/auth/manual';
 
 const { width, height } = Dimensions.get('window');
 
 export const LoginScreen = ({ navigation, onLogin }) => {
+    const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const theme = useTheme();
     const [showPassword, setShowPassword] = useState(false);
@@ -32,9 +34,25 @@ export const LoginScreen = ({ navigation, onLogin }) => {
         return emailRegex.test(email) || "Correo inválido";
     };
 
-    const onSubmit = (data) => {
-        console.log(data);
-        navigation.navigate('Home');
+    const onSubmit = async (data) => {
+        setLoading(true);
+        try {
+            console.log("Enviando login:", data.email);
+
+            // 1. LLAMADA A LA API
+            const result = await handleManualLogin(data.email, data.password);
+
+            // 2. ÉXITO (Aquí deberías guardar el token en AsyncStorage)
+            console.log("Token recibido:", result.access_token);
+
+            // 3. Navegar al Home
+            navigation.replace('Home');
+
+        } catch (error) {
+            Alert.alert("Error de Acceso", error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const onGooglePress = async () => {
@@ -149,8 +167,10 @@ export const LoginScreen = ({ navigation, onLogin }) => {
                         onPress={handleSubmit(onSubmit)}
                         style={styles.loginBtn}
                         labelStyle={{ fontSize: 16 }}
+                        loading={loading}    // Muestra ruedita
+                        disabled={loading}   // Evita doble click
                     >
-                        Iniciar Sesión
+                        {loading ? "Entrando..." : "Iniciar Sesión"}
                     </Button>
 
                     {/* Botón de Acceso Rápido para Desarrollo */}

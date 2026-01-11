@@ -1,43 +1,40 @@
 import React, { useState } from 'react';
 import {
-    View,
-    Image,
-    StyleSheet,
-    TouchableOpacity,
-    Dimensions,
-    KeyboardAvoidingView,
-    Platform,
-    TouchableWithoutFeedback,
-    Keyboard,
-    ScrollView,
+    View, Image, StyleSheet, TouchableOpacity, Dimensions,
+    KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView, Alert
 } from 'react-native';
-import { Text, TextInput, Button, IconButton, Icon, Modal, Portal } from 'react-native-paper';
+import { Text, TextInput, Button, IconButton } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
-
+import { handleSendCode } from '../../../api/auth/gmail'; // Solo importamos handleSendCode aquí
 
 const { width, height } = Dimensions.get('window');
 
 export const RecoverScreen = ({ navigation }) => {
+    const [loading, setLoading] = useState(false);
 
-    const [modalVisible, setModalVisible] = useState(false);
-    const { control, handleSubmit, watch, formState: { errors } } = useForm({
-        defaultValues: {
-            email: '',
-        }
+    const { control, handleSubmit, formState: { errors } } = useForm({
+        defaultValues: { email: '' }
     });
 
     const validateEmail = (email) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || "Correo inválido";
     };
-    const onSubmit = (data) => {
-        console.log("Datos de recuperar:", data);
-        // Aquí iría la lógica de registro (Firebase/Backend)
-        setModalVisible(true);
-    };
-    //funcion para cerrar modal
-    const handleCloseModal = () => {
-        setModalVisible(false);
-        navigation.goBack(); // Opcional: Volver al login automáticamente
+
+    const onSubmit = async (data) => {
+        setLoading(true);
+        try {
+            // 1. Enviar código
+            await handleSendCode(data.email);
+
+            // 2. Navegar a la pantalla de ResetPassword
+            // IMPORTANTE: Le pasamos el email para no tener que escribirlo de nuevo
+            navigation.navigate('ResetPassword', { email: data.email });
+
+        } catch (error) {
+            Alert.alert("Error", error.message || "No se pudo enviar el correo.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -45,222 +42,74 @@ export const RecoverScreen = ({ navigation }) => {
             <KeyboardAvoidingView
                 style={styles.container}
                 behavior={Platform.OS === 'android' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'android' ? -100 : 0}
             >
-                {/* 1. HEADER CON BOTÓN VOLVER */}
+                {/* HEADER */}
                 <View style={styles.header}>
-                    {/* Botón flotante para volver */}
-                    <TouchableOpacity
-                        style={styles.backButton}
-                        onPress={() => navigation.goBack()}
-                    >
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                         <IconButton icon="arrow-left" iconColor="#000" size={24} />
                         <Text style={styles.backText}>Volver</Text>
                     </TouchableOpacity>
-
-                    <Image
-                        source={require('../../../../assets/reciclaje.png')} // Puedes usar otra imagen si tienes
-                        style={styles.illustration}
-                        resizeMode="contain"
-                    />
+                    <Image source={require('../../../../assets/reciclaje.png')} style={styles.illustration} resizeMode="contain" />
                 </View>
-                <View style={styles.formContainer}>
-                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }} bounces={false}>
-                        <View style={styles.circular}>
-                            <Image
-                                source={require('../../../../assets/candado.png')}
-                                style={styles.ilustration2}
-                                resizeMode="contain"
-                            />
-                        </View>
 
+                {/* FORMULARIO */}
+                <View style={styles.formContainer}>
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        <View style={styles.circular}>
+                            <Image source={require('../../../../assets/candado.png')} style={styles.ilustration2} resizeMode="contain" />
+                        </View>
                         <Text variant="headlineMedium" style={styles.title}>Recuperar tu cuenta</Text>
-                        <Text style={styles.subtitle}>Ingresa tu correo electrónico asociado y te enviaremos un enlace para restablecerla.</Text>
+                        <Text style={styles.subtitle}>Ingresa tu correo para recibir el código.</Text>
+
                         <Controller
                             control={control}
                             name="email"
-                            rules={{ required: true, validate: (val) => validateEmail(val) }}
+                            rules={{ required: true, validate: validateEmail }}
                             render={({ field: { onChange, value } }) => (
                                 <TextInput
                                     mode="flat"
                                     placeholder="Email:"
                                     placeholderTextColor="#384745"
-
                                     style={styles.input}
                                     value={value}
                                     onChangeText={onChange}
                                     underlineColor="transparent"
                                     activeUnderlineColor="transparent"
-                                    left={<TextInput.Icon icon="email" color="#000000" />}
+                                    left={<TextInput.Icon icon="email" color="#000" />}
+                                    disabled={loading}
                                 />
                             )}
                         />
-                        {/* Botón Registrarse */}
+
                         <Button
                             mode="contained"
                             onPress={handleSubmit(onSubmit)}
                             style={styles.registerBtn}
-                            labelStyle={{ fontSize: 16, color: '#000000' }}
-                            icon={({ size, color }) => (
-                                <View style={{ transform: [{ rotate: '0deg' }] }}>
-                                    <Icon source="email-fast" color={color} size={20} />
-                                </View>
-                            )}
-                            contentStyle={{ flexDirection: 'row-reverse' }}
+                            labelStyle={{ fontSize: 16, color: '#000' }}
+                            loading={loading}
+                            disabled={loading}
                         >
-                            Enviar Correo
+                            {loading ? "Enviando..." : "Enviar Correo"}
                         </Button>
+
                     </ScrollView>
                 </View>
-
-                <Portal>
-                    <Modal
-                        visible={modalVisible}
-                        onDismiss={() => setModalVisible(false)}
-                        contentContainerStyle={styles.modalContainer}
-                    >
-                        {/* Icono de Check / Éxito */}
-                        <View style={styles.modalIconContainer}>
-                            <Icon source="check-circle-outline" color="#018f64" size={60} />
-                        </View>
-
-                        <Text style={styles.modalTitle}>¡Correo Enviado!</Text>
-                        <Text style={styles.modalText}>
-                            Revisa tu bandeja de entrada. Hemos enviado un enlace para restablecer tu contraseña.
-                        </Text>
-
-                        <Button
-                            mode="contained"
-                            onPress={handleCloseModal}
-                            style={styles.modalButton}
-                        >
-                            Entendido
-                        </Button>
-                    </Modal>
-                </Portal>
             </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
     );
 };
+
 const styles = StyleSheet.create({
-    container: {
-        fontFamily: 'InclusiveSans-Regular',
-        flex: 1,
-        backgroundColor: '#b1eedc', // Cielo
-    },
-    header: {
-        height: height * 0.50, // Un poco más corto que el login para dar espacio a los campos
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        marginBottom: -height * 0.045,
-        zIndex: 1,
-        position: 'relative',
-    },
-    backButton: {
-        position: 'absolute',
-        top: 50, // Ajustar según safe area
-        left: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        zIndex: 10,
-    },
-    backText: {
-        fontSize: 16,
-        fontFamily: 'InclusiveSans-Regular',
-        color: '#000',
-        marginLeft: -10,
-    },
-    illustration: {
-        width: width,
-        height: '80%',
-        maxHeight: 300,
-    },
-    ilustration2: {
-        width: width * 0.1,
-        height: height * 0.1,
-        maxHeight: 100,
-    },
-    circular: {
-        width: width * 0.22,
-        height: width * 0.22, // CONSEJO: Usa la misma medida que el width para que sea un círculo perfecto, no un óvalo.
-        borderRadius: (width * 0.22) / 2, // La mitad del ancho para que sea redondo perfecto
-
-        backgroundColor: '#b1eedc',
-        justifyContent: 'center', // Centra la imagen del candado verticalmente
-        alignItems: 'center',     // Centra la imagen del candado horizontalmente
-
-        // --- CORRECCIÓN DE POSICIÓN ---
-        alignSelf: 'center',      // <--- ESTO centra el círculo en la pantalla automáticamente
-        marginBottom: 15,         // <--- Espacio entre el candado y el título "Recuperar tu cuenta"
-        marginTop: 15,
-    },
-    formContainer: {
-        backgroundColor: '#018f64', // Pasto
-        flex: 1,
-        paddingHorizontal: 25,
-        paddingTop: 35,
-        paddingBottom: 25,
-        minHeight: height * 0.7, // Asegura que cubra el fondo
-    },
-    title: {
-        color: '#000000',
-        fontSize: 22,
-        fontFamily: 'InclusiveSans-Regular',
-        marginBottom: 5,
-        textAlign: 'center',
-    },
-    subtitle: {
-        color: '#000000',
-        fontSize: 16,
-        marginBottom: 20,
-        textAlign: 'center',
-        paddingHorizontal: 25,
-    },
-    input: {
-        backgroundColor: '#B7ECDD',
-        borderRadius: 12,
-        marginBottom: 12,
-        height: 50,
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
-        overflow: 'hidden',
-
-    },
-
-    registerBtn: {
-        fontFamily: 'InclusiveSans-Regular',
-        backgroundColor: '#FAC96E',
-        borderRadius: 12,
-        paddingVertical: 4,
-        marginTop: 10,
-        marginBottom: 10,
-        fontSize: 16,
-    },
-    modalContainer: {
-        backgroundColor: '#282034',
-        padding: 20,
-        margin: 20,
-        borderRadius: 20,
-        alignItems: 'center',
-    },
-    modalIconContainer: {
-        marginBottom: 15,
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#018f64', // Verde oscuro
-        marginBottom: 10,
-    },
-    modalText: {
-        fontSize: 16,
-        textAlign: 'center',
-        color: '#F0F4F5',
-        marginBottom: 20,
-    },
-    modalButton: {
-        backgroundColor: '#018f64',
-        borderRadius: 10,
-        width: '100%',
-    }
-}); 
+    container: { flex: 1, backgroundColor: '#b1eedc' },
+    header: { height: height * 0.50, justifyContent: 'flex-end', alignItems: 'center', marginBottom: -height * 0.045, zIndex: 1 },
+    backButton: { position: 'absolute', top: 50, left: 10, flexDirection: 'row', alignItems: 'center', zIndex: 10 },
+    backText: { fontSize: 16, color: '#000', marginLeft: -10 },
+    illustration: { width: width, height: '80%', maxHeight: 300 },
+    formContainer: { backgroundColor: '#018f64', flex: 1, paddingHorizontal: 25, paddingTop: 35, paddingBottom: 25, minHeight: height * 0.7 },
+    circular: { alignSelf: 'center', width: width * 0.22, height: width * 0.22, borderRadius: (width * 0.22) / 2, backgroundColor: '#b1eedc', justifyContent: 'center', alignItems: 'center', marginBottom: 15, marginTop: 15 },
+    ilustration2: { width: width * 0.1, height: height * 0.1, maxHeight: 100 },
+    title: { color: '#000', fontSize: 22, textAlign: 'center', marginBottom: 5 },
+    subtitle: { color: '#000', fontSize: 16, textAlign: 'center', marginBottom: 20, paddingHorizontal: 25 },
+    input: { backgroundColor: '#B7ECDD', borderRadius: 12, marginBottom: 12, height: 50, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' },
+    registerBtn: { backgroundColor: '#FAC96E', borderRadius: 12, paddingVertical: 4, marginTop: 10, marginBottom: 10 },
+});
