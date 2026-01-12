@@ -11,6 +11,8 @@ import * as SplashScreenExpo from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Asset } from 'expo-asset';
 import { AppRoutes } from './src/routes/app-routes';
+import { Provider } from 'react-redux';
+import { store } from './src/store/store';
 
 SplashScreenExpo.preventAutoHideAsync();
 
@@ -64,25 +66,27 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
+    <Provider store={store}>
+      <SafeAreaProvider>
 
-      {/* 2. Proveedor de Paper (Pasa tu tema de colores verdes) */}
-      <PaperProvider theme={appTheme}>
+        {/* 2. Proveedor de Paper (Pasa tu tema de colores verdes) */}
+        <PaperProvider theme={appTheme}>
 
-        {/* Configura la barra de estado para que se vea bien sobre tu fondo verde */}
-        <StatusBar style="light" backgroundColor={appTheme.colors.background} />
+          {/* Configura la barra de estado para que se vea bien sobre tu fondo verde */}
+          <StatusBar style="light" backgroundColor={appTheme.colors.background} />
 
-        {/* CAMBIO CLAVE: Renderizamos las rutas, no la pantalla directa */}
-        {showAnimation ? (
-          <View style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>
-            <SplashScreen onFinish={() => setShowAnimation(false)} />
-          </View>
-        ) : null}
+          {/* CAMBIO CLAVE: Renderizamos las rutas, no la pantalla directa */}
+          {showAnimation ? (
+            <View style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>
+              <SplashScreen onFinish={() => setShowAnimation(false)} />
+            </View>
+          ) : null}
 
-        <AppRoutes />
+          <AppRoutes />
 
-      </PaperProvider>
-    </SafeAreaProvider>
+        </PaperProvider>
+      </SafeAreaProvider>
+    </Provider>
   );
 }
 

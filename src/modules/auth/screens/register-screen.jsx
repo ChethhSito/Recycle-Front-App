@@ -9,9 +9,13 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { GoogleIcon } from '../../../shared/svgs/google';
 import { handleGoogleLogin } from '../../../api/auth/google';
 import { handleManualRegister } from '../../../api/auth/manual';
+import { useDispatch } from 'react-redux';
+import { login } from '../../../store/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const { width, height } = Dimensions.get('window');
 
 export const RegisterScreen = ({ navigation }) => {
+    const dispatch = useDispatch();
     const [role, setRole] = useState('citizen');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -86,17 +90,12 @@ export const RegisterScreen = ({ navigation }) => {
                 })
             };
 
-            console.log("Enviando al Backend:", registrationData); // <--- Para verificar
-
-            // 1. LLAMADA A LA API
+            console.log("Enviando al Backend:", registrationData);
             const result = await handleManualRegister(registrationData);
 
-            // 2. ÉXITO
             console.log("Usuario creado, Token:", result.access_token);
-            Alert.alert("¡Bienvenido!", "Cuenta creada exitosamente.");
-
-            // 3. Navegar directo al Home (Auto-login)
-            navigation.replace('Home');
+            await AsyncStorage.setItem('user_token', result.access_token);
+            dispatch(login({ token: result.access_token }));
 
         } catch (error) {
             Alert.alert("Error de Registro", error.message);
