@@ -8,10 +8,14 @@ import { useForm, Controller } from 'react-hook-form';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { GoogleIcon } from '../../../shared/svgs/google';
 import { handleGoogleLogin } from '../../../api/auth/google';
-
+import { handleManualRegister } from '../../../api/auth/manual';
+import { useDispatch } from 'react-redux';
+import { login } from '../../../store/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const { width, height } = Dimensions.get('window');
 
 export const RegisterScreen = ({ navigation }) => {
+    const dispatch = useDispatch();
     const [role, setRole] = useState('citizen');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -52,6 +56,7 @@ export const RegisterScreen = ({ navigation }) => {
         defaultValues: {
             fullName: '',
             email: '',
+            documentNumber: '', // <--- AGREGAR ESTO
             phone: '',
             password: '',
             confirmPassword: ''
@@ -63,10 +68,40 @@ export const RegisterScreen = ({ navigation }) => {
         return emailRegex.test(email);
     };
 
-    const onSubmit = (data) => {
-        const registrationData = { ...data, role };
-        console.log("Datos de registro:", registrationData);
-        // Lógica de backend...
+    const onSubmit = async (data) => {
+        setLoading(true);
+        try {
+            // Preparamos los datos EXACTOS que pide el Backend
+            const registrationData = {
+                fullName: data.fullName,
+                email: data.email,
+                password: data.password,
+
+                // CORRECCIÓN 1: Enviar en Mayúsculas (CITIZEN o RECYCLER)
+                role: role === 'citizen' ? 'CITIZEN' : 'RECYCLER',
+
+                // CORRECCIÓN 2: Agregar authProvider explícitamente
+                authProvider: 'local',
+
+                // Solo enviamos teléfono si es reciclador
+                ...(role === 'recycler' && {
+                    phone: data.phone,
+                    documentNumber: data.documentNumber
+                })
+            };
+
+            console.log("Enviando al Backend:", registrationData);
+            const result = await handleManualRegister(registrationData);
+
+            console.log("Usuario creado, Token:", result.access_token);
+            await AsyncStorage.setItem('user_token', result.access_token);
+            dispatch(login({ token: result.access_token }));
+
+        } catch (error) {
+            Alert.alert("Error de Registro", error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -141,17 +176,53 @@ export const RegisterScreen = ({ navigation }) => {
                             />
 
                             {role === 'recycler' && (
-                                <Controller
-                                    control={control} name="phone" rules={{ required: true }}
-                                    render={({ field: { onChange, value } }) => (
-                                        <TextInput
-                                            mode="flat" placeholder="Numero de documento:" placeholderTextColor="#384745"
-                                            style={styles.input} value={value} onChangeText={onChange} keyboardType="phone-pad"
-                                            underlineColor="transparent" activeUnderlineColor="transparent"
-                                            left={<TextInput.Icon icon="text-box" color="#000000" />}
-                                        />
-                                    )}
-                                />
+                                <>
+                                    {/* --- 1. NUEVO INPUT: DOCUMENTO DE IDENTIDAD --- */}
+                                    <Controller
+                                        control={control}
+                                        name="documentNumber"
+                                        // Aquí lo hacemos obligatorio solo para ellos
+                                        rules={{
+                                            required: "El documento es obligatorio",
+                                            minLength: { value: 8, message: "Mínimo 8 dígitos" }
+                                        }}
+                                        render={({ field: { onChange, value } }) => (
+                                            <TextInput
+                                                mode="flat"
+                                                placeholder="DNI / Documento:"
+                                                placeholderTextColor="#384745"
+                                                style={styles.input}
+                                                value={value}
+                                                onChangeText={onChange}
+                                                keyboardType="numeric" // Teclado numérico
+                                                underlineColor="transparent"
+                                                activeUnderlineColor="transparent"
+                                                left={<TextInput.Icon icon="card-account-details" color="#000000" />}
+                                            />
+                                        )}
+                                    />
+
+                                    {/* --- 2. INPUT DE TELÉFONO (Ya lo tenías) --- */}
+                                    <Controller
+                                        control={control}
+                                        name="phone"
+                                        rules={{ required: true }}
+                                        render={({ field: { onChange, value } }) => (
+                                            <TextInput
+                                                mode="flat"
+                                                placeholder="Número de celular:"
+                                                placeholderTextColor="#384745"
+                                                style={styles.input}
+                                                value={value}
+                                                onChangeText={onChange}
+                                                keyboardType="phone-pad"
+                                                underlineColor="transparent"
+                                                activeUnderlineColor="transparent"
+                                                left={<TextInput.Icon icon="phone" color="#000000" />}
+                                            />
+                                        )}
+                                    />
+                                </>
                             )}
 
                             <Controller
@@ -193,8 +264,15 @@ export const RegisterScreen = ({ navigation }) => {
 
                             {/* Botones */}
                             <View style={{ marginTop: 10, paddingBottom: 30 }}>
-                                <Button mode="contained" onPress={handleSubmit(onSubmit)} style={styles.registerBtn} labelStyle={{ fontSize: 16 }}>
-                                    {role === 'citizen' ? 'Registrarse' : 'Registrarme como Reciclador'}
+                                <Button
+                                    mode="contained"
+                                    onPress={handleSubmit(onSubmit)}
+                                    style={styles.registerBtn}
+                                    labelStyle={{ fontSize: 16 }}
+                                    loading={loading}
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Creando cuenta...' : (role === 'citizen' ? 'Registrarse' : 'Registrarme como Reciclador')}
                                 </Button>
                                 <Button mode="contained" icon={() => <GoogleIcon />} onPress={onGooglePress} loading={googleLoading} disabled={googleLoading} style={styles.googleBtn} labelStyle={{ color: '#000000', fontSize: 16 }}>
                                     Regístrate con Google

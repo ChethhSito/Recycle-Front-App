@@ -4,6 +4,9 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LogOut, AlertTriangle } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../store/auth'; // Asegúrate que la ruta sea correcta hacia tu store
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 const DRAWER_WIDTH = width * 0.75;
@@ -53,6 +56,7 @@ const LogoutModal = ({ visible, onClose, onConfirm }) => {
 
 export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, avatarUrl }) => {
     const navigation = useNavigation();
+    const dispatch = useDispatch();
     const slideAnim = React.useRef(new Animated.Value(-DRAWER_WIDTH)).current;
     const [pressedItem, setPressedItem] = React.useState(null);
     const [logoutModalVisible, setLogoutModalVisible] = React.useState(false);
@@ -78,14 +82,16 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
         setLogoutModalVisible(true);
     };
 
-    const confirmLogout = () => {
+    const confirmLogout = async () => {
         setLogoutModalVisible(false);
         onClose();
-        // Navegar al Login y resetear la navegación
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Login' }],
-        });
+        try {
+            await AsyncStorage.removeItem('user_token');
+            dispatch(logout());
+
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+        }
     };
 
     const menuSections = [

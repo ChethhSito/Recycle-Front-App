@@ -187,8 +187,8 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
         }
     ];
 
-    const filteredPrograms = filterType === 'ALL' 
-        ? programsData 
+    const filteredPrograms = filterType === 'ALL'
+        ? programsData
         : programsData.filter(p => p.organizationType === filterType);
 
     const handleProgramPress = (program) => {
@@ -199,22 +199,22 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
         <View style={styles.container}>
             {/* Header */}
             <LinearGradient
-                colors={['#018f64', '#00C7A1']}
+                colors={['#018f64', '#018f64']}
                 style={styles.header}
             >
                 <View style={styles.headerContent}>
                     <TouchableOpacity onPress={onOpenDrawer} style={styles.menuButton}>
-                        <Icon name="menu" size={28} color="#fff" />
+                        <Icon name="menu" size={28} color="#ffffffff" />
                     </TouchableOpacity>
-                    
+
                     <View style={styles.headerTextContainer}>
                         <Text style={styles.headerTitle}>Programas Ambientales</Text>
                         <Text style={styles.headerSubtitle}>{filteredPrograms.length} programas activos</Text>
                     </View>
-                    
+
                     <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-                        <Image 
-                            source={{ uri: userAvatar }} 
+                        <Image
+                            source={{ uri: userAvatar }}
                             style={styles.avatar}
                         />
                     </TouchableOpacity>
@@ -224,7 +224,7 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
             {/* Filtros */}
             <View style={styles.filtersContainer}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.filterChip, filterType === 'ALL' && styles.filterChipActive]}
                         onPress={() => setFilterType('ALL')}
                     >
@@ -233,7 +233,7 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
                         </Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.filterChip, filterType === 'NOS_PLANET' && styles.filterChipActive]}
                         onPress={() => setFilterType('NOS_PLANET')}
                     >
@@ -243,7 +243,7 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
                         </Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.filterChip, filterType === 'ONG' && styles.filterChipActive]}
                         onPress={() => setFilterType('ONG')}
                     >
@@ -253,7 +253,7 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
                         </Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.filterChip, filterType === 'ESTADO' && styles.filterChipActive]}
                         onPress={() => setFilterType('ESTADO')}
                     >
@@ -266,7 +266,7 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
             </View>
 
             {/* Lista de programas */}
-            <ScrollView 
+            <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
@@ -293,7 +293,7 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#b1eedc',
     },
     header: {
         paddingTop: 50,
@@ -320,21 +320,21 @@ const styles = StyleSheet.create({
         marginLeft: 15,
     },
     headerTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#fff',
+        fontSize: 18,
+
+        color: '#ffffffff',
     },
     headerSubtitle: {
         fontSize: 13,
-        color: '#fff',
+        color: '#cfcfcfff',
         opacity: 0.9,
         marginTop: 2,
     },
     filtersContainer: {
-        backgroundColor: '#fff',
+        backgroundColor: '#b1eedc',
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
+        borderBottomColor: '#018f64',
     },
     filtersScroll: {
         paddingHorizontal: 20,

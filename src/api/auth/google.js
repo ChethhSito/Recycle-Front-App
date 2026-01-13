@@ -1,8 +1,9 @@
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
+import { urlBaseAuth } from "../helper/url-auth";
 
 // Asegúrate de usar TU IP REAL
-const BACKEND_URL = 'http://192.168.18.8.nip.io:3000/api/auth/google';
+const BACKEND_URL = 'http://192.168.18.8.nip.io:3000/api/auth/google' || `${urlBaseAuth}/google`;
 
 WebBrowser.maybeCompleteAuthSession();
 

@@ -271,7 +271,7 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     // Filtrar premios por categoría
     const filteredRewards = selectedCategory === 'all'
         ? rewardsData
-        : rewardsData.filter(reward => 
+        : rewardsData.filter(reward =>
             reward.category.toLowerCase() === categories.find(c => c.id === selectedCategory)?.label.toLowerCase()
         );
 
@@ -297,7 +297,7 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
 
     const handleConfirmRedeem = () => {
         setConfirmModalVisible(false);
-        
+
         // Restar puntos
         setUserPoints(prev => prev - selectedReward.points);
 
@@ -337,8 +337,8 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
 
                 {/* Categorías */}
                 <View style={styles.categoriesSection}>
-                    <ScrollView 
-                        horizontal 
+                    <ScrollView
+                        horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={styles.categoriesContainer}
                     >
@@ -351,10 +351,10 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                                 ]}
                                 onPress={() => setSelectedCategory(category.id)}
                             >
-                                <Icon 
-                                    name={category.icon} 
-                                    size={20} 
-                                    color={selectedCategory === category.id ? '#FFF' : '#018f64'} 
+                                <Icon
+                                    name={category.icon}
+                                    size={20}
+                                    color={selectedCategory === category.id ? '#FFF' : '#018f64'}
                                 />
                                 <Text style={[
                                     styles.categoryButtonText,
@@ -423,16 +423,16 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
+        backgroundColor: '#b1eedc',
     },
     scrollView: {
         flex: 1,
     },
     categoriesSection: {
-        backgroundColor: '#FFF',
+        backgroundColor: '#b1eedc',
         paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+        borderBottomColor: '#018f64',
     },
     categoriesContainer: {
         paddingHorizontal: 16,
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
     categoryButtonText: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#018f64',
+        color: '#030303ff',
         marginLeft: 6,
     },
     categoryButtonTextActive: {

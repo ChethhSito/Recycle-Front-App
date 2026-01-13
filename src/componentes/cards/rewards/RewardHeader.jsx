@@ -6,9 +6,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 export const RewardHeader = ({ userName, avatarUrl, userPoints, onMenuPress }) => {
     return (
         <LinearGradient
-            colors={['#018f64', '#00C7A1', '#018f64']}
+            colors={['#018f64', '#19a188ff', '#018f64']}
             start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: 0.5, y: 0.5 }}
             style={styles.container}
         >
             {/* Elementos decorativos */}

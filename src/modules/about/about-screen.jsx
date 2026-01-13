@@ -224,14 +224,14 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+
     color: '#ffffffff',
     marginBottom: 16,
   },
 
   // ========== MISIÓN ==========
   missionCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#b1eedc',
     borderRadius: 24,
     padding: 24,
     alignItems: 'center',
@@ -254,13 +254,13 @@ const styles = StyleSheet.create({
   missionTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#32243B',
+    color: '#000000ff',
     marginBottom: 12,
     textAlign: 'center',
   },
   missionText: {
     fontSize: 15,
-    color: '#666',
+    color: '#2b2b2bff',
     lineHeight: 24,
     textAlign: 'center',
     marginBottom: 16,
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   },
   missionSubtext: {
     fontSize: 14,
-    color: '#999',
+    color: '#636363ff',
     lineHeight: 22,
     textAlign: 'center',
     fontStyle: 'italic',

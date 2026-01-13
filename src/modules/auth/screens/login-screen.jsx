@@ -10,14 +10,20 @@ import {
     TouchableWithoutFeedback,
     Keyboard
 } from 'react-native';
+
 import { Text, TextInput, Button, useTheme, HelperText, Snackbar } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 import { GoogleIcon } from '../../../shared/svgs/google';
 import { handleGoogleLogin } from '../../../api/auth/google';
-
+import { handleManualLogin } from '../../../api/auth/manual';
+import { useDispatch } from 'react-redux';
+import { login } from '../../../store/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const { width, height } = Dimensions.get('window');
 
-export const LoginScreen = ({ navigation, onLogin }) => {
+export const LoginScreen = ({ navigation }) => {
+    const dispatch = useDispatch();
+    const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const theme = useTheme();
     const [showPassword, setShowPassword] = useState(false);
@@ -32,25 +38,36 @@ export const LoginScreen = ({ navigation, onLogin }) => {
         return emailRegex.test(email) || "Correo inválido";
     };
 
-    const onSubmit = (data) => {
-        console.log(data);
-        navigation.navigate('Home');
+    const onSubmit = async (data) => {
+        setLoading(true);
+        try {
+            console.log("Enviando login:", data.email);
+            const result = await handleManualLogin(data.email, data.password);
+            console.log("Token recibido:", result.access_token);
+            await AsyncStorage.setItem('user_token', result.access_token);
+            dispatch(login({
+                token: result.access_token,
+                // user: result.user (si tu backend devuelve datos del usuario aquí)
+            }));
+        } catch (error) {
+            Alert.alert("Error de Acceso", error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const onGooglePress = async () => {
-        // 1. Evitar que el usuario spamee el botón
         if (googleLoading) return;
 
-        setGoogleLoading(true); // Bloqueamos el botón
-        console.log("Iniciando proceso de Google..."); // Log para verificar que el botón responde
+        setGoogleLoading(true);
 
         try {
             const token = await handleGoogleLogin();
 
             if (token) {
                 console.log("Login exitoso");
-                // Guardar token y navegar...
-                navigation.replace('Home');
+                await AsyncStorage.setItem('user_token', token);
+                dispatch(login(token));
             } else {
                 console.log("Usuario canceló el login");
             }
@@ -58,7 +75,6 @@ export const LoginScreen = ({ navigation, onLogin }) => {
             console.error(error);
             Alert.alert("Error", "Inténtalo de nuevo.");
         } finally {
-            // 2. IMPORTANTE: Desbloquear el botón SIEMPRE, haya error o éxito
             setGoogleLoading(false);
         }
     };
@@ -149,8 +165,10 @@ export const LoginScreen = ({ navigation, onLogin }) => {
                         onPress={handleSubmit(onSubmit)}
                         style={styles.loginBtn}
                         labelStyle={{ fontSize: 16 }}
+                        loading={loading}    // Muestra ruedita
+                        disabled={loading}   // Evita doble click
                     >
-                        Iniciar Sesión
+                        {loading ? "Entrando..." : "Iniciar Sesión"}
                     </Button>
 
                     {/* Botón de Acceso Rápido para Desarrollo */}
