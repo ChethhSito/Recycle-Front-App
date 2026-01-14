@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { View, StyleSheet, Dimensions, FlatList, Animated, Share, Platform } from 'react-native';
-import { Text, Button, ProgressBar } from 'react-native-paper';
+import { Text, Button, ProgressBar, IconButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
-
+const CURRENT_USER_LEVEL = 2;
 // 1. DATA DE LOS 7 NIVELES (Colores y Textos actualizados)
 const LEVELS = [
     {
@@ -13,49 +13,49 @@ const LEVELS = [
         color: '#5D4037', bg: '#F5E6D3', // Beige Tierra
         desc: 'Todo gran cambio comienza pequeño.',
         longDesc: 'Estás dando el primer paso vital. Como una semilla, llevas dentro el potencial de un futuro más verde. ¡Sigue reciclando para germinar!',
-        currentPoints: 330, targetPoints: 500
+        currentPoints: 400, targetPoints: 400
     },
     {
         id: '2', level: 2, title: 'Raíz Profunda', icon: 'grass',
         color: '#4E342E', bg: '#E6D0B3', // Tierra Oscura
         desc: 'Tus valores se están afianzando.',
         longDesc: 'Antes de crecer hacia arriba, creces hacia adentro. Tus hábitos de reciclaje están creando una base sólida y resistente.',
-        currentPoints: 420, targetPoints: 800
+        currentPoints: 400, targetPoints: 800
     },
     {
         id: '3', level: 3, title: 'Brote Verde', icon: 'sprout',
         color: '#33691E', bg: '#D9F2C3', // Verde Lima
         desc: 'Tus acciones salen a la luz.',
         longDesc: '¡Ya eres visible! Tus primeros esfuerzos han roto la superficie. Tu compromiso con el planeta empieza a ser notorio.',
-        currentPoints: 950, targetPoints: 1500
+        currentPoints: 0, targetPoints: 1200
     },
     {
         id: '4', level: 4, title: 'Tallo Robusto', icon: 'flower-tulip',
         color: '#1B5E20', bg: '#B8E6C9', // Verde Menta
         desc: 'Resiliencia y constancia.',
         longDesc: 'Nada te detiene. Tu constancia te ha convertido en un pilar fundamental. Tu tallo es fuerte y capaz de soportar desafíos.',
-        currentPoints: 1800, targetPoints: 2500
+        currentPoints: 0, targetPoints: 2000
     },
     {
         id: '5', level: 5, title: 'Rama Fuerte', icon: 'spa',
         color: '#004D40', bg: '#8CD4B6', // Verde Medio
         desc: 'Tu influencia se expande.',
         longDesc: 'Empiezas a ramificarte. Tu ejemplo alcanza a amigos y familiares, extendiendo la cultura del reciclaje más allá de ti mismo.',
-        currentPoints: 2900, targetPoints: 4000
+        currentPoints: 0, targetPoints: 2800
     },
     {
         id: '6', level: 6, title: 'Árbol Guardián', icon: 'tree',
         color: '#006064', bg: '#5CB8A7', // Verde Azulado
         desc: 'Das sombra y protección.',
         longDesc: 'Has madurado. Eres un referente en tu comunidad, ofreciendo protección al medio ambiente y enseñando con el ejemplo.',
-        currentPoints: 4500, targetPoints: 6000
+        currentPoints: 0, targetPoints: 4400
     },
     {
         id: '7', level: 7, title: 'Bosque Viviente', icon: 'pine-tree',
         color: '#00332C', bg: '#408573', // Verde Bosque Profundo
         desc: 'Eres un ecosistema de cambio.',
         longDesc: 'Has alcanzado la cima. Eres un líder, un ecosistema en sí mismo que nutre y sostiene la vida a su alrededor. ¡Eres leyenda!',
-        currentPoints: 7500, targetPoints: 10000
+        currentPoints: 0, targetPoints: 6000
     },
 ];
 
@@ -102,71 +102,119 @@ ${item.longDesc}
     };
 
     const renderItem = ({ item }) => {
+        const isLocked = item.level > CURRENT_USER_LEVEL;
         const progress = item.currentPoints / item.targetPoints;
 
         return (
             <View style={[styles.slideContainer, { backgroundColor: item.bg }]}>
-
-                {/* --- Contenido Principal (Icono y Textos) --- */}
-                <View style={styles.mainContent}>
-                    <View style={[styles.circleBackdrop, { backgroundColor: 'rgba(255,255,255,0.6)' }]}>
-                        <MaterialCommunityIcons name={item.icon} size={130} color={item.color} />
-                    </View>
-
-                    <View style={styles.textContainer}>
-                        <Text variant="displaySmall" style={[styles.title, { color: item.color }]}>
-                            {item.title}
-                        </Text>
-                        <Text style={[styles.desc, { color: '#1d1d1d' }]}>
-                            {item.desc}
-                        </Text>
-                        <View style={styles.divider} />
-                        <Text style={styles.longDesc}>
-                            {item.longDesc}
-                        </Text>
-                    </View>
-                </View>
-
-                {/* --- Sección Inferior (Stats y Botones) --- */}
-                <View style={styles.bottomSection}>
-                    <View style={styles.statsContainer}>
-                        <View style={styles.statsRow}>
-                            <View style={[styles.badgePill, { backgroundColor: item.color }]}>
-                                <Text style={styles.badgeText}>NIVEL {item.level}</Text>
-                            </View>
-                            <Text style={[styles.pointsText, { color: item.color }]}>
-                                {item.currentPoints} / {item.targetPoints} XP
-                            </Text>
+                {isLocked ? (
+                    // === ESTADO BLOQUEADO ===
+                    <View style={styles.mainContent}>
+                        {/* Círculo con Candado */}
+                        <View style={[styles.circleBackdrop, { backgroundColor: 'rgba(0,0,0,0.1)' }]}>
+                            <MaterialCommunityIcons name="lock" size={100} color="rgba(0,0,0,0.4)" />
                         </View>
-                        <ProgressBar
-                            progress={progress}
-                            color={item.color}
-                            style={styles.progressBar}
-                        />
+
+                        <View style={styles.textContainer}>
+                            <Text variant="headlineMedium" style={[styles.title, { color: 'rgba(0,0,0,0.5)' }]}>
+                                Nivel {item.level} Bloqueado
+                            </Text>
+                            <Text style={[styles.desc, { color: 'rgba(0,0,0,0.4)' }]}>
+                                Sigue reciclando para descubrir este rango.
+                            </Text>
+
+                            {/* Información mínima para motivar */}
+                            <View style={styles.lockedInfoContainer}>
+                                <Text style={styles.lockedInfoText}>
+                                    Meta: {item.targetPoints} XP
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.bottomSection}>
+                            {/* Botón Volver (Siempre activo) */}
+                            <Button
+                                mode="text"
+                                textColor="rgba(0,0,0,0.5)"
+                                onPress={() => navigation.goBack()}
+                            >
+                                Volver
+                            </Button>
+
+                            {/* Botón Simbólico */}
+                            <Button
+                                mode="contained"
+                                disabled={true}
+                                style={{ backgroundColor: 'rgba(0,0,0,0.1)' }}
+                                labelStyle={{ color: 'rgba(0,0,0,0.3)' }}
+                            >
+                                Bloqueado 🔒
+                            </Button>
+                        </View>
                     </View>
 
-                    {/* Botones */}
-                    <View style={styles.bottomButtonsAction}>
-                        <Button
-                            mode="text"
-                            textColor={item.color}
-                            onPress={() => navigation.goBack()}
-                            labelStyle={{ fontSize: 16 }}
-                        >
-                            Volver
-                        </Button>
-                        <Button
-                            mode="contained"
-                            buttonColor={item.color}
-                            icon="share-variant"
-                            onPress={() => onShare(item)}
-                            labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
-                            contentStyle={{ paddingHorizontal: 10 }}
-                        >
-                            Compartir
-                        </Button>
+                ) : (
+                    // === ESTADO DESBLOQUEADO (Tu diseño original) ===
+                    <View style={{ flex: 1, width: '100%' }}>
+                        <View style={styles.mainContent}>
+                            <View style={[styles.circleBackdrop, { backgroundColor: 'rgba(255,255,255,0.6)' }]}>
+                                <MaterialCommunityIcons name={item.icon} size={130} color={item.color} />
+                            </View>
+
+                            <View style={styles.textContainer}>
+                                <Text variant="displaySmall" style={[styles.title, { color: item.color }]}>
+                                    {item.title}
+                                </Text>
+                                <Text style={[styles.desc, { color: '#1d1d1d' }]}>
+                                    {item.desc}
+                                </Text>
+                                <View style={styles.divider} />
+                                <Text style={styles.longDesc}>
+                                    {item.longDesc}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.bottomSection}>
+                            <View style={styles.statsContainer}>
+                                <View style={styles.statsRow}>
+                                    <View style={[styles.badgePill, { backgroundColor: item.color }]}>
+                                        <Text style={styles.badgeText}>NIVEL {item.level}</Text>
+                                    </View>
+                                    <Text style={[styles.pointsText, { color: item.color }]}>
+                                        {item.currentPoints} / {item.targetPoints} XP
+                                    </Text>
+                                </View>
+                                <ProgressBar
+                                    progress={progress}
+                                    color={item.color}
+                                    style={styles.progressBar}
+                                />
+                            </View>
+
+                            <View style={styles.bottomButtonsAction}>
+                                <Button
+                                    mode="text"
+                                    textColor={item.color}
+                                    onPress={() => navigation.goBack()}
+                                    labelStyle={{ fontSize: 16 }}
+                                >
+                                    Volver
+                                </Button>
+                                <Button
+                                    mode="contained"
+                                    buttonColor={item.color}
+                                    icon="share-variant"
+                                    onPress={() => onShare(item)}
+                                    labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
+                                    contentStyle={{ paddingHorizontal: 10 }}
+                                >
+                                    Compartir
+                                </Button>
+                            </View>
+                        </View>
                     </View>
-                </View>
+                )}
             </View>
         );
     };
@@ -174,18 +222,21 @@ ${item.longDesc}
     const Pagination = () => {
         return (
             <View style={styles.paginationContainer}>
-                {LEVELS.map((_, i) => (
-                    <View
-                        key={i}
-                        style={[
-                            styles.dot,
-                            {
-                                backgroundColor: i === activeIndex ? '#333' : 'rgba(0,0,0,0.1)',
-                                width: i === activeIndex ? 20 : 8
-                            }
-                        ]}
-                    />
-                ))}
+                {LEVELS.map((item, i) => {
+                    const isLocked = item.level > CURRENT_USER_LEVEL;
+                    return (
+                        <View
+                            key={i}
+                            style={[
+                                styles.dot,
+                                {
+                                    backgroundColor: i === activeIndex ? '#333' : (isLocked ? 'rgba(0,0,0,0.05)' : 'rgba(0,0,0,0.2)'),
+                                    width: i === activeIndex ? 20 : 8
+                                }
+                            ]}
+                        />
+                    );
+                })}
             </View>
         );
     };

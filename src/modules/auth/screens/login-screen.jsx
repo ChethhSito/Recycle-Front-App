@@ -79,15 +79,6 @@ export const LoginScreen = ({ navigation }) => {
         }
     };
 
-    // Función de acceso rápido para desarrollo
-    const quickLogin = () => {
-        setValue('email', 'admin@gmail.com');
-        setValue('password', '123456');
-        setTimeout(() => {
-            navigation.navigate('Home');
-        }, 300);
-    };
-
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <KeyboardAvoidingView
@@ -170,17 +161,6 @@ export const LoginScreen = ({ navigation }) => {
                     >
                         {loading ? "Entrando..." : "Iniciar Sesión"}
                     </Button>
-
-                    {/* Botón de Acceso Rápido para Desarrollo */}
-                    <Button
-                        mode="outlined"
-                        onPress={quickLogin}
-                        style={styles.devBtn}
-                        labelStyle={{ color: '#00926F', fontSize: 14 }}
-                    >
-                        ⚡ Acceso Rápido (Dev)
-                    </Button>
-
                     <Button
                         mode="contained"
                         icon={() => <GoogleIcon />}
