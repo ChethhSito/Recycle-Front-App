@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { verifyOTP, getOTPTimeRemaining, clearOTP, generateSecureOTP, storeOTP } from './otpManager';
-import { sendOTPEmail } from './resendService';
+import { verifyOTP, getOTPTimeRemaining, clearOTP, generateSecureOTP, storeOTP } from '../../../api/email/two-factor/otpManager';
+import { sendOTPEmail } from '../../../api/email/two-factor/resendService';
 
 export const TwoFactorVerifyScreen = () => {
     const navigation = useNavigation();

@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { generateSecureOTP, storeOTP } from './otpManager';
-import { sendOTPEmail } from './resendService';
+import { generateSecureOTP, storeOTP } from '../../../api/email/two-factor/otpManager';
+import { sendOTPEmail } from '../../../api/email/two-factor/resendService';
 import { TestingModeModal } from '../../../componentes/modal/settings/TestingModeModal';
 import { EmailSelectionModal } from '../../../componentes/modal/settings/EmailSelectionModal';
 

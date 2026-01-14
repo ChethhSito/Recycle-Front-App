@@ -1,2 +1,2 @@
-export * from './map-screen';
-export * from './detail-recycle-screen';
+export * from './Map-screen';
+export * from './Detail-recycle-screen';

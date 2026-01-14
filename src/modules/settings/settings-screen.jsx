@@ -115,7 +115,7 @@ const SettingsItem = ({
     );
 };
 
-export const SettingsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
+export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }) => {
     const navigation = useNavigation();
     const route = useRoute();
     
@@ -345,13 +345,11 @@ export const SettingsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
             <DeleteAccountModal
                 visible={deleteAccountModalVisible}
                 onClose={() => setDeleteAccountModalVisible(false)}
+                userEmail={userEmail || 'usuario@example.com'}
+                userName={userName || 'Usuario'}
                 onConfirm={() => {
                     setDeleteAccountModalVisible(false);
-                    // Lógica para eliminar cuenta
-                    navigation.reset({
-                        index: 0,
-                        routes: [{ name: 'Login' }],
-                    });
+                    // La lógica de suspensión está en el modal
                 }}
             />
 
