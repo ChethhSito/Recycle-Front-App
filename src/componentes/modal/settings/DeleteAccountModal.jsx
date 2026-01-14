@@ -11,12 +11,12 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { sendSuspensionEmail } from '../../../api/email/suspension-email';
+import { sendSuspensionEmail } from '../../../api/email/suspension/suspension-email';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../../store/auth';
 
-export const DeleteAccountModal = ({ visible, onClose, userEmail = 'usuario@example.com', userName = 'Usuario' }) => {
+export const DeleteAccountModal = ({ visible, onClose, userEmail = 'raulquintanazinc@gmail.com', userName = 'Raul Quintana' }) => {
     const dispatch = useDispatch();
     const [confirmText, setConfirmText] = useState('');
     const [isLoading, setIsLoading] = useState(false);

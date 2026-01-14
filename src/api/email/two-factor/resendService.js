@@ -6,7 +6,7 @@
  * Dominio: onboarding@resend.dev (temporal de Resend)
  */
 
-const RESEND_API_KEY = 're_NcebB7UA_Ee6uifkPMUSyPMFPYYoSiz9b';
+const RESEND_API_KEY = process.env.EXPO_PUBLIC_RESEND_API_KEY;
 const RESEND_API_URL = 'https://api.resend.com/emails';
 
 /**
