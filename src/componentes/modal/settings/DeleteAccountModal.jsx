@@ -7,31 +7,69 @@ import {
     TouchableOpacity,
     ScrollView,
     TextInput,
+    ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { sendSuspensionEmail } from '../../../api/email/suspension-email';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../../store/auth';
 
-export const DeleteAccountModal = ({ visible, onClose }) => {
+export const DeleteAccountModal = ({ visible, onClose, userEmail = 'usuario@example.com', userName = 'Usuario' }) => {
+    const dispatch = useDispatch();
     const [confirmText, setConfirmText] = useState('');
-    const [showFinalConfirm, setShowFinalConfirm] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-    const canDelete = confirmText === 'ELIMINAR';
+    const canSuspend = confirmText.toUpperCase() === 'SUSPENDER';
 
-    const handleDeleteRequest = () => {
-        if (canDelete) {
-            setShowFinalConfirm(true);
+    const handleConfirmSuspend = async () => {
+        if (!canSuspend || isLoading) return;
+
+        setIsLoading(true);
+        
+        try {
+            const suspensionDate = new Date();
+            
+            // Guardar datos de suspensión
+            await AsyncStorage.setItem('account_suspended', JSON.stringify({
+                isSuspended: true,
+                suspensionDate: suspensionDate.toISOString(),
+                userEmail,
+                userName
+            }));
+
+            // Enviar email de notificación
+            const emailResult = await sendSuspensionEmail(userEmail, userName, suspensionDate);
+            
+            if (emailResult.success) {
+                console.log('✅ Email de suspensión enviado');
+            } else {
+                console.warn('⚠️ Email falló (cuenta suspendida de todos modos)');
+            }
+
+            // Cerrar modal principal
+            setConfirmText('');
+            onClose();
+
+            // Mostrar modal de éxito
+            setShowSuccessModal(true);
+
+            // Después de 2 segundos, cerrar sesión (Redux maneja la navegación)
+            setTimeout(() => {
+                setShowSuccessModal(false);
+                dispatch(logout());
+            }, 2000);
+
+        } catch (error) {
+            console.error('Error al suspender cuenta:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleConfirmDelete = () => {
-        setShowFinalConfirm(false);
-        // Aquí iría la lógica para eliminar la cuenta en el backend
-        console.log('Cuenta eliminada');
-        setConfirmText('');
-        onClose();
-    };
-
-    const handleCloseAll = () => {
-        setShowFinalConfirm(false);
+    const handleClose = () => {
         setConfirmText('');
         onClose();
     };
@@ -40,100 +78,111 @@ export const DeleteAccountModal = ({ visible, onClose }) => {
         <>
             {/* Modal Principal */}
             <Modal
-                visible={visible && !showFinalConfirm}
+                visible={visible}
                 animationType="slide"
                 transparent={true}
-                onRequestClose={handleCloseAll}
+                onRequestClose={handleClose}
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        {/* Header */}
-                        <View style={styles.header}>
-                            <Text style={styles.title}>Eliminar Cuenta</Text>
-                            <TouchableOpacity onPress={handleCloseAll} style={styles.closeButton}>
-                                <Icon name="close" size={28} color="#32243B" />
+                        {/* Header con Gradient */}
+                        <LinearGradient
+                            colors={['#F59E0B', '#D97706']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.header}
+                        >
+                            <Icon name="alert-circle" size={40} color="#FFF" />
+                            <Text style={styles.headerTitle}>Suspender Cuenta</Text>
+                            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+                                <Icon name="close" size={28} color="#FFF" />
                             </TouchableOpacity>
-                        </View>
+                        </LinearGradient>
 
                         <ScrollView showsVerticalScrollIndicator={false}>
                             <View style={styles.content}>
-                                {/* Icono de Advertencia */}
-                                <View style={styles.warningIconContainer}>
-                                    <Icon name="alert-circle" size={80} color="#EF4444" />
+                                <Text style={styles.title}>
+                                    ¿Estás seguro de suspender tu cuenta?
+                                </Text>
+
+                                <Text style={styles.description}>
+                                    Tu cuenta se suspenderá por <Text style={styles.highlightText}>30 días</Text>. 
+                                    Si cambias de opinión, solo inicia sesión para recuperarla. 
+                                    Después de 30 días, se eliminará permanentemente.
+                                </Text>
+
+                                {/* Countdown Badge */}
+                                <View style={styles.countdownBadge}>
+                                    <Text style={styles.countdownNumber}>30</Text>
+                                    <Text style={styles.countdownLabel}>días de gracia</Text>
                                 </View>
-
-                                <Text style={styles.warningTitle}>
-                                    ¿Estás seguro de eliminar tu cuenta?
-                                </Text>
-
-                                <Text style={styles.warningText}>
-                                    Esta acción es permanente y no se puede deshacer. Perderás:
-                                </Text>
 
                                 {/* Lista de pérdidas */}
                                 <View style={styles.lossList}>
-                                    <View style={styles.lossItem}>
-                                        <Icon name="close-circle" size={20} color="#EF4444" />
-                                        <Text style={styles.lossText}>Todos tus EcoPuntos acumulados</Text>
-                                    </View>
-                                    <View style={styles.lossItem}>
-                                        <Icon name="close-circle" size={20} color="#EF4444" />
-                                        <Text style={styles.lossText}>Historial de reciclaje completo</Text>
-                                    </View>
-                                    <View style={styles.lossItem}>
-                                        <Icon name="close-circle" size={20} color="#EF4444" />
-                                        <Text style={styles.lossText}>Recompensas pendientes de canjear</Text>
-                                    </View>
-                                    <View style={styles.lossItem}>
-                                        <Icon name="close-circle" size={20} color="#EF4444" />
-                                        <Text style={styles.lossText}>Acceso a convenios y beneficios</Text>
-                                    </View>
-                                    <View style={styles.lossItem}>
-                                        <Icon name="close-circle" size={20} color="#EF4444" />
-                                        <Text style={styles.lossText}>Toda tu información de perfil</Text>
-                                    </View>
+                                    <Text style={styles.lossListTitle}>Se perderá permanentemente:</Text>
+                                    {[
+                                        'Todos tus EcoPuntos acumulados',
+                                        'Historial de reciclaje completo',
+                                        'Recompensas pendientes de canjear',
+                                        'Acceso a convenios y beneficios',
+                                        'Toda tu información de perfil'
+                                    ].map((item, index) => (
+                                        <View key={index} style={styles.lossItem}>
+                                            <Icon name="close-circle" size={18} color="#DC2626" />
+                                            <Text style={styles.lossText}>{item}</Text>
+                                        </View>
+                                    ))}
                                 </View>
 
-                                {/* Confirmación por texto */}
+                                {/* Input de Confirmación */}
                                 <View style={styles.confirmSection}>
                                     <Text style={styles.confirmLabel}>
-                                        Para continuar, escribe <Text style={styles.confirmKeyword}>ELIMINAR</Text> en el campo:
+                                        Para continuar, escribe <Text style={styles.confirmKeyword}>SUSPENDER</Text>
                                     </Text>
                                     <TextInput
-                                        style={styles.confirmInput}
+                                        style={[
+                                            styles.confirmInput,
+                                            canSuspend && styles.confirmInputValid
+                                        ]}
                                         value={confirmText}
                                         onChangeText={setConfirmText}
-                                        placeholder="Escribe ELIMINAR"
+                                        placeholder="Escribe SUSPENDER"
                                         placeholderTextColor="#9CA3AF"
                                         autoCapitalize="characters"
+                                        editable={!isLoading}
                                     />
                                 </View>
 
                                 {/* Botones */}
                                 <TouchableOpacity
                                     style={[
-                                        styles.deleteButton,
-                                        !canDelete && styles.deleteButtonDisabled
+                                        styles.suspendButton,
+                                        (!canSuspend || isLoading) && styles.suspendButtonDisabled
                                     ]}
-                                    onPress={handleDeleteRequest}
-                                    disabled={!canDelete}
+                                    onPress={handleConfirmSuspend}
+                                    disabled={!canSuspend || isLoading}
+                                    activeOpacity={0.8}
                                 >
-                                    <Icon 
-                                        name="delete-forever" 
-                                        size={20} 
-                                        color={canDelete ? '#FFF' : '#9CA3AF'} 
-                                    />
-                                    <Text style={[
-                                        styles.deleteButtonText,
-                                        !canDelete && styles.deleteButtonTextDisabled
-                                    ]}>
-                                        Eliminar Mi Cuenta
-                                    </Text>
+                                    {isLoading ? (
+                                        <ActivityIndicator size="small" color="#FFF" />
+                                    ) : (
+                                        <>
+                                            <Icon 
+                                                name="clock-alert-outline" 
+                                                size={20} 
+                                                color="#FFF" 
+                                            />
+                                            <Text style={styles.suspendButtonText}>
+                                                Suspender Mi Cuenta
+                                            </Text>
+                                        </>
+                                    )}
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
                                     style={styles.cancelButton}
-                                    onPress={handleCloseAll}
+                                    onPress={handleClose}
+                                    disabled={isLoading}
                                 >
                                     <Text style={styles.cancelButtonText}>Cancelar</Text>
                                 </TouchableOpacity>
@@ -143,38 +192,22 @@ export const DeleteAccountModal = ({ visible, onClose }) => {
                 </View>
             </Modal>
 
-            {/* Modal de Confirmación Final */}
+            {/* Modal de Éxito */}
             <Modal
-                visible={showFinalConfirm}
+                visible={showSuccessModal}
                 animationType="fade"
                 transparent={true}
-                onRequestClose={() => setShowFinalConfirm(false)}
             >
-                <View style={styles.confirmModalOverlay}>
-                    <View style={styles.confirmModalContent}>
-                        <View style={styles.confirmIconContainer}>
-                            <Icon name="alert-octagon" color="#EF4444" size={48} />
+                <View style={styles.successOverlay}>
+                    <View style={styles.successContent}>
+                        <View style={styles.successIconContainer}>
+                            <Icon name="check-circle" size={80} color="#10B981" />
                         </View>
-
-                        <Text style={styles.confirmTitle}>Última Confirmación</Text>
-                        <Text style={styles.confirmText}>
-                            ¿Realmente deseas eliminar tu cuenta de forma permanente? No podrás recuperar tu información después.
+                        <Text style={styles.successTitle}>¡Cuenta Suspendida!</Text>
+                        <Text style={styles.successMessage}>
+                            Tu cuenta ha sido suspendida por 30 días.{'\n'}
+                            Revisa tu email para más información.
                         </Text>
-
-                        <View style={styles.confirmButtons}>
-                            <TouchableOpacity
-                                style={styles.backButton}
-                                onPress={() => setShowFinalConfirm(false)}
-                            >
-                                <Text style={styles.backButtonText}>No, Volver</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.finalDeleteButton}
-                                onPress={handleConfirmDelete}
-                            >
-                                <Text style={styles.finalDeleteButtonText}>Sí, Eliminar</Text>
-                            </TouchableOpacity>
-                        </View>
                     </View>
                 </View>
             </Modal>
@@ -193,66 +226,94 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         maxHeight: '90%',
-        paddingBottom: 30,
+        overflow: 'hidden',
     },
     header: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
+        justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingTop: 20,
-        paddingBottom: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
+        paddingVertical: 20,
+        gap: 12,
     },
-    title: {
+    headerTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#EF4444',
+        color: '#FFF',
+        flex: 1,
     },
     closeButton: {
         padding: 4,
     },
     content: {
-        paddingHorizontal: 20,
-        paddingVertical: 20,
+        paddingHorizontal: 24,
+        paddingVertical: 28,
     },
-    warningIconContainer: {
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    warningTitle: {
+    title: {
         fontSize: 20,
         fontWeight: 'bold',
         color: '#1F2937',
         textAlign: 'center',
-        marginBottom: 12,
+        marginBottom: 16,
     },
-    warningText: {
+    description: {
         fontSize: 15,
         color: '#6B7280',
         textAlign: 'center',
-        marginBottom: 20,
+        lineHeight: 22,
+        marginBottom: 24,
+    },
+    highlightText: {
+        fontWeight: 'bold',
+        color: '#F59E0B',
+    },
+    countdownBadge: {
+        backgroundColor: '#FEF3C7',
+        borderRadius: 16,
+        paddingVertical: 20,
+        paddingHorizontal: 24,
+        alignItems: 'center',
+        marginBottom: 24,
+        borderWidth: 2,
+        borderColor: '#F59E0B',
+    },
+    countdownNumber: {
+        fontSize: 48,
+        fontWeight: 'bold',
+        color: '#D97706',
+        lineHeight: 48,
+    },
+    countdownLabel: {
+        fontSize: 14,
+        color: '#92400E',
+        fontWeight: '600',
+        marginTop: 4,
     },
     lossList: {
         backgroundColor: '#FEF2F2',
-        padding: 16,
-        borderRadius: 12,
+        borderRadius: 16,
+        padding: 20,
         marginBottom: 24,
+    },
+    lossListTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#991B1B',
+        marginBottom: 12,
     },
     lossItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: 10,
+        gap: 10,
     },
     lossText: {
         fontSize: 14,
         color: '#991B1B',
-        marginLeft: 12,
         flex: 1,
     },
     confirmSection: {
-        marginBottom: 20,
+        marginBottom: 24,
     },
     confirmLabel: {
         fontSize: 14,
@@ -262,43 +323,51 @@ const styles = StyleSheet.create({
     },
     confirmKeyword: {
         fontWeight: 'bold',
-        color: '#EF4444',
+        color: '#F59E0B',
     },
     confirmInput: {
         backgroundColor: '#F9FAFB',
-        borderWidth: 1,
+        borderWidth: 2,
         borderColor: '#E5E7EB',
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 14,
-        fontSize: 15,
+        fontSize: 16,
         color: '#1F2937',
         textAlign: 'center',
         fontWeight: '600',
     },
-    deleteButton: {
-        backgroundColor: '#EF4444',
+    confirmInputValid: {
+        borderColor: '#10B981',
+        backgroundColor: '#ECFDF5',
+    },
+    suspendButton: {
+        backgroundColor: '#F59E0B',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 14,
+        paddingVertical: 16,
         borderRadius: 12,
-        gap: 8,
+        gap: 10,
         marginBottom: 12,
+        elevation: 4,
+        shadowColor: '#F59E0B',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
     },
-    deleteButtonDisabled: {
+    suspendButtonDisabled: {
         backgroundColor: '#F3F4F6',
+        elevation: 0,
+        shadowOpacity: 0,
     },
-    deleteButtonText: {
+    suspendButtonText: {
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: 'bold',
         color: '#FFF',
     },
-    deleteButtonTextDisabled: {
-        color: '#9CA3AF',
-    },
     cancelButton: {
-        paddingVertical: 14,
+        paddingVertical: 16,
         alignItems: 'center',
     },
     cancelButtonText: {
@@ -307,84 +376,41 @@ const styles = StyleSheet.create({
         color: '#6B7280',
     },
 
-    // Modal de Confirmación Final
-    confirmModalOverlay: {
+    // Modal de Éxito
+    successOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
     },
-    confirmModalContent: {
+    successContent: {
         backgroundColor: '#FFFFFF',
-        padding: 28,
-        borderRadius: 20,
+        borderRadius: 24,
+        padding: 32,
         alignItems: 'center',
         width: '100%',
-        maxWidth: 380,
-        elevation: 5,
+        maxWidth: 340,
+        elevation: 12,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
     },
-    confirmIconContainer: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: '#FEE2E2',
-        justifyContent: 'center',
-        alignItems: 'center',
+    successIconContainer: {
         marginBottom: 20,
     },
-    confirmTitle: {
-        fontSize: 20,
+    successTitle: {
+        fontSize: 22,
         fontWeight: 'bold',
         color: '#1F2937',
         marginBottom: 12,
         textAlign: 'center',
     },
-    confirmText: {
+    successMessage: {
         fontSize: 15,
+        color: '#6B7280',
         textAlign: 'center',
-        color: '#6B7280',
-        marginBottom: 28,
         lineHeight: 22,
-    },
-    confirmButtons: {
-        flexDirection: 'row',
-        gap: 12,
-        width: '100%',
-    },
-    backButton: {
-        flex: 1,
-        backgroundColor: '#F3F4F6',
-        paddingVertical: 14,
-        borderRadius: 12,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-    },
-    backButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#6B7280',
-    },
-    finalDeleteButton: {
-        flex: 1,
-        backgroundColor: '#EF4444',
-        paddingVertical: 14,
-        borderRadius: 12,
-        alignItems: 'center',
-        elevation: 2,
-        shadowColor: '#EF4444',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-    },
-    finalDeleteButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#FFF',
     },
 });

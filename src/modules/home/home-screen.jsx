@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, useWindowDimensions } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, useWindowDimensions, Animated } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import {
@@ -13,6 +13,7 @@ import {
 import { NavItem } from '../../componentes/navigation/NavItem';
 import { DrawerMenu } from '../../componentes/navigation/DrawerMenu';
 import { ProgramDetailModal } from '../../componentes/modal/shared/ProgramDetailModal';
+import { AssistantNotification, getRandomMessage } from '../../componentes/shared/AssistantNotification';
 import { useNavigation } from '@react-navigation/native';
 
 
@@ -25,6 +26,64 @@ export const HomeScreen = ({ userAvatar, userName }) => {
     const [selectedProgram, setSelectedProgram] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
+    const [notificationVisible, setNotificationVisible] = useState(false);
+
+    // Animaciones para el FAB
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+    const pulseAnim = useRef(new Animated.Value(1)).current;
+
+    // Animación de pulso continua para el FAB
+    useEffect(() => {
+        const pulse = Animated.loop(
+            Animated.sequence([
+                Animated.timing(pulseAnim, {
+                    toValue: 1.15,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(pulseAnim, {
+                    toValue: 1,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+            ])
+        );
+        pulse.start();
+
+        // Mostrar notificación después de 3 segundos
+        const notificationTimer = setTimeout(() => {
+            setNotificationVisible(true);
+        }, 3000);
+
+        // Mostrar notificaciones periódicamente cada 60 segundos
+        const intervalId = setInterval(() => {
+            setNotificationVisible(true);
+        }, 60000);
+
+        return () => {
+            pulse.stop();
+            clearTimeout(notificationTimer);
+            clearInterval(intervalId);
+        };
+    }, []);
+
+    const handleFabPress = () => {
+        // Animación de escala al presionar
+        Animated.sequence([
+            Animated.timing(scaleAnim, {
+                toValue: 0.9,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+            Animated.timing(scaleAnim, {
+                toValue: 1,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+        ]).start();
+
+        navigation.navigate('VirtualAssistant');
+    };
 
     // Datos según el tipo de filtro
     const impactData = {
@@ -228,6 +287,42 @@ export const HomeScreen = ({ userAvatar, userName }) => {
                 userPoints={330}
                 avatarUrl={userAvatar || 'https://i.pravatar.cc/150?img=33'}
             />
+
+            {/* Notificación del Asistente */}
+            <AssistantNotification
+                visible={notificationVisible}
+                onClose={() => setNotificationVisible(false)}
+                onOpen={() => navigation.navigate('VirtualAssistant')}
+            />
+
+            {/* FAB - Asistente Virtual */}
+            <Animated.View
+                style={[
+                    componentStyles.fabContainer,
+                    {
+                        transform: [{ scale: scaleAnim }],
+                    },
+                ]}
+            >
+                <TouchableOpacity
+                    style={componentStyles.fab}
+                    onPress={handleFabPress}
+                    activeOpacity={0.8}
+                >
+                    <Animated.View
+                        style={[
+                            componentStyles.fabPulse,
+                            {
+                                transform: [{ scale: pulseAnim }],
+                            },
+                        ]}
+                    />
+                    <Icon name="robot-happy" size={32} color="#FFFFFF" />
+                    <View style={componentStyles.fabBadge}>
+                        <Icon name="lightning-bolt" size={12} color="#FFF" />
+                    </View>
+                </TouchableOpacity>
+            </Animated.View>
         </View>
     );
 };
@@ -323,5 +418,43 @@ const styles = (theme) => StyleSheet.create({
         marginHorizontal: 0,
         elevation: 10,
         color: '#000',
+    },
+    fabContainer: {
+        position: 'absolute',
+        bottom: 80,
+        right: 20,
+    },
+    fab: {
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        backgroundColor: '#018f64',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 12,
+        shadowColor: '#018f64',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 10,
+    },
+    fabPulse: {
+        position: 'absolute',
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        backgroundColor: 'rgba(1, 143, 100, 0.3)',
+    },
+    fabBadge: {
+        position: 'absolute',
+        top: -5,
+        right: -5,
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#F59E0B',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
     },
 });

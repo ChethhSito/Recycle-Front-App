@@ -19,6 +19,7 @@ import { handleManualLogin } from '../../../api/auth/manual';
 import { useDispatch } from 'react-redux';
 import { login } from '../../../store/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 export const LoginScreen = ({ navigation }) => {
@@ -42,6 +43,38 @@ export const LoginScreen = ({ navigation }) => {
         setLoading(true);
         try {
             console.log("Enviando login:", data.email);
+            
+            // Verificar si hay suspensión activa
+            const suspensionData = await AsyncStorage.getItem('account_suspended');
+            if (suspensionData) {
+                const suspension = JSON.parse(suspensionData);
+                
+                // Calcular si aún está dentro de los 30 días
+                const suspensionDate = new Date(suspension.suspensionDate);
+                const deletionDate = new Date(suspensionDate);
+                deletionDate.setDate(deletionDate.getDate() + 30);
+                
+                const today = new Date();
+                
+                if (today < deletionDate) {
+                    // Cuenta aún está suspendida, navegar a RestorationScreen
+                    console.log('Cuenta suspendida detectada, navegando a RestaurarCuenta');
+                    navigation.replace('RestaurarCuenta');
+                    setLoading(false);
+                    return;
+                } else {
+                    // Ya pasaron los 30 días, eliminar datos
+                    await AsyncStorage.removeItem('account_suspended');
+                    Alert.alert(
+                        'Cuenta Eliminada',
+                        'Tu cuenta fue eliminada después de 30 días de suspensión.',
+                        [{ text: 'Entendido' }]
+                    );
+                    setLoading(false);
+                    return;
+                }
+            }
+            
             const result = await handleManualLogin(data.email, data.password);
             console.log("Token recibido:", result.access_token);
             await AsyncStorage.setItem('user_token', result.access_token);

@@ -99,6 +99,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
             title: 'Principal',
             items: [
                 { icon: 'home', label: 'Inicio', onPress: () => navigation.navigate('Home') },
+                { icon: 'robot-happy', label: 'Asistente Virtual', onPress: () => navigation.navigate('VirtualAssistant'), highlight: true },
                 { icon: 'leaf', label: 'EcoPuntos', onPress: () => navigation.navigate('Rank') },
                 { icon: 'gift', label: 'Premios', onPress: () => navigation.navigate('Rewards') },
                 { icon: 'sprout', label: 'Tu huella verde', onPress: () => navigation.navigate('GreenFootprint') },
@@ -169,14 +170,31 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                                 {section.items.map((item, itemIndex) => (
                                     <TouchableOpacity
                                         key={itemIndex}
-                                        style={styles.menuItem}
+                                        style={[
+                                            styles.menuItem,
+                                            item.highlight && styles.menuItemHighlight
+                                        ]}
                                         onPress={() => {
                                             item.onPress();
                                             onClose();
                                         }}
                                     >
-                                        <Icon name={item.icon} size={20} color="#000" />
-                                        <Text style={styles.menuItemText}>{item.label}</Text>
+                                        <Icon 
+                                            name={item.icon} 
+                                            size={20} 
+                                            color={item.highlight ? '#018f64' : '#000'} 
+                                        />
+                                        <Text style={[
+                                            styles.menuItemText,
+                                            item.highlight && styles.menuItemTextHighlight
+                                        ]}>
+                                            {item.label}
+                                        </Text>
+                                        {item.highlight && (
+                                            <View style={styles.newBadge}>
+                                                <Text style={styles.newBadgeText}>Nuevo</Text>
+                                            </View>
+                                        )}
                                     </TouchableOpacity>
                                 ))}
                             </View>
@@ -292,10 +310,32 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 12,
     },
+    menuItemHighlight: {
+        backgroundColor: 'rgba(1, 143, 100, 0.1)',
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        marginVertical: 4,
+    },
     menuItemText: {
         fontSize: 15,
         color: '#000',
         marginLeft: 15,
+        flex: 1,
+    },
+    menuItemTextHighlight: {
+        color: '#018f64',
+        fontWeight: '600',
+    },
+    newBadge: {
+        backgroundColor: '#F59E0B',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 10,
+    },
+    newBadgeText: {
+        fontSize: 10,
+        color: '#FFF',
+        fontWeight: 'bold',
     },
     footer: {
         marginTop: 30,

@@ -6,7 +6,7 @@ import { createStackNavigator, TransitionPresets } from '@react-navigation/stack
 import { useCheckAuth } from '../hooks/useCheckAuth';
 import { useSelector } from 'react-redux'; // Opcional, si necesitas datos del user
 
-import { LoginScreen, RegisterScreen, RecoverScreen, ResetPasswordScreen } from '../modules/auth/screens';
+import { LoginScreen, RegisterScreen, RecoverScreen, ResetPasswordScreen, RestorationScreen } from '../modules/auth/screens';
 import { ForumScreen } from '../modules/forum/forum-screen';
 import { InductionScreen } from '../modules/induction/induction-screen';
 import { DrawerMenu } from '../componentes/navigation/DrawerMenu';
@@ -20,6 +20,7 @@ import { PartnersScreen } from '../modules/partners/partners-screen';
 import { EnvironmentalProgramsScreen } from '../modules/programs/environmental-programs-screen';
 import { RequestDetailScreen, MapScreen } from '../modules/recycler';
 import { HomeScreen } from '../modules/home';
+import { VirtualAssistantScreen } from '../modules/assistant/VirtualAssistantScreen';
 
 import { TwoFactorInfoScreen } from '../modules/settings/two-factor-auth/two-factor-info-screen';
 import { TwoFactorMethodScreen } from '../modules/settings/two-factor-auth/two-factor-method-screen';
@@ -98,6 +99,11 @@ export const AppRoutes = () => {
                                 />
                             )}
                         </Stack.Screen>
+                        <Stack.Screen 
+                            name="RestaurarCuenta" 
+                            component={RestorationScreen}
+                            options={{ headerShown: false }}
+                        />
                     </>
                 ) : (
                     // === RUTAS PRIVADAS (LOGUEADO) ===
@@ -156,6 +162,18 @@ export const AppRoutes = () => {
                                     onOpenDrawer={() => setDrawerVisible(true)}
                                     userAvatar={userInfo.avatar}
                                     userName={userInfo.name}
+                                    userEmail={userInfo.email}
+                                />
+                            )}
+                        </Stack.Screen>
+                        <Stack.Screen name="VirtualAssistant">
+                            {props => (
+                                <VirtualAssistantScreen
+                                    {...props}
+                                    onOpenDrawer={() => setDrawerVisible(true)}
+                                    userAvatar={userInfo.avatar}
+                                    userName={userInfo.name}
+                                    userEmail={userInfo.email}
                                 />
                             )}
                         </Stack.Screen>
