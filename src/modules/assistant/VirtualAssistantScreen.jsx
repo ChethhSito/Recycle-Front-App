@@ -19,7 +19,19 @@ export const VirtualAssistantScreen = ({ onOpenDrawer, userAvatar, userName }) =
     const [messages, setMessages] = useState([
         {
             id: 1,
-            text: '¡Hola! 👋 Soy tu asistente virtual de reciclaje. ¿En qué puedo ayudarte hoy?',
+            text: '¡Hola! 👋 Soy tu asistente virtual de reciclaje.',
+            isBot: true,
+            timestamp: new Date(Date.now() - 60000)
+        },
+        {
+            id: 2,
+            text: 'Estoy aquí para resolver tus dudas sobre separación de residuos, puntos de acopio y tips ecológicos. 🌍',
+            isBot: true,
+            timestamp: new Date(Date.now() - 30000)
+        },
+        {
+            id: 3,
+            text: '¿En qué puedo ayudarte hoy?',
             isBot: true,
             timestamp: new Date()
         }
@@ -30,7 +42,6 @@ export const VirtualAssistantScreen = ({ onOpenDrawer, userAvatar, userName }) =
     const scrollViewRef = useRef(null);
     const iconRotation = useRef(new Animated.Value(0)).current;
 
-    // Animación de rotación para iconos de fondo
     useEffect(() => {
         Animated.loop(
             Animated.timing(iconRotation, {
@@ -49,7 +60,6 @@ export const VirtualAssistantScreen = ({ onOpenDrawer, userAvatar, userName }) =
     const handleSendMessage = async (text = inputText) => {
         if (!text.trim()) return;
 
-        // Agregar mensaje del usuario
         const userMessage = {
             id: Date.now(),
             text: text.trim(),
@@ -61,16 +71,13 @@ export const VirtualAssistantScreen = ({ onOpenDrawer, userAvatar, userName }) =
         setInputText('');
         setIsLoading(true);
 
-        // Scroll al final
         setTimeout(() => {
             scrollViewRef.current?.scrollToEnd({ animated: true });
         }, 100);
 
         try {
-            // Obtener respuesta de Gemini
             const botResponse = await sendMessageToGemini(text);
 
-            // Agregar respuesta del bot
             const botMessage = {
                 id: Date.now() + 1,
                 text: botResponse,
@@ -80,13 +87,11 @@ export const VirtualAssistantScreen = ({ onOpenDrawer, userAvatar, userName }) =
 
             setMessages(prev => [...prev, botMessage]);
 
-            // Scroll al final después de recibir respuesta
             setTimeout(() => {
                 scrollViewRef.current?.scrollToEnd({ animated: true });
             }, 100);
 
         } catch (error) {
-            // Agregar mensaje de error
             const errorMessage = {
                 id: Date.now() + 1,
                 text: error.message || '❌ Lo siento, hubo un error al procesar tu mensaje. Intenta de nuevo.',
@@ -94,7 +99,6 @@ export const VirtualAssistantScreen = ({ onOpenDrawer, userAvatar, userName }) =
                 isError: true,
                 timestamp: new Date()
             };
-
             setMessages(prev => [...prev, errorMessage]);
         } finally {
             setIsLoading(false);
@@ -148,42 +152,24 @@ export const VirtualAssistantScreen = ({ onOpenDrawer, userAvatar, userName }) =
 
     return (
         <View style={styles.container}>
-            {/* Header con gradiente */}
+            {/* 1. Header Fijo */}
             <LinearGradient
                 colors={['#018f64', '#00C7A1', '#018f64']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.header}
             >
-                {/* Iconos decorativos de fondo */}
-                <Animated.View
-                    style={[
-                        styles.decorativeIcon,
-                        styles.decorativeIcon1,
-                        { transform: [{ rotate: rotation }] }
-                    ]}
-                >
+                <Animated.View style={[styles.decorativeIcon, styles.decorativeIcon1, { transform: [{ rotate: rotation }] }]}>
                     <Icon name="recycle" size={120} color="rgba(255, 255, 255, 0.1)" />
                 </Animated.View>
-                <Animated.View
-                    style={[
-                        styles.decorativeIcon,
-                        styles.decorativeIcon2,
-                        { transform: [{ rotate: rotation }] }
-                    ]}
-                >
+                <Animated.View style={[styles.decorativeIcon, styles.decorativeIcon2, { transform: [{ rotate: rotation }] }]}>
                     <Icon name="leaf" size={80} color="rgba(255, 255, 255, 0.1)" />
                 </Animated.View>
 
-                {/* Contenido del header */}
                 <View style={styles.headerContent}>
-                    <TouchableOpacity
-                        style={styles.menuButton}
-                        onPress={onOpenDrawer}
-                    >
+                    <TouchableOpacity style={styles.menuButton} onPress={onOpenDrawer}>
                         <Icon name="menu" size={28} color="#FFFFFF" />
                     </TouchableOpacity>
-
                     <View style={styles.headerCenter}>
                         <Icon name="robot-happy" size={28} color="#FFFFFF" />
                         <View style={styles.headerTextContainer}>
@@ -191,17 +177,39 @@ export const VirtualAssistantScreen = ({ onOpenDrawer, userAvatar, userName }) =
                             <Text style={styles.headerSubtitle}>Estoy aquí para ayudarte</Text>
                         </View>
                     </View>
-
                     <View style={styles.menuButton} />
                 </View>
             </LinearGradient>
 
-            {/* Área de chat */}
             <KeyboardAvoidingView
                 style={styles.chatContainer}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
             >
+                
+                {/* 2. Filtros FIJOS ARRIBA (Fuera del ScrollView de mensajes) */}
+                <View style={styles.topFilterContainer}>
+                    <Text style={styles.suggestedTitleMini}>Sugerencias rápidas:</Text>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={styles.suggestedScroll}
+                        contentContainerStyle={{ paddingHorizontal: 15 }}
+                    >
+                        {suggestedQuestions.map((question, index) => (
+                            <TouchableOpacity
+                                key={index}
+                                style={styles.chipButton}
+                                onPress={() => handleSuggestedQuestion(question)}
+                                disabled={isLoading}
+                            >
+                                <Text style={styles.chipText}>{question}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </View>
+
+                {/* 3. Lista de Mensajes (Scrollable) */}
                 <ScrollView
                     ref={scrollViewRef}
                     style={styles.messagesScrollView}
@@ -209,32 +217,8 @@ export const VirtualAssistantScreen = ({ onOpenDrawer, userAvatar, userName }) =
                     showsVerticalScrollIndicator={false}
                     onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
                 >
-                    {/* Preguntas sugeridas (solo si no hay mensajes del usuario) */}
-                    {messages.filter(m => !m.isBot).length === 0 && (
-                        <View style={styles.suggestedSection}>
-                            <Text style={styles.suggestedTitle}>Preguntas frecuentes:</Text>
-                            <ScrollView
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                style={styles.suggestedScroll}
-                            >
-                                {suggestedQuestions.map((question, index) => (
-                                    <TouchableOpacity
-                                        key={index}
-                                        style={styles.chipButton}
-                                        onPress={() => handleSuggestedQuestion(question)}
-                                    >
-                                        <Text style={styles.chipText}>{question}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-                        </View>
-                    )}
-
-                    {/* Mensajes */}
                     {messages.map(renderMessage)}
 
-                    {/* Indicador de escritura */}
                     {isLoading && (
                         <View style={[styles.messageContainer, styles.botMessageContainer]}>
                             <View style={styles.botAvatar}>
@@ -252,7 +236,7 @@ export const VirtualAssistantScreen = ({ onOpenDrawer, userAvatar, userName }) =
                     )}
                 </ScrollView>
 
-                {/* Input de mensaje */}
+                {/* 4. Input (Fijo abajo) */}
                 <View style={styles.inputContainer}>
                     <View style={styles.inputWrapper}>
                         <TextInput
@@ -296,6 +280,7 @@ const styles = StyleSheet.create({
         paddingBottom: 15,
         paddingHorizontal: 15,
         overflow: 'hidden',
+        zIndex: 10, // Para asegurar que esté encima si es necesario
     },
     decorativeIcon: {
         position: 'absolute',
@@ -342,41 +327,48 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F5F5F5',
     },
-    messagesScrollView: {
-        flex: 1,
+    // ESTILOS NUEVOS PARA FILTROS FIJOS SUPERIORES
+    topFilterContainer: {
+        backgroundColor: '#F5F5F5',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.05)',
+        zIndex: 5,
     },
-    messagesContent: {
-        padding: 15,
-        paddingBottom: 20,
-    },
-    suggestedSection: {
-        marginBottom: 20,
-    },
-    suggestedTitle: {
-        fontSize: 14,
+    suggestedTitleMini: {
+        fontSize: 12,
         fontWeight: '600',
         color: '#6B7280',
-        marginBottom: 10,
+        marginBottom: 8,
+        marginLeft: 15,
     },
     suggestedScroll: {
         flexDirection: 'row',
     },
     chipButton: {
         backgroundColor: '#FFFFFF',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
+        paddingVertical: 8,
+        paddingHorizontal: 14,
         borderRadius: 20,
-        marginRight: 10,
+        marginRight: 8,
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
-        shadowRadius: 2,
+        shadowRadius: 1,
     },
     chipText: {
         fontSize: 13,
         color: '#018f64',
         fontWeight: '500',
+    },
+    // Mensajes
+    messagesScrollView: {
+        flex: 1,
+    },
+    messagesContent: {
+        padding: 15,
+        paddingBottom: 20,
     },
     messageContainer: {
         flexDirection: 'row',
