@@ -3,26 +3,31 @@ import { createSlice } from '@reduxjs/toolkit';
 export const authSlice = createSlice({
     name: 'auth',
     initialState: {
-        status: 'checking', // 'checking', 'not-authenticated', 'authenticated'
-        user: null,         // Aquí guardaremos los datos del usuario (uid, email, displayName)
-        errorMessage: null,
+        status: 'checking', // 'checking', 'authenticated', 'not-authenticated'
+        user: {},
+        errorMessage: undefined,
     },
     reducers: {
-        login: (state, { payload }) => {
+        onLogin: (state, { payload }) => {
             state.status = 'authenticated';
             state.user = payload;
-            state.errorMessage = null;
+            state.errorMessage = undefined;
         },
-        logout: (state, { payload }) => {
+        onLogout: (state, { payload }) => {
             state.status = 'not-authenticated';
-            state.user = null;
-            state.errorMessage = payload?.errorMessage;
+            state.user = {};
+            state.errorMessage = payload;
         },
-        checkingCredentials: (state) => {
+        onChecking: (state) => {
             state.status = 'checking';
+            state.user = {};
+            state.errorMessage = undefined;
+        },
+        clearErrorMessage: (state) => {
+            state.errorMessage = undefined;
         }
     }
 });
 
-// Exportamos las acciones para usarlas en los componentes
-export const { login, logout, checkingCredentials } = authSlice.actions;
+// ¡IMPORTANTE! Exportamos los nombres exactos que usamos en el Hook
+export const { onLogin, onLogout, onChecking, clearErrorMessage } = authSlice.actions;

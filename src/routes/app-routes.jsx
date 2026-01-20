@@ -3,8 +3,6 @@ import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 
-import { useCheckAuth } from '../hooks/useCheckAuth';
-import { useSelector } from 'react-redux'; // Opcional, si necesitas datos del user
 
 import { LoginScreen, RegisterScreen, RecoverScreen, ResetPasswordScreen, RestorationScreen } from '../modules/auth/screens';
 import { ForumScreen } from '../modules/forum/forum-screen';
@@ -27,19 +25,19 @@ import { TwoFactorMethodScreen } from '../modules/settings/two-factor-auth/two-f
 import { TwoFactorVerifyScreen } from '../modules/settings/two-factor-auth/two-factor-verify-screen';
 import { TwoFactorSuccessScreen } from '../modules/settings/two-factor-auth/two-factor-success-screen';
 
+import { useAuthStore } from '../hooks/use-auth-store';
+
 const Stack = createStackNavigator();
 
 export const AppRoutes = () => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
-    const status = useCheckAuth();
-    const [userInfo] = useState({
-        name: 'Juan David',
-        email: 'juan@ecolloy.pe',
-        points: 330,
-        avatar: 'https://i.pravatar.cc/150?img=33'
-    });
+    const { status, checkAuthToken, user } = useAuthStore();
+
+    useEffect(() => {
+        checkAuthToken();
+    }, []);
+
+    const userInfo = user || { name: '', email: '', avatar: null, points: 0 };
 
     if (status === 'checking') {
         return (
@@ -75,32 +73,21 @@ export const AppRoutes = () => {
                 {status !== 'authenticated' ? (
                     // === RUTAS PÚBLICAS (NO LOGUEADO) ===
                     <>
-
                         <Stack.Screen name="Login" component={LoginScreen} />
                         <Stack.Screen
                             name="Recover" component={RecoverScreen}
-                            options={{
-                                ...modalOptions
-                            }}
+                            options={{ ...modalOptions }}
                         />
                         <Stack.Screen
                             name="Register" component={RegisterScreen}
-                            options={{
-                                ...modalOptions
-                            }}
+                            options={{ ...modalOptions }}
                         />
-                        <Stack.Screen name="ResetPassword">
-                            {props => (
-                                <ResetPasswordScreen
-                                    {...props}
-                                    onOpenDrawer={() => setDrawerVisible(true)}
-                                    userAvatar={userInfo.avatar}
-                                    userName={userInfo.name}
-                                />
-                            )}
-                        </Stack.Screen>
-                        <Stack.Screen 
-                            name="RestaurarCuenta" 
+                        {/* ResetPassword recibe params, no necesita props manuales aquí usualmente, 
+                            pero si quieres pasarle datos del drawer, está bien dejarlo así */}
+                        <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+
+                        <Stack.Screen
+                            name="RestaurarCuenta"
                             component={RestorationScreen}
                             options={{ headerShown: false }}
                         />
@@ -108,17 +95,20 @@ export const AppRoutes = () => {
                 ) : (
                     // === RUTAS PRIVADAS (LOGUEADO) ===
                     <>
+                        {/* AHORA SÍ 'userInfo' EXISTE Y TIENE DATOS */}
                         <Stack.Screen name="Home">
                             {props => (
                                 <HomeScreen
                                     {...props}
                                     onOpenDrawer={() => setDrawerVisible(true)}
                                     userAvatar={userInfo.avatar}
-                                    userName={userInfo.name}
+                                    userName={userInfo.name} // Ahora sí lee el nombre real
                                 />
                             )}
                         </Stack.Screen>
+
                         <Stack.Screen name="Rank" component={RankScreen} />
+
                         <Stack.Screen name="Forum">
                             {props => (
                                 <ForumScreen
@@ -129,6 +119,7 @@ export const AppRoutes = () => {
                                 />
                             )}
                         </Stack.Screen>
+
                         <Stack.Screen name="Induction">
                             {props => (
                                 <InductionScreen
@@ -142,6 +133,7 @@ export const AppRoutes = () => {
 
                         <Stack.Screen name="Request" component={CreateRequestScreen} />
                         <Stack.Screen name="RequestList" component={RequestListScreen} />
+
                         <Stack.Screen name="Profile">
                             {props => (
                                 <ProfileScreen
@@ -153,8 +145,10 @@ export const AppRoutes = () => {
                                 />
                             )}
                         </Stack.Screen>
+
                         <Stack.Screen name="PersonalData" component={PersonalDataScreen} />
                         <Stack.Screen name="History" component={HistoryScreen} />
+
                         <Stack.Screen name="Settings">
                             {props => (
                                 <SettingsScreen
@@ -166,6 +160,7 @@ export const AppRoutes = () => {
                                 />
                             )}
                         </Stack.Screen>
+
                         <Stack.Screen name="VirtualAssistant">
                             {props => (
                                 <VirtualAssistantScreen
@@ -177,10 +172,12 @@ export const AppRoutes = () => {
                                 />
                             )}
                         </Stack.Screen>
+
                         <Stack.Screen name="TwoFactorInfo" component={TwoFactorInfoScreen} />
                         <Stack.Screen name="TwoFactorMethod" component={TwoFactorMethodScreen} />
                         <Stack.Screen name="TwoFactorVerify" component={TwoFactorVerifyScreen} />
                         <Stack.Screen name="TwoFactorSuccess" component={TwoFactorSuccessScreen} />
+
                         <Stack.Screen name="AboutUs">
                             {props => (
                                 <AboutScreen
@@ -190,7 +187,9 @@ export const AppRoutes = () => {
                                 />
                             )}
                         </Stack.Screen>
+
                         <Stack.Screen name="GreenFootprint" component={GreenFootprintScreen} />
+
                         <Stack.Screen name="Rewards">
                             {props => (
                                 <RewardsScreen
@@ -201,6 +200,7 @@ export const AppRoutes = () => {
                                 />
                             )}
                         </Stack.Screen>
+
                         <Stack.Screen name="Partners">
                             {props => (
                                 <PartnersScreen
@@ -211,6 +211,7 @@ export const AppRoutes = () => {
                                 />
                             )}
                         </Stack.Screen>
+
                         <Stack.Screen name="EnvironmentalPrograms">
                             {props => (
                                 <EnvironmentalProgramsScreen
@@ -221,6 +222,7 @@ export const AppRoutes = () => {
                                 />
                             )}
                         </Stack.Screen>
+
                         <Stack.Screen name="Map">
                             {props => (
                                 <MapScreen
@@ -231,6 +233,7 @@ export const AppRoutes = () => {
                                 />
                             )}
                         </Stack.Screen>
+
                         <Stack.Screen name="RequestDetail">
                             {props => (
                                 <RequestDetailScreen
@@ -250,6 +253,7 @@ export const AppRoutes = () => {
                 <DrawerMenu
                     visible={drawerVisible}
                     onClose={() => setDrawerVisible(false)}
+                    // AQUÍ TAMBIÉN USABAS userInfo
                     userName={userInfo.name}
                     userEmail={userInfo.email}
                     userPoints={userInfo.points}
