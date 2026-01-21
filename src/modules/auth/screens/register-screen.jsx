@@ -10,6 +10,7 @@ import { GoogleIcon } from '../../../shared/svgs/google';
 import { handleGoogleLogin } from '../../../api/auth/google'; // Google lo dejamos igual por ahora
 import { useAuthStore } from '../../../hooks/use-auth-store'; // ✅ IMPORTANTE
 
+
 const { width, height } = Dimensions.get('window');
 
 export const RegisterScreen = ({ navigation }) => {
@@ -41,15 +42,26 @@ export const RegisterScreen = ({ navigation }) => {
     // Si el registro falla, mostramos la alerta automáticamente
     useEffect(() => {
         if (errorMessage) {
-            Alert.alert('Error de Registro', errorMessage);
+            // Si errorMessage es un Array (Lista), lo unimos con saltos de línea. Si es texto, lo dejamos igual.
+            const msg = Array.isArray(errorMessage)
+                ? errorMessage.join('\n')
+                : typeof errorMessage === 'object' // Por si acaso devuelve un objeto raro
+                    ? JSON.stringify(errorMessage)
+                    : errorMessage;
+
+            Alert.alert('Error de Registro', msg);
         }
     }, [errorMessage]);
 
     const validateEmail = (email) => {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || "Correo inválido";
+        // 1. Regex estándar más robusto
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        // 2. Importante: Validamos sobre el texto sin espacios (trim)
+        return emailRegex.test(email.trim()) || "Correo inválido";
     };
 
     const onSubmit = (data) => {
+        console.log(data);
         // Validación de contraseñas
         if (data.password !== data.confirmPassword) {
             Alert.alert("Error", "Las contraseñas no coinciden");
@@ -62,6 +74,7 @@ export const RegisterScreen = ({ navigation }) => {
             email: data.email,
             password: data.password,
             role: role === 'citizen' ? 'CITIZEN' : 'RECYCLER',
+            authProvider: 'local',
             // Solo enviamos datos extra si es reciclador
             ...(role === 'recycler' && {
                 phone: data.phone,
@@ -186,13 +199,14 @@ export const RegisterScreen = ({ navigation }) => {
                             )}
 
                             <Controller
-                                control={control} name="email" rules={{ required: true, validate: validateEmail }}
+                                control={control} name="email" rules={{ required: true, validate: (text) => validateEmail(text) }}
                                 render={({ field: { onChange, value } }) => (
                                     <TextInput
                                         mode="flat" placeholder="Email:" placeholderTextColor="#384745" style={styles.input}
-                                        value={value} onChangeText={onChange} underlineColor="transparent" activeUnderlineColor="transparent"
+                                        value={value} onChangeText={(text) => onChange(text.trim())} underlineColor="transparent" activeUnderlineColor="transparent"
                                         left={<TextInput.Icon icon="email" color="#000000" />}
                                         disabled={isLoading}
+                                        autoCapitalize="none"
                                     />
                                 )}
                             />
@@ -233,7 +247,6 @@ export const RegisterScreen = ({ navigation }) => {
                                     onPress={handleSubmit(onSubmit)}
                                     style={styles.registerBtn}
                                     labelStyle={{ fontSize: 16 }}
-                                    loading={isLoading}
                                     disabled={isLoading}
                                 >
                                     {isLoading ? 'Registrando...' : (role === 'citizen' ? 'Registrarse' : 'Registrarme como Reciclador')}

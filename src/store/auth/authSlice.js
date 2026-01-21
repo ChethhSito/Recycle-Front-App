@@ -25,9 +25,12 @@ export const authSlice = createSlice({
         },
         clearErrorMessage: (state) => {
             state.errorMessage = undefined;
-        }
+        },
+        onUpdateUser: (state, { payload }) => {
+            state.user = { ...state.user, ...payload };
+        },
     }
 });
 
 // ¡IMPORTANTE! Exportamos los nombres exactos que usamos en el Hook
-export const { onLogin, onLogout, onChecking, clearErrorMessage } = authSlice.actions;
+export const { onLogin, onLogout, onChecking, clearErrorMessage, onUpdateUser } = authSlice.actions;

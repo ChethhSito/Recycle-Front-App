@@ -246,10 +246,6 @@ export const HomeScreen = () => {
             <DrawerMenu
                 visible={drawerVisible}
                 onClose={() => setDrawerVisible(false)}
-                userName={user.fullName}
-                userEmail={user.email}
-                userPoints={user.points}
-                avatarUrl={user.avatarUrl || 'https://i.pravatar.cc/150?img=33'}
             />
 
             <AssistantNotification visible={notificationVisible} onClose={() => setNotificationVisible(false)} onOpen={() => navigation.navigate('VirtualAssistant')} />
