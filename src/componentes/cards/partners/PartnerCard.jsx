@@ -4,15 +4,19 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export const PartnerCard = ({ partner, onPress }) => {
-    const partnerThemes = {
-        yape: { colors: ['#6C3FB5', '#8B5FD8'], textColor: '#6C3FB5' },
-        bcp: { colors: ['#002C77', '#004BA8'], textColor: '#002C77' },
-        government: { colors: ['#D32F2F', '#F44336'], textColor: '#D32F2F' },
-        ong: { colors: ['#0288D1', '#4FC3F7'], textColor: '#0288D1' },
-        corporate: { colors: ['#00796B', '#00897B'], textColor: '#00796B' },
+    // Helper para generar un color más claro para el gradiente
+    const lightenColor = (hex, percent) => {
+        const num = parseInt(hex.replace('#', ''), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = (num >> 16) + amt;
+        const G = (num >> 8 & 0x00FF) + amt;
+        const B = (num & 0x0000FF) + amt;
+        return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
     };
 
-    const theme = partnerThemes[partner.type] || partnerThemes.corporate;
+    const mainColor = partner.mainColor || '#00796B';
+    const lightColor = lightenColor(mainColor, 20);
+    const textColor = mainColor;
 
     return (
         <TouchableOpacity
@@ -20,23 +24,27 @@ export const PartnerCard = ({ partner, onPress }) => {
             onPress={onPress}
             activeOpacity={0.8}
         >
-            {/* Header con gradiente */}
+            {/* Header con gradiente dinámico */}
             <LinearGradient
-                colors={theme.colors}
+                colors={[mainColor, lightColor]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.gradientHeader}
             >
-                <View style={styles.iconContainer}>
-                    <Icon name={partner.icon} size={48} color="#FFF" />
+                <View style={styles.logoContainer}>
+                    <Image
+                        source={{ uri: partner.logo }}
+                        style={styles.logoImage}
+                        resizeMode="cover"
+                    />
                 </View>
             </LinearGradient>
 
             {/* Contenido */}
             <View style={styles.content}>
                 {/* Tipo de partner */}
-                <View style={[styles.typeBadge, { backgroundColor: `${theme.textColor}15` }]}>
-                    <Text style={[styles.typeText, { color: theme.textColor }]}>
+                <View style={[styles.typeBadge, { backgroundColor: `${textColor}15` }]}>
+                    <Text style={[styles.typeText, { color: textColor }]}>
                         {partner.typeLabel}
                     </Text>
                 </View>
@@ -52,21 +60,21 @@ export const PartnerCard = ({ partner, onPress }) => {
                 {/* Estadísticas */}
                 <View style={styles.statsContainer}>
                     <View style={styles.statItem}>
-                        <Icon name="gift-outline" size={18} color={theme.textColor} />
-                        <Text style={styles.statText}>{partner.rewardsCount} premios</Text>
+                        <Icon name="gift-outline" size={18} color={textColor} />
+                        <Text style={styles.statText}>{partner.rewardsCount || 0} premios</Text>
                     </View>
                     <View style={styles.statItem}>
-                        <Icon name="account-group" size={18} color={theme.textColor} />
-                        <Text style={styles.statText}>{partner.usersCount} canjes</Text>
+                        <Icon name="account-group" size={18} color={textColor} />
+                        <Text style={styles.statText}>{partner.usersCount || 0} canjes</Text>
                     </View>
                 </View>
 
                 {/* Botón */}
                 <View style={styles.footer}>
-                    <Text style={[styles.footerText, { color: theme.textColor }]}>
+                    <Text style={[styles.footerText, { color: textColor }]}>
                         Ver beneficios
                     </Text>
-                    <Icon name="arrow-right" size={20} color={theme.textColor} />
+                    <Icon name="arrow-right" size={20} color={textColor} />
                 </View>
             </View>
         </TouchableOpacity>
@@ -92,15 +100,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         position: 'relative',
     },
-    iconContainer: {
+    logoContainer: {
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+        backgroundColor: '#FFF',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 3,
         borderColor: 'rgba(255, 255, 255, 0.4)',
+        overflow: 'hidden',
+    },
+    logoImage: {
+        width: '100%',
+        height: '100%',
     },
     content: {
         padding: 16,
