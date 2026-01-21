@@ -1,85 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { CloudHeader } from '../../componentes/cards/home/CloudHeader';
 import { VideoCard } from '../../componentes/cards/VideoCard';
 import { VideoPlayerModal } from '../../componentes/modal/shared/VideoPlayerModal';
-
-// Datos de videos educativos con URLs reales de YouTube
-const VIDEOS = [
-    {
-        id: '1',
-        title: 'Reducir, Reutilizar y Reciclar',
-        category: 'Tutorial',
-        duration: '3:45',
-        thumbnail: 'https://img.youtube.com/vi/cvakvfXj0KE/mqdefault.jpg',
-        views: '1.2k',
-        xpPoints: 10,
-        completionXP: 15,
-        videoUrl: 'https://www.youtube.com/watch?v=cvakvfXj0KE',
-        description: 'Aprende las 3R del reciclaje: Reducir, Reutilizar y Reciclar para mejorar el mundo.',
-    },
-    {
-        id: '2',
-        title: 'Separación de Residuos',
-        category: 'Tutorial',
-        duration: '2:30',
-        thumbnail: 'https://img.youtube.com/vi/uaI3PLmAJyM/mqdefault.jpg',
-        views: '856',
-        xpPoints: 10,
-        completionXP: 15,
-        videoUrl: 'https://www.youtube.com/watch?v=uaI3PLmAJyM',
-        description: 'Guía práctica para separar correctamente los residuos en tu hogar.',
-    },
-    {
-        id: '3',
-        title: 'El ciclo del reciclaje',
-        category: 'Reciclaje',
-        duration: '4:15',
-        thumbnail: 'https://img.youtube.com/vi/cvakvfXj0KE/mqdefault.jpg',
-        views: '2.1k',
-        xpPoints: 12,
-        completionXP: 18,
-        videoUrl: 'https://www.youtube.com/watch?v=cvakvfXj0KE',
-        description: 'Descubre el proceso completo del reciclaje de materiales.',
-    },
-    {
-        id: '4',
-        title: 'Beneficios del reciclaje',
-        category: 'Eco-Tips',
-        duration: '3:00',
-        thumbnail: 'https://img.youtube.com/vi/uaI3PLmAJyM/mqdefault.jpg',
-        views: '945',
-        xpPoints: 8,
-        completionXP: 12,
-        videoUrl: 'https://www.youtube.com/watch?v=uaI3PLmAJyM',
-        description: 'Impacto positivo del reciclaje en el medio ambiente.',
-    },
-    {
-        id: '5',
-        title: 'Cómo canjear tus puntos',
-        category: 'Premios',
-        duration: '2:45',
-        thumbnail: 'https://img.youtube.com/vi/cvakvfXj0KE/mqdefault.jpg',
-        views: '1.5k',
-        xpPoints: 15,
-        completionXP: 25,
-        videoUrl: 'https://www.youtube.com/watch?v=cvakvfXj0KE',
-        description: 'Conoce el catálogo de premios y cómo reclamarlos con tus puntos XP.',
-    },
-    {
-        id: '6',
-        title: 'Compostaje en casa',
-        category: 'Eco-Tips',
-        duration: '5:20',
-        thumbnail: 'https://img.youtube.com/vi/uaI3PLmAJyM/mqdefault.jpg',
-        views: '678',
-        xpPoints: 12,
-        completionXP: 20,
-        videoUrl: 'https://www.youtube.com/watch?v=uaI3PLmAJyM',
-        description: 'Aprende a hacer compost con residuos orgánicos y reduce tu huella.',
-    },
-];
+import { useInduction } from '../../api/induction/useInduction';
 
 const CATEGORIES = ['Todos', 'Tutorial', 'Reciclaje', 'Eco-Tips', 'Premios'];
 
@@ -90,10 +16,19 @@ export const InductionScreen = ({ navigation, onOpenDrawer, userAvatar, userName
     const [completedVideos, setCompletedVideos] = useState(new Set());
     const [likedVideos, setLikedVideos] = useState(new Set());
 
+    // Custom Hook
+    const { videos, loading, refetch, registerView } = useInduction();
+
+    useFocusEffect(
+        useCallback(() => {
+            refetch();
+        }, [refetch])
+    );
+
     // Filtrar videos por categoría
     const filteredVideos = selectedCategory === 'Todos'
-        ? VIDEOS
-        : VIDEOS.filter(video => video.category === selectedCategory);
+        ? videos
+        : videos.filter(video => video.category === selectedCategory);
 
     const handleVideoPress = (video) => {
         setSelectedVideo(video);
@@ -103,7 +38,7 @@ export const InductionScreen = ({ navigation, onOpenDrawer, userAvatar, userName
     const handleVideoComplete = (videoId) => {
         if (!completedVideos.has(videoId)) {
             setCompletedVideos(prev => new Set(prev).add(videoId));
-            // Aquí se puede integrar con el sistema de puntos global si es necesario
+            registerView(videoId);
         }
     };
 
@@ -153,28 +88,35 @@ export const InductionScreen = ({ navigation, onOpenDrawer, userAvatar, userName
                 </View>
 
                 {/* Lista de Videos */}
-                <ScrollView
-                    style={styles.scrollView}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.scrollContent}
-                >
-                    {filteredVideos.length > 0 ? (
-                        filteredVideos.map((video) => (
-                            <VideoCard
-                                key={video.id}
-                                video={video}
-                                onPress={() => handleVideoPress(video)}
-                                isCompleted={completedVideos.has(video.id)}
-                            />
-                        ))
-                    ) : (
-                        <View style={styles.emptyState}>
-                            <Text style={styles.emptyText}>
-                                No hay videos en esta categoría
-                            </Text>
-                        </View>
-                    )}
-                </ScrollView>
+                {loading ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#FFF" />
+                        <Text style={styles.loadingText}>Cargando lecciones...</Text>
+                    </View>
+                ) : (
+                    <ScrollView
+                        style={styles.scrollView}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.scrollContent}
+                    >
+                        {filteredVideos.length > 0 ? (
+                            filteredVideos.map((video) => (
+                                <VideoCard
+                                    key={video.id}
+                                    video={video}
+                                    onPress={() => handleVideoPress(video)}
+                                    isCompleted={completedVideos.has(video.id)}
+                                />
+                            ))
+                        ) : (
+                            <View style={styles.emptyState}>
+                                <Text style={styles.emptyText}>
+                                    No hay videos en esta categoría
+                                </Text>
+                            </View>
+                        )}
+                    </ScrollView>
+                )}
 
                 {/* Video Player Modal */}
                 {selectedVideo && (
@@ -185,8 +127,8 @@ export const InductionScreen = ({ navigation, onOpenDrawer, userAvatar, userName
                             setModalVisible(false);
                             setSelectedVideo(null);
                         }}
-                        onVideoComplete={handleVideoComplete}
-                        onLike={handleLike}
+                        onVideoComplete={() => handleVideoComplete(selectedVideo.id)}
+                        onLike={() => handleLike(selectedVideo.id)}
                     />
                 )}
             </View>
@@ -204,7 +146,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#018f64',
     },
     filtersSection: {
-
         marginBottom: 12,
     },
     filtersContainer: {
@@ -238,6 +179,15 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingBottom: 24,
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        color: '#FFF',
+        marginTop: 10,
+    },
     emptyState: {
         alignItems: 'center',
         justifyContent: 'center',
@@ -245,7 +195,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
-        color: '#666',
+        color: '#EEE',
         textAlign: 'center',
     },
 });
