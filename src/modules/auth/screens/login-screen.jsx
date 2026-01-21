@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Image,
@@ -8,31 +8,35 @@ import {
     KeyboardAvoidingView,
     Platform,
     TouchableWithoutFeedback,
-    Keyboard
+    Keyboard,
+    Alert
 } from 'react-native';
 
 import { Text, TextInput, Button, useTheme, HelperText, Snackbar } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 import { GoogleIcon } from '../../../shared/svgs/google';
 import { handleGoogleLogin } from '../../../api/auth/google';
-import { handleManualLogin } from '../../../api/auth/manual';
-import { useDispatch } from 'react-redux';
-import { login } from '../../../store/auth';
+import { useAuthStore } from '../../../hooks/use-auth-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert } from 'react-native';
+
 const { width, height } = Dimensions.get('window');
 
 export const LoginScreen = ({ navigation }) => {
-    const dispatch = useDispatch();
-    const [loading, setLoading] = useState(false);
+    const { startLogin, errorMessage, status } = useAuthStore();
+
+    const loading = status === 'checking';
     const [googleLoading, setGoogleLoading] = useState(false);
-    const theme = useTheme();
     const [showPassword, setShowPassword] = useState(false);
 
-    // Configuración del formulario
-    const { control, handleSubmit, formState: { errors }, setValue } = useForm({
+    const { control, handleSubmit, formState: { errors } } = useForm({
         defaultValues: { email: '', password: '' }
     });
+
+    useEffect(() => {
+        if (errorMessage) {
+            Alert.alert('Error de autenticación', errorMessage);
+        }
+    }, [errorMessage]);
 
     const validateEmail = (email) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,53 +44,26 @@ export const LoginScreen = ({ navigation }) => {
     };
 
     const onSubmit = async (data) => {
-        setLoading(true);
-        try {
-            console.log("Enviando login:", data.email);
-            
-            // Verificar si hay suspensión activa
-            const suspensionData = await AsyncStorage.getItem('account_suspended');
-            if (suspensionData) {
-                const suspension = JSON.parse(suspensionData);
-                
-                // Calcular si aún está dentro de los 30 días
-                const suspensionDate = new Date(suspension.suspensionDate);
-                const deletionDate = new Date(suspensionDate);
-                deletionDate.setDate(deletionDate.getDate() + 30);
-                
-                const today = new Date();
-                
-                if (today < deletionDate) {
-                    // Cuenta aún está suspendida, navegar a RestorationScreen
-                    console.log('Cuenta suspendida detectada, navegando a RestaurarCuenta');
-                    navigation.replace('RestaurarCuenta');
-                    setLoading(false);
-                    return;
-                } else {
-                    // Ya pasaron los 30 días, eliminar datos
-                    await AsyncStorage.removeItem('account_suspended');
-                    Alert.alert(
-                        'Cuenta Eliminada',
-                        'Tu cuenta fue eliminada después de 30 días de suspensión.',
-                        [{ text: 'Entendido' }]
-                    );
-                    setLoading(false);
-                    return;
-                }
+        Keyboard.dismiss();
+
+        // Lógica de Suspensión (Se queda aquí por ahora)
+        const suspensionData = await AsyncStorage.getItem('account_suspended');
+        if (suspensionData) {
+            const suspension = JSON.parse(suspensionData);
+            const deletionDate = new Date(new Date(suspension.suspensionDate).getTime() + 30 * 24 * 60 * 60 * 1000);
+
+            if (new Date() < deletionDate) {
+                navigation.replace('RestaurarCuenta');
+                return;
+            } else {
+                await AsyncStorage.removeItem('account_suspended');
+                Alert.alert('Cuenta Eliminada', 'Tu cuenta fue eliminada tras 30 días.');
+                return;
             }
-            
-            const result = await handleManualLogin(data.email, data.password);
-            console.log("Token recibido:", result.access_token);
-            await AsyncStorage.setItem('user_token', result.access_token);
-            dispatch(login({
-                token: result.access_token,
-                // user: result.user (si tu backend devuelve datos del usuario aquí)
-            }));
-        } catch (error) {
-            Alert.alert("Error de Acceso", error.message);
-        } finally {
-            setLoading(false);
         }
+
+        // 3. ¡LLAMADA LIMPIA! Solo le pasamos los datos al hook
+        startLogin({ email: data.email, password: data.password });
     };
 
     const onGooglePress = async () => {
@@ -110,15 +87,6 @@ export const LoginScreen = ({ navigation }) => {
         } finally {
             setGoogleLoading(false);
         }
-    };
-
-    // Función de acceso rápido para desarrollo
-    const quickLogin = () => {
-        setValue('email', 'admin@gmail.com');
-        setValue('password', '123456');
-        setTimeout(() => {
-            navigation.navigate('Home');
-        }, 300);
     };
 
     return (
@@ -156,6 +124,7 @@ export const LoginScreen = ({ navigation }) => {
                                 onChangeText={onChange}
                                 underlineColor="transparent"
                                 activeUnderlineColor="transparent"
+                                disabled={loading}
                                 left={<TextInput.Icon icon="email" color="#000000" />}
                             />
                         )}
@@ -176,6 +145,7 @@ export const LoginScreen = ({ navigation }) => {
                                 secureTextEntry={!showPassword}
                                 underlineColor="transparent"
                                 activeUnderlineColor="transparent"
+                                disabled={loading}
                                 left={<TextInput.Icon icon="lock" color="#000000" />}
                                 right={
                                     <TextInput.Icon
@@ -203,17 +173,6 @@ export const LoginScreen = ({ navigation }) => {
                     >
                         {loading ? "Entrando..." : "Iniciar Sesión"}
                     </Button>
-
-                    {/* Botón de Acceso Rápido para Desarrollo */}
-                    <Button
-                        mode="outlined"
-                        onPress={quickLogin}
-                        style={styles.devBtn}
-                        labelStyle={{ color: '#00926F', fontSize: 14 }}
-                    >
-                        ⚡ Acceso Rápido (Dev)
-                    </Button>
-
                     <Button
                         mode="contained"
                         icon={() => <GoogleIcon />}

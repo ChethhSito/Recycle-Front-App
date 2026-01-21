@@ -15,13 +15,20 @@ import { DrawerMenu } from '../../componentes/navigation/DrawerMenu';
 import { ProgramDetailModal } from '../../componentes/modal/shared/ProgramDetailModal';
 import { AssistantNotification, getRandomMessage } from '../../componentes/shared/AssistantNotification';
 import { useNavigation } from '@react-navigation/native';
+import { useAuthStore } from '../../hooks/use-auth-store';
+import { useLevels } from '../../hooks/use-levels-store';
 
 
-export const HomeScreen = ({ userAvatar, userName }) => {
+export const HomeScreen = () => {
+
+    const { user } = useAuthStore();
+    const { levels } = useLevels();
+
     const navigation = useNavigation();
     const theme = useTheme();
     const { height } = useWindowDimensions(); // <--- 1. OBTENEMOS LA ALTURA DE LA PANTALLA
     const componentStyles = styles(theme);
+
     const [filterType, setFilterType] = useState('peso');
     const [selectedProgram, setSelectedProgram] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
@@ -31,6 +38,20 @@ export const HomeScreen = ({ userAvatar, userName }) => {
     // Animaciones para el FAB
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const pulseAnim = useRef(new Animated.Value(1)).current;
+
+    const userLevelNumber = user?.level || 1;
+    const currentLevelData = levels?.find(l => l.levelNumber === userLevelNumber) || {};
+
+    const userName = user?.fullName
+    const userEmail = user?.email
+    const userPoints = user?.points
+    const userAvatarUrl = user?.avatarUrl
+    const levelName = currentLevelData.name
+    const levelIcon = currentLevelData.iconName
+    const targetPoints = currentLevelData.maxPoints
+    const currentPoints = user?.points;
+    // Calculamos el progreso (evitando división por cero)
+    const progressValue = targetPoints > 0 ? (currentPoints / targetPoints) : 0;
 
     // Animación de pulso continua para el FAB
     useEffect(() => {
@@ -144,183 +165,101 @@ export const HomeScreen = ({ userAvatar, userName }) => {
     };
 
     return (
-        // 2. APLICAMOS LA ALTURA FORZADA SI ES WEB
-        <View style={[
-            componentStyles.container, 
-            Platform.OS === 'web' && { height: height, overflow: 'hidden' } 
-        ]}>
+        <View style={[componentStyles.container, Platform.OS === 'web' && { height: height, overflow: 'hidden' }]}>
             <ScrollView
                 style={componentStyles.scrollContent}
                 contentContainerStyle={componentStyles.scrollContentContainer}
                 showsVerticalScrollIndicator={false}
-                nestedScrollEnabled={true} 
+                nestedScrollEnabled={true}
             >
-                {/* Header con usuario */}
+                {/* 4. HEADER CONECTADO A REDUX */}
                 <CloudHeader
-                    userName={`Hola, ${userName}`}
-                    userType="Ciudadano"
-                    avatarUrl={userAvatar || 'https://i.pravatar.cc/150?img=33'}
+                    userName={`Hola, ${user.fullName || 'Usuario'}`}
+                    userType={user.role === 'CITIZEN' ? 'Ciudadano' : 'Reciclador'}
+                    avatarUrl={user.avatarUrl} // Si es null, el componente CloudHeader debería manejar un default
                     onMenuPress={() => setDrawerVisible(true)}
                 />
 
-                {/* Quote Card */}
-                <QuoteCard
-                    quote="El mejor momento para plantar un árbol fue hace 20 años. El segundo mejor momento es ahora."
-                />
+                <QuoteCard quote="El mejor momento para plantar un árbol fue hace 20 años. El segundo mejor momento es ahora." />
 
-                {/* Tarjeta de Progreso */}
+                {/* 5. TARJETA DE PROGRESO 100% DINÁMICA */}
                 <ProgressCard
-                    badgeIcon="seed"
-                    badgeTitle="Semilla de Cambio"
-                    rank="Nivel 1"
-                    progress={0.66}
-                    currentPoints={330}
-                    maxPoints={500}
+                    badgeIcon={currentLevelData.iconName || 'seed'}
+                    badgeTitle={currentLevelData.name || 'Semilla'}
+                    rank={`Nivel ${userLevelNumber}`}
+                    progress={progressValue}
+                    currentPoints={currentPoints}
+                    maxPoints={targetPoints}
+
+                    // 👇 PASAMOS LOS COLORES DE LA BD
+                    bgColor={currentLevelData.primaryColor || '#F5E6D3'}
+                    iconColor={currentLevelData.bgColor || '#5D4037'}
                 />
 
-                {/* Tu impacto este mes */}
+                {/* Sección de Impacto */}
                 <View style={componentStyles.impactSection}>
                     <Text style={componentStyles.sectionTitle}>Tu impacto este mes:</Text>
-
                     <View style={componentStyles.filterContainer}>
-                        <TouchableOpacity
-                            style={[
-                                componentStyles.filterButton,
-                                filterType === 'peso' && componentStyles.filterButtonActive
-                            ]}
-                            onPress={() => setFilterType('peso')}
-                        >
-                            <Text style={[
-                                componentStyles.filterText,
-                                filterType === 'peso' && componentStyles.filterTextActive
-                            ]}>
-                                ver por peso
-                            </Text>
+                        <TouchableOpacity style={[componentStyles.filterButton, filterType === 'peso' && componentStyles.filterButtonActive]} onPress={() => setFilterType('peso')}>
+                            <Text style={[componentStyles.filterText, filterType === 'peso' && componentStyles.filterTextActive]}>ver por peso</Text>
                         </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[
-                                componentStyles.filterButton,
-                                filterType === 'cantidad' && componentStyles.filterButtonActive
-                            ]}
-                            onPress={() => setFilterType('cantidad')}
-                        >
-                            <Text style={[
-                                componentStyles.filterText,
-                                filterType === 'cantidad' && componentStyles.filterTextActive
-                            ]}>
-                                ver por cantidad
-                            </Text>
+                        <TouchableOpacity style={[componentStyles.filterButton, filterType === 'cantidad' && componentStyles.filterButtonActive]} onPress={() => setFilterType('cantidad')}>
+                            <Text style={[componentStyles.filterText, filterType === 'cantidad' && componentStyles.filterTextActive]}>ver por cantidad</Text>
                         </TouchableOpacity>
                     </View>
 
                     <View style={componentStyles.statsContainer}>
                         {impactData[filterType].map((item, index) => (
-                            <StatItem
-                                key={index}
-                                icon={item.icon}
-                                label={item.label}
-                                value={item.value}
-                                backgroundColor={item.backgroundColor}
-                                iconColor={item.iconColor}
-                            />
+                            <StatItem key={index} {...item} />
                         ))}
                     </View>
                 </View>
 
-                {/* Nube decorativa */}
-                <Image
-                    source={require('../../../assets/nube.png')}
-                    style={componentStyles.nubeImage}
-                    resizeMode="stretch"
-                />
+                {/* Decoración */}
+                <Image source={require('../../../assets/nube.png')} style={componentStyles.nubeImage} resizeMode="stretch" />
 
-                {/* Programas Populares */}
+                {/* Programas */}
                 <View style={componentStyles.programsSection}>
                     <View style={[componentStyles.programsHeader, { paddingHorizontal: 20 }]}>
                         <Icon name="leaf" size={50} color="#018f64" />
-                        <Text style={[componentStyles.sectionTitle, { color: '#31253B', marginBottom: 0, marginLeft: 10 }]}>
-                            Programas Populares
-                        </Text>
+                        <Text style={[componentStyles.sectionTitle, { color: '#31253B', marginBottom: 0, marginLeft: 10 }]}>Programas Populares</Text>
                     </View>
-
-                    <ScrollView 
-                        horizontal 
-                        showsHorizontalScrollIndicator={false}
-                        nestedScrollEnabled={true}
-                        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 10 }}
-                    >
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 10 }}>
                         {programsData.map((program) => (
-                            <ProgramCard
-                                key={program.id}
-                                image={program.image}
-                                title={program.title}
-                                badge={program.badge}
-                                schedule={program.schedule}
-                                location={program.location}
-                                onPress={() => handleProgramPress(program)}
-                            />
+                            <ProgramCard key={program.id} {...program} onPress={() => handleProgramPress(program)} />
                         ))}
                     </ScrollView>
                 </View>
             </ScrollView>
 
-            {/* Bottom Navigation */}
+            {/* Bottom Nav */}
             <View style={componentStyles.bottomNav}>
                 <NavItem icon="home" label="Inicio" active />
                 <NavItem icon="recycle" label="Reciclar" onPress={() => navigation.navigate('RequestList')} />
                 <NavItem icon="trophy" label="Premios" onPress={() => navigation.navigate('Rewards')} />
             </View>
 
-            {/* Modales */}
-            <ProgramDetailModal
-                visible={modalVisible}
-                onClose={() => setModalVisible(false)}
-                program={selectedProgram}
-            />
+            {/* Modales y Drawer */}
+            <ProgramDetailModal visible={modalVisible} onClose={() => setModalVisible(false)} program={selectedProgram} />
 
+            {/* 6. DRAWER CONECTADO A REDUX (Ya lo tenías bien) */}
             <DrawerMenu
                 visible={drawerVisible}
                 onClose={() => setDrawerVisible(false)}
-                userName={userName || 'Juan David'}
-                userEmail="jdavidhuay@gmail.com"
-                userPoints={330}
-                avatarUrl={userAvatar || 'https://i.pravatar.cc/150?img=33'}
+                userName={user.fullName}
+                userEmail={user.email}
+                userPoints={user.points}
+                avatarUrl={user.avatarUrl || 'https://i.pravatar.cc/150?img=33'}
             />
 
-            {/* Notificación del Asistente */}
-            <AssistantNotification
-                visible={notificationVisible}
-                onClose={() => setNotificationVisible(false)}
-                onOpen={() => navigation.navigate('VirtualAssistant')}
-            />
+            <AssistantNotification visible={notificationVisible} onClose={() => setNotificationVisible(false)} onOpen={() => navigation.navigate('VirtualAssistant')} />
 
-            {/* FAB - Asistente Virtual */}
-            <Animated.View
-                style={[
-                    componentStyles.fabContainer,
-                    {
-                        transform: [{ scale: scaleAnim }],
-                    },
-                ]}
-            >
-                <TouchableOpacity
-                    style={componentStyles.fab}
-                    onPress={handleFabPress}
-                    activeOpacity={0.8}
-                >
-                    <Animated.View
-                        style={[
-                            componentStyles.fabPulse,
-                            {
-                                transform: [{ scale: pulseAnim }],
-                            },
-                        ]}
-                    />
+            {/* FAB */}
+            <Animated.View style={[componentStyles.fabContainer, { transform: [{ scale: scaleAnim }] }]}>
+                <TouchableOpacity style={componentStyles.fab} onPress={handleFabPress} activeOpacity={0.8}>
+                    <Animated.View style={[componentStyles.fabPulse, { transform: [{ scale: pulseAnim }] }]} />
                     <Icon name="robot-happy" size={32} color="#FFFFFF" />
-                    <View style={componentStyles.fabBadge}>
-                        <Icon name="lightning-bolt" size={12} color="#FFF" />
-                    </View>
+                    <View style={componentStyles.fabBadge}><Icon name="lightning-bolt" size={12} color="#FFF" /></View>
                 </TouchableOpacity>
             </Animated.View>
         </View>

@@ -10,31 +10,44 @@ export const ProgressCard = ({
     progress = 0.66,
     currentPoints = 330,
     maxPoints = 500,
+    // 👇 1. NUEVAS PROPS (Con valores por defecto por si acaso)
+    bgColor = '#F5E6D3',
+    iconColor = '#5D4037',
 }) => {
     const theme = useTheme();
     const componentStyles = styles(theme);
 
     return (
-        <Card style={componentStyles.progressCard}>
+        // 👇 2. APLICAMOS EL COLOR DE FONDO DINÁMICO
+        <Card style={[componentStyles.progressCard, { backgroundColor: bgColor }]}>
             <Card.Content>
                 <View style={componentStyles.badgeContainer}>
                     <View style={componentStyles.circle}>
-                        <Icon name={badgeIcon} size={40} color="#5D4037" />
+                        {/* 👇 3. USAMOS EL COLOR PRINCIPAL PARA EL ICONO */}
+                        <Icon name={badgeIcon} size={30} color={iconColor} />
                     </View>
                     <View style={componentStyles.badgeInfo}>
                         <Text style={componentStyles.badgeTitle}>{badgeTitle}</Text>
                         <Text style={componentStyles.badgeRank}>{rank}</Text>
                     </View>
                 </View>
+
                 <Text style={componentStyles.progressText}>
-                    Siguiente nivel: Brote Verde
+                    Siguiente nivel: (Calculado automáticamente)
                 </Text>
-                <Text style={componentStyles.progressLabel}>TU PROGRESO ACTUAL</Text>
+
+                {/* Opcional: Puedes pintar este texto también con el color del nivel */}
+                <Text style={[componentStyles.progressLabel, { color: iconColor }]}>
+                    TU PROGRESO ACTUAL
+                </Text>
+
+                {/* 👇 4. LA BARRA DE PROGRESO COMBINA CON EL NIVEL */}
                 <ProgressBar
                     progress={progress}
-                    color="#018f64"
+                    color={iconColor}
                     style={componentStyles.progressBar}
                 />
+
                 <View style={componentStyles.pointsContainer}>
                     <Text style={componentStyles.points}>{currentPoints}/{maxPoints} pts</Text>
                 </View>
@@ -45,9 +58,10 @@ export const ProgressCard = ({
 
 const styles = (theme) => StyleSheet.create({
     progressCard: {
-        backgroundColor: '#F5E6D3',
+        // backgroundColor: '#F5E6D3', // ❌ YA NO ES NECESARIO AQUÍ (Se pasa por style prop)
         margin: 20,
         borderRadius: 20,
+        elevation: 4, // Un poco de sombra para que resalte
     },
     badgeContainer: {
         flexDirection: 'row',
@@ -58,7 +72,7 @@ const styles = (theme) => StyleSheet.create({
         width: 50,
         height: 50,
         borderRadius: 40,
-        backgroundColor: '#ffffff99',
+        backgroundColor: '#000000', // Hacemos el blanco semitransparente para que se mezcle bien con cualquier fondo
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -66,30 +80,35 @@ const styles = (theme) => StyleSheet.create({
         marginLeft: 15,
     },
     badgeTitle: {
-        color: '#000000ff',
+        color: '#ffffffff', // Color oscuro neutro para texto sobre fondos pastel
         fontSize: 18,
+        fontWeight: 'bold',
     },
     badgeRank: {
-        color: '#000000ff',
+        color: '#ffffffff',
         fontSize: 14,
     },
     progressLabel: {
-        color: '#018f64',
-        fontSize: 14,
+        // color: '#018f64', // Lo quitamos para usar iconColor dinámico
+        fontSize: 12,
         marginTop: 5,
-        marginBottom: 10,
-        fontWeight: '600',
+        marginBottom: 5,
+        fontWeight: 'bold',
+        opacity: 0.8,
+        letterSpacing: 1,
     },
     progressText: {
-        color: '#000000ff',
+        color: '#ffffffff',
         fontSize: 14,
         marginBottom: 5,
         marginTop: 10,
+        fontStyle: 'italic',
+        opacity: 0.8
     },
     progressBar: {
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#666',
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: '#c0c0c080', // Fondo de la barra más sutil
     },
     pointsContainer: {
         flexDirection: 'row',
@@ -97,7 +116,8 @@ const styles = (theme) => StyleSheet.create({
         marginTop: 8,
     },
     points: {
-        color: '#000000ff',
+        color: '#ffffffff',
         fontSize: 14,
+        fontWeight: 'bold',
     },
 });

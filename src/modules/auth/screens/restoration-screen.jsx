@@ -126,13 +126,13 @@ export const RestorationScreen = () => {
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#018f64" />
-            
+
             {/* Fondo con LinearGradient */}
             <LinearGradient
                 colors={['#018f64', '#00755b', '#005c4b']}
                 style={styles.gradient}
             >
-                <ScrollView 
+                <ScrollView
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 >
@@ -262,7 +262,7 @@ export const RestorationScreen = () => {
                 animationType="fade"
             >
                 <View style={styles.modalOverlay}>
-                    <Animated.View 
+                    <Animated.View
                         style={[
                             styles.modalContent,
                             { transform: [{ scale: scaleAnim }] }
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 32,
     },
-    
+
     // Modal de Confirmación de Restaurar (estilo DrawerMenu)
     confirmModalOverlay: {
         flex: 1,
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: '#FFFFFF',
     },
-    
+
     // Modal de Éxito
     modalOverlay: {
         flex: 1,
@@ -627,7 +627,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         lineHeight: 22,
     },
-    
+
     // Modal de Confirmación de Logout (estilo DrawerMenu)
     logoutModalOverlay: {
         flex: 1,

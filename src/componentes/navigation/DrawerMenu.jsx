@@ -1,17 +1,15 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated, Dimensions, Image, ScrollView } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { LogOut, AlertTriangle } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useDispatch } from 'react-redux';
-import { logout } from '../../store/auth'; // Asegúrate que la ruta sea correcta hacia tu store
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LogOut } from 'lucide-react-native';
+// 1. IMPORTAR EL HOOK
+import { useAuthStore } from '../../hooks/use-auth-store';
 
 const { width } = Dimensions.get('window');
 const DRAWER_WIDTH = width * 0.75;
 
-// Modal de Confirmación de Cierre de Sesión
+// Modal de Confirmación de Cierre de Sesión (Se mantiene igual)
 const LogoutModal = ({ visible, onClose, onConfirm }) => {
     return (
         <Modal
@@ -56,12 +54,14 @@ const LogoutModal = ({ visible, onClose, onConfirm }) => {
 
 export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, avatarUrl }) => {
     const navigation = useNavigation();
-    const dispatch = useDispatch();
-    const slideAnim = React.useRef(new Animated.Value(-DRAWER_WIDTH)).current;
-    const [pressedItem, setPressedItem] = React.useState(null);
-    const [logoutModalVisible, setLogoutModalVisible] = React.useState(false);
 
-    React.useEffect(() => {
+    // 2. EXTRAER startLogout DEL HOOK
+    const { startLogout, user } = useAuthStore();
+
+    const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
+    const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+
+    useEffect(() => {
         if (visible) {
             Animated.spring(slideAnim, {
                 toValue: 0,
@@ -76,22 +76,20 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                 useNativeDriver: true,
             }).start();
         }
+        console.log('user', user);
     }, [visible]);
 
     const handleLogoutPress = () => {
         setLogoutModalVisible(true);
     };
 
-    const confirmLogout = async () => {
+    // 3. FUNCIÓN LOGOUT SIMPLIFICADA
+    const confirmLogout = () => {
         setLogoutModalVisible(false);
-        onClose();
-        try {
-            await AsyncStorage.removeItem('user_token');
-            dispatch(logout());
+        onClose(); // Cierra el drawer visualmente
 
-        } catch (error) {
-            console.error("Error al cerrar sesión:", error);
-        }
+        // Llamada directa al hook (sin try-catch ni async/await necesarios aquí, el hook lo maneja)
+        startLogout();
     };
 
     const menuSections = [
@@ -179,10 +177,10 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                                             onClose();
                                         }}
                                     >
-                                        <Icon 
-                                            name={item.icon} 
-                                            size={20} 
-                                            color={item.highlight ? '#018f64' : '#000'} 
+                                        <Icon
+                                            name={item.icon}
+                                            size={20}
+                                            color={item.highlight ? '#018f64' : '#000'}
                                         />
                                         <Text style={[
                                             styles.menuItemText,
@@ -228,6 +226,7 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
     );
 };
 
+// ... Styles se mantienen igual ...
 const styles = StyleSheet.create({
     modalContainer: {
         flex: 1,
@@ -366,7 +365,6 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         marginLeft: 8,
     },
-    // Estilos del Modal de Logout mejorado
     logoutModalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
