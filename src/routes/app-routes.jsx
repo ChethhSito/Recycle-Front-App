@@ -19,6 +19,7 @@ import { EnvironmentalProgramsScreen } from '../modules/programs/environmental-p
 import { RequestDetailScreen, MapScreen } from '../modules/recycler';
 import { HomeScreen } from '../modules/home';
 import { VirtualAssistantScreen } from '../modules/assistant/VirtualAssistantScreen';
+import { EditProfileModal } from '../modules/settings/editprofilemodal-screen';
 
 import { TwoFactorInfoScreen } from '../modules/settings/two-factor-auth/two-factor-info-screen';
 import { TwoFactorMethodScreen } from '../modules/settings/two-factor-auth/two-factor-method-screen';
@@ -226,6 +227,17 @@ export const AppRoutes = () => {
                         <Stack.Screen name="Map">
                             {props => (
                                 <MapScreen
+                                    {...props}
+                                    onOpenDrawer={() => setDrawerVisible(true)}
+                                    userAvatar={userInfo.avatar}
+                                    userName={userInfo.name}
+                                />
+                            )}
+                        </Stack.Screen>
+
+                        <Stack.Screen name="EditProfileModal">
+                            {props => (
+                                <EditProfileModal
                                     {...props}
                                     onOpenDrawer={() => setDrawerVisible(true)}
                                     userAvatar={userInfo.avatar}

@@ -52,7 +52,7 @@ const LogoutModal = ({ visible, onClose, onConfirm }) => {
     );
 };
 
-export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, avatarUrl }) => {
+export const DrawerMenu = ({ visible, onClose }) => {
     const navigation = useNavigation();
 
     // 2. EXTRAER startLogout DEL HOOK
@@ -76,7 +76,6 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                 useNativeDriver: true,
             }).start();
         }
-        console.log('user', user);
     }, [visible]);
 
     const handleLogoutPress = () => {
@@ -118,7 +117,15 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
         {
             title: 'Cuenta',
             items: [
-                { icon: 'cog', label: 'Configuración', onPress: () => navigation.navigate('Settings') },
+                {
+                    icon: 'cog', label: 'Configuración', onPress: () => navigation.navigate('Settings', {
+                        // Pasamos los datos del usuario que sacaste del store
+                        userAvatar: user.avatarUrl,
+                        userName: user.fullName,
+                        userEmail: user.email,
+                        userPhone: user.phone // Agregamos el teléfono también
+                    })
+                },
             ]
         }
     ];
@@ -149,14 +156,14 @@ export const DrawerMenu = ({ visible, onClose, userName, userEmail, userPoints, 
                         {/* Header del Drawer */}
                         <View style={styles.drawerHeader}>
                             <Image
-                                source={{ uri: avatarUrl }}
+                                source={{ uri: user.avatarUrl }}
                                 style={styles.avatar}
                             />
                             <View style={styles.userInfo}>
-                                <Text style={styles.userName}>{userName}</Text>
-                                <Text style={styles.userEmail}>{userEmail}</Text>
+                                <Text style={styles.userName}>{user.fullName}</Text>
+                                <Text style={styles.userEmail}>{user.email}</Text>
                                 <View style={styles.pointsBadge}>
-                                    <Text style={styles.pointsText}>{userPoints} puntos</Text>
+                                    <Text style={styles.pointsText}>{user.points} puntos</Text>
                                 </View>
                             </View>
                         </View>

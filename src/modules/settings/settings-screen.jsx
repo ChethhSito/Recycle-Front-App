@@ -18,6 +18,7 @@ import { DeleteAccountModal } from '../../componentes/modal/settings/DeleteAccou
 import { TermsModal } from '../../componentes/modal/settings/TermsModal';
 import { ChangePasswordModal } from '../../componentes/modal/settings/ChangePasswordModal';
 import { ToggleConfirmModal } from '../../componentes/modal/settings/ToggleConfirmModal';
+import { EditProfileModal } from './editprofilemodal-screen';
 
 // Componente ToggleSwitch personalizado
 const ToggleSwitch = ({ value, onValueChange, disabled = false }) => {
@@ -46,15 +47,15 @@ const SettingsSection = ({ title, children, style }) => {
 };
 
 // Componente SettingsItem para cada opción
-const SettingsItem = ({ 
-    icon, 
-    iconColor = '#018f64', 
-    label, 
-    value, 
-    onPress, 
-    rightComponent, 
+const SettingsItem = ({
+    icon,
+    iconColor = '#018f64',
+    label,
+    value,
+    onPress,
+    rightComponent,
     status,
-    isDanger = false 
+    isDanger = false
 }) => {
     const isDisabled = !!status;
 
@@ -75,10 +76,10 @@ const SettingsItem = ({
                     isDanger && styles.iconContainerDanger,
                     isDisabled && styles.iconContainerDisabled
                 ]}>
-                    <Icon 
-                        name={icon} 
-                        size={22} 
-                        color={isDisabled ? '#9CA3AF' : (isDanger ? '#DC2626' : iconColor)} 
+                    <Icon
+                        name={icon}
+                        size={22}
+                        color={isDisabled ? '#9CA3AF' : (isDanger ? '#DC2626' : iconColor)}
                     />
                 </View>
                 <View style={styles.settingsItemTextContainer}>
@@ -114,15 +115,16 @@ const SettingsItem = ({
         </TouchableOpacity>
     );
 };
-
-export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }) => {
+import { useAuthStore } from '../../hooks/use-auth-store';
+export const SettingsScreen = ({ onOpenDrawer }) => {
     const navigation = useNavigation();
     const route = useRoute();
-    
+    const { user } = useAuthStore();
     // Estados
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-    
+    const [editProfileModalVisible, setEditProfileModalVisible] = useState(false);
+
     // Estados de modales
     const [supportModalVisible, setSupportModalVisible] = useState(false);
     const [deleteAccountModalVisible, setDeleteAccountModalVisible] = useState(false);
@@ -151,7 +153,7 @@ export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }
     const handleNotificationsToggle = (value) => {
         setToggleModalConfig({
             title: value ? 'Activar Notificaciones' : 'Desactivar Notificaciones',
-            message: value 
+            message: value
                 ? '¿Deseas recibir notificaciones sobre tus actividades de reciclaje, premios disponibles y novedades?'
                 : '¿Estás seguro que deseas desactivar las notificaciones? Podrías perderte actualizaciones importantes.',
             icon: 'bell',
@@ -170,6 +172,10 @@ export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }
 
     const handleChangePassword = () => {
         setChangePasswordModalVisible(true);
+    };
+
+    const handleEditProfile = () => {
+        setEditProfileModalVisible(true);
     };
 
     const handleTwoFactorToggle = (value) => {
@@ -228,7 +234,7 @@ export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }
                     </TouchableOpacity>
 
                     <View style={styles.avatarContainer}>
-                        <Image source={{ uri: userAvatar }} style={styles.avatar} />
+                        <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
                         <View style={styles.avatarBorder} />
                     </View>
                 </View>
@@ -238,7 +244,7 @@ export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }
                     <View style={styles.titleSection}>
                         <Icon name="cog" size={32} color="#FFD700" />
                         <View style={styles.titleTextContainer}>
-                            <Text style={styles.greeting}>Hola, {userName}</Text>
+                            <Text style={styles.greeting}>Hola, {user.fullName}</Text>
                             <Text style={styles.headerTitle}>Configuración</Text>
                             <Text style={styles.headerSubtitle}>Personaliza tu experiencia</Text>
                         </View>
@@ -246,7 +252,7 @@ export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }
                 </View>
             </LinearGradient>
 
-            <ScrollView 
+            <ScrollView
                 style={styles.scrollView}
                 showsVerticalScrollIndicator={false}
             >
@@ -259,7 +265,7 @@ export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }
                         status="Próximamente"
                         onPress={handleLanguagePress}
                     />
-                    
+
                     <SettingsItem
                         icon="bell"
                         label="Notificaciones"
@@ -271,7 +277,7 @@ export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }
                             />
                         }
                     />
-                    
+
                     <SettingsItem
                         icon="weather-night"
                         label="Modo Oscuro"
@@ -287,7 +293,13 @@ export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }
                         label="Cambiar Contraseña"
                         onPress={handleChangePassword}
                     />
-                    
+
+                    <SettingsItem
+                        icon="account"
+                        label="Editar Perfil"
+                        onPress={handleEditProfile}
+                    />
+
                     <SettingsItem
                         icon="shield-check"
                         label="Verificación en 2 pasos"
@@ -308,7 +320,7 @@ export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }
                         label="Centro de Ayuda"
                         onPress={handleHelpCenter}
                     />
-                    
+
                     <SettingsItem
                         icon="file-document"
                         label="Términos y Privacidad"
@@ -345,8 +357,8 @@ export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }
             <DeleteAccountModal
                 visible={deleteAccountModalVisible}
                 onClose={() => setDeleteAccountModalVisible(false)}
-                userEmail={userEmail || 'usuario@example.com'}
-                userName={userName || 'Usuario'}
+                userEmail={user.email}
+                userName={user.fullName}
                 onConfirm={() => {
                     setDeleteAccountModalVisible(false);
                     // La lógica de suspensión está en el modal
@@ -363,6 +375,16 @@ export const SettingsScreen = ({ userAvatar, userName, userEmail, onOpenDrawer }
                 onClose={() => setChangePasswordModalVisible(false)}
             />
 
+            <EditProfileModal
+                visible={editProfileModalVisible}
+                onClose={() => setEditProfileModalVisible(false)}
+                currentUser={{
+                    fullName: user.fullName,
+                    phone: user?.phone, // Use optional chaining in case user is undefined initially
+                    avatarUrl: user.avatarUrl
+                }}
+                onUpdateSuccess={onOpenDrawer} // Or a specific function to refresh user data
+            />
             {toggleModalConfig && (
                 <ToggleConfirmModal
                     visible={toggleModalVisible}

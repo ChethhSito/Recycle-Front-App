@@ -1,8 +1,9 @@
 import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { urlBase } from '../api/helper/url-auth';
-import { onChecking, onLogin, onLogout, clearErrorMessage } from '../store/auth/authSlice';
+import { urlBase, urlUser } from '../api/helper/url-auth';
+import { onChecking, onLogin, onLogout, clearErrorMessage, onUpdateUser } from '../store/auth/authSlice';
+import { Platform } from 'react-native';
 
 export const useAuthStore = () => {
 
@@ -19,7 +20,7 @@ export const useAuthStore = () => {
         try {
             // 2. Petición HTTP
             const { data } = await axios.post(`${urlBase}/login`, { email, password });
-            console.log('Data login:', data);
+            console.log('Data login:', data.access_token);
             // 3. Guardar en Disco
             await AsyncStorage.setItem('user_token', data.access_token);
             // Si quieres guardar datos básicos del user para uso offline:
@@ -44,12 +45,18 @@ export const useAuthStore = () => {
     // ==========================================
     // 2. REGISTRO
     // ==========================================
-    const startRegister = async ({ fullName, email, password, role = 'CITIZEN' }) => {
+    const startRegister = async ({ fullName, email, password, role = 'CITIZEN', phone, documentNumber }) => {
         dispatch(onChecking());
 
         try {
             const { data } = await axios.post(`${urlBase}/register`, {
-                fullName, email, password, role
+                fullName,
+                email,
+                password,
+                role,
+                phone,
+                documentNumber, // Asegúrate de enviarlo si el form lo tiene
+                authProvider: 'local' // 👈 ¡AGREGA ESTO AQUÍ!
             });
 
             // Usualmente el registro loguea automáticamente. 
@@ -106,6 +113,72 @@ export const useAuthStore = () => {
         dispatch(onLogout());
     };
 
+    const startUpdateProfile = async ({ fullName, phone, imageAsset }) => {
+
+        // 1. Obtenemos el token
+        const token = await AsyncStorage.getItem('user_token');
+        if (!token) return false;
+
+        // Header común para las peticiones
+        const config = {
+            headers: { Authorization: `Bearer ${token}` }
+        };
+
+        try {
+            let newAvatarUrl = user.avatarUrl; // Por defecto mantenemos la actual
+
+            // A. ¿Hay foto nueva? SUBIRLA PRIMERO
+            if (imageAsset) {
+                const formData = new FormData();
+                formData.append('file', {
+                    uri: Platform.OS === 'ios' ? imageAsset.uri.replace('file://', '') : imageAsset.uri,
+                    name: 'avatar.jpg',
+                    type: 'image/jpeg',
+                });
+
+                // Petición POST para subir imagen (Content-Type especial)
+                const { data: imageData } = await axios.post(`${urlUser}/avatar`, formData, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+
+                // Asumimos que tu backend devuelve { avatarUrl: '...' }
+                // Si tu backend devuelve { secure_url: '...' }, cámbialo aquí.
+                newAvatarUrl = imageData.avatarUrl || imageData.secure_url;
+            }
+
+            // B. ACTUALIZAR DATOS DE TEXTO (PATCH)
+            // Aunque no cambie la foto, actualizamos el nombre y celular
+            await axios.patch(`${urlUser}/profile`, {
+                fullName,
+                phone
+            }, config);
+
+            // C. TODO SALIÓ BIEN: ACTUALIZAR REDUX Y STORAGE LOCAL
+            const updatedUser = {
+                ...user,
+                fullName,
+                phone,
+                avatarUrl: newAvatarUrl
+            };
+
+            // 1. Redux (UI Instantánea)
+            dispatch(onUpdateUser(updatedUser));
+
+            // 2. Persistencia (Para cuando cierre la app)
+            await AsyncStorage.setItem('user_data', JSON.stringify(updatedUser));
+
+            return true; // Retornamos éxito
+
+        } catch (error) {
+            console.log('Error actualizando perfil:', error);
+            // Aquí podrías despachar un mensaje de error si quieres
+            return false; // Retornamos fallo
+        }
+    };
+
     return {
         // Propiedades
         status,
@@ -117,5 +190,6 @@ export const useAuthStore = () => {
         startRegister,
         checkAuthToken,
         startLogout,
+        startUpdateProfile,
     }
 }
