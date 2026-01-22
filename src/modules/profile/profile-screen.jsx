@@ -238,7 +238,8 @@ https://nosplanet.org/app
             onPress={() => navigation.navigate('PersonalData', {
               userName: user?.fullName,
               userEmail: user?.email,
-              userAvatar: user?.avatar
+              userAvatar: user?.avatar,
+
             })}
           />
           <View style={styles.sectionDivider} />
