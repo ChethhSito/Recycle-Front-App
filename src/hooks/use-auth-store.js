@@ -87,7 +87,8 @@ export const useAuthStore = () => {
             const { data } = await axios.get(`${urlBase}/check-status`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
-                }
+                },
+                timeout: 5000 // Timeout de 5 segundos para no quedarse pegado
             });
 
             // Si el backend responde OK, actualizamos todo con la data FRESCA

@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { CloudHeader } from '../../componentes/cards/home/CloudHeader';
 import { VideoCard } from '../../componentes/cards/VideoCard';
 import { VideoPlayerModal } from '../../componentes/modal/shared/VideoPlayerModal';
-import { useInduction } from '../../api/induction/useInduction';
+import { useInduction } from '../../hooks/use-induction-store';
 
 const CATEGORIES = ['Todos', 'Tutorial', 'Reciclaje', 'Eco-Tips', 'Premios'];
 
@@ -102,7 +102,7 @@ export const InductionScreen = ({ navigation, onOpenDrawer, userAvatar, userName
                         {filteredVideos.length > 0 ? (
                             filteredVideos.map((video) => (
                                 <VideoCard
-                                    key={video.id}
+                                    key={video._id}
                                     video={video}
                                     onPress={() => handleVideoPress(video)}
                                     isCompleted={completedVideos.has(video.id)}
@@ -127,8 +127,8 @@ export const InductionScreen = ({ navigation, onOpenDrawer, userAvatar, userName
                             setModalVisible(false);
                             setSelectedVideo(null);
                         }}
-                        onVideoComplete={() => handleVideoComplete(selectedVideo.id)}
-                        onLike={() => handleLike(selectedVideo.id)}
+                        onVideoComplete={() => handleVideoComplete(selectedVideo._id)}
+                        onLike={() => handleLike(selectedVideo._id)}
                     />
                 )}
             </View>
