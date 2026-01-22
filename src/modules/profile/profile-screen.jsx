@@ -120,17 +120,18 @@ const MenuOption = ({
     </>
   );
 };
-
-export const ProfileScreen = ({ navigation, onOpenDrawer, userAvatar, userName, userPoints = 330 }) => {
+import { useAuthStore } from '../../hooks/use-auth-store';
+export const ProfileScreen = ({ navigation, onOpenDrawer }) => {
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const { user } = useAuthStore();
   const [userData] = useState({
-    name: userName || "Usuario",
+    name: user?.fullName,
     userType: "Ciudadano Eco",
     level: "Semilla de Cambio 🌱",
-    avatarUrl: userAvatar || "https://i.pravatar.cc/150?img=33",
-    progress: 0.66,
-    currentPoints: userPoints || 330,
-    nextLevelPoints: 500,
+    avatarUrl: user?.avatar,
+    progress: user?.progress,
+    currentPoints: user?.points,
+    nextLevelPoints: user?.nextLevelPoints,
     stats: {
       recycled: '45.2kg',
       water: '120L',
@@ -150,8 +151,6 @@ export const ProfileScreen = ({ navigation, onOpenDrawer, userAvatar, userName, 
 
   const confirmLogout = () => {
     setLogoutModalVisible(false);
-    // Lógica de cierre de sesión
-    console.log('Logout confirmado');
     // Navegar al Login y resetear la navegación
     navigation.reset({
       index: 0,
@@ -237,9 +236,9 @@ https://nosplanet.org/app
             icon={User}
             title="Datos Personales"
             onPress={() => navigation.navigate('PersonalData', {
-              userName: userData.name,
-              userEmail: 'juan@ecolloy.pe',
-              userAvatar: userData.avatarUrl
+              userName: user?.fullName,
+              userEmail: user?.email,
+              userAvatar: user?.avatar
             })}
           />
           <View style={styles.sectionDivider} />

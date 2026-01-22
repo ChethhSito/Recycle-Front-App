@@ -4,26 +4,24 @@ import { Card, Text, ProgressBar, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
 export const ProgressCard = ({
-    badgeIcon = 'seed',
-    badgeTitle = 'Semilla de Cambio',
-    rank = 'Nivel 1',
-    progress = 0.66,
-    currentPoints = 330,
-    maxPoints = 500,
-    // 👇 1. NUEVAS PROPS (Con valores por defecto por si acaso)
-    bgColor = '#F5E6D3',
-    iconColor = '#5D4037',
+    badgeIcon,
+    badgeTitle,
+    rank,
+    progress,
+    currentPoints,
+    maxPoints,
+    bgColor,
+    iconColor,
+    nextLevelTitle,
 }) => {
     const theme = useTheme();
     const componentStyles = styles(theme);
 
     return (
-        // 👇 2. APLICAMOS EL COLOR DE FONDO DINÁMICO
         <Card style={[componentStyles.progressCard, { backgroundColor: bgColor }]}>
             <Card.Content>
                 <View style={componentStyles.badgeContainer}>
                     <View style={componentStyles.circle}>
-                        {/* 👇 3. USAMOS EL COLOR PRINCIPAL PARA EL ICONO */}
                         <Icon name={badgeIcon} size={30} color={iconColor} />
                     </View>
                     <View style={componentStyles.badgeInfo}>
@@ -33,15 +31,12 @@ export const ProgressCard = ({
                 </View>
 
                 <Text style={componentStyles.progressText}>
-                    Siguiente nivel: (Calculado automáticamente)
+                    Siguiente nivel: {nextLevelTitle}
                 </Text>
 
-                {/* Opcional: Puedes pintar este texto también con el color del nivel */}
                 <Text style={[componentStyles.progressLabel, { color: iconColor }]}>
                     TU PROGRESO ACTUAL
                 </Text>
-
-                {/* 👇 4. LA BARRA DE PROGRESO COMBINA CON EL NIVEL */}
                 <ProgressBar
                     progress={progress}
                     color={iconColor}

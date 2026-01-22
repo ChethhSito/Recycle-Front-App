@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
@@ -18,17 +18,21 @@ import { User, Mail, Phone, ArrowLeft, Save } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useAuthStore } from '../../hooks/use-auth-store';
 
 export const PersonalDataScreen = ({ navigation, route }) => {
-  const userName = route?.params?.userName || 'Usuario';
-  const userEmail = route?.params?.userEmail || 'usuario@email.com';
-  const userAvatar = route?.params?.userAvatar || 'https://i.pravatar.cc/150?img=33';
-  
+  const { user } = useAuthStore();
+  const userName = user.fullName;
+  const userEmail = user.email;
+  const userAvatar = user.avatar;
+  const userPhone = user.phone;
+  const userDni = user.dni;
+
   const [formData, setFormData] = useState({
     name: userName,
     email: userEmail,
-    phone: '+51 987 654 321',
-    dni: '72345678'
+    phone: userPhone,
+    dni: userDni
   });
 
   const [avatarUri, setAvatarUri] = useState(userAvatar);
@@ -39,7 +43,7 @@ export const PersonalDataScreen = ({ navigation, route }) => {
   const pickImage = async () => {
     // Pedir permisos
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+
     if (status !== 'granted') {
       Alert.alert('Permiso denegado', 'Se necesita permiso para acceder a la galería de fotos');
       return;
@@ -72,12 +76,12 @@ export const PersonalDataScreen = ({ navigation, route }) => {
   const confirmSave = () => {
     // Cerrar modal de confirmación
     setShowSaveModal(false);
-    
+
     // Aquí iría la lógica para guardar en el backend
-    
+
     // Mostrar modal de éxito
     setShowSuccessModal(true);
-    
+
     // Cerrar el modal de éxito y salir del modo edición después de 2 segundos
     setTimeout(() => {
       setShowSuccessModal(false);
@@ -108,7 +112,7 @@ export const PersonalDataScreen = ({ navigation, route }) => {
             <Text style={styles.headerTitle}>Datos Personales</Text>
             <Text style={styles.headerSubtitle}>{isEditing ? 'Modo edición' : 'Ver información'}</Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setIsEditing(!isEditing)}
             style={styles.headerEditButton}
           >
@@ -118,7 +122,7 @@ export const PersonalDataScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
 
-        <ScrollView 
+        <ScrollView
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
@@ -180,7 +184,7 @@ export const PersonalDataScreen = ({ navigation, route }) => {
             {/* Información adicional */}
             <View style={styles.infoBox}>
               <Text style={styles.infoText}>
-                💡 Tu DNI no puede ser modificado. Si necesitas cambiarlo, 
+                💡 Tu DNI no puede ser modificado. Si necesitas cambiarlo,
                 contacta con soporte.
               </Text>
             </View>
@@ -188,7 +192,7 @@ export const PersonalDataScreen = ({ navigation, route }) => {
 
           {/* Botón de Guardar */}
           {isEditing && (
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={handleSave}
               style={styles.saveButtonWrapper}
               activeOpacity={0.8}

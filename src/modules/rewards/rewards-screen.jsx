@@ -8,6 +8,7 @@ import { RewardCard } from '../../componentes/cards/rewards/RewardCard';
 import { PartnerRewardCard } from '../../componentes/cards/rewards/PartnerRewardCard';
 import { RewardDetailModal } from '../../componentes/modal/rewards/RewardDetailModal';
 import { RedeemConfirmModal } from '../../componentes/modal/rewards/RedeemConfirmModal';
+import { useAuthStore } from '../../hooks/use-auth-store';
 
 export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     const navigation = useNavigation();
@@ -17,6 +18,7 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     const [detailModalVisible, setDetailModalVisible] = useState(false);
     const [confirmModalVisible, setConfirmModalVisible] = useState(false);
     const [userPoints, setUserPoints] = useState(330); // Puntos del usuario
+    const { user } = useAuthStore();
 
     // Categorías de premios
     const categories = [
@@ -329,9 +331,9 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
             >
                 {/* Header Exclusivo de Premios */}
                 <RewardHeader
-                    userName={userName}
-                    avatarUrl={userAvatar || 'https://i.pravatar.cc/150?img=33'}
-                    userPoints={userPoints}
+                    userName={user?.fullName}
+                    avatarUrl={user?.avatar || 'https://i.pravatar.cc/150?img=33'}
+                    userPoints={user?.points}
                     onMenuPress={onOpenDrawer}
                 />
 

@@ -7,7 +7,8 @@ export const levelsApi = async () => {
         const data = await response.data
         return data;
     } catch (error) {
-        console.log(error);
+
+        throw error;
     }
 
 }   

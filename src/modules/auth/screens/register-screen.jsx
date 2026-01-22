@@ -61,7 +61,6 @@ export const RegisterScreen = ({ navigation }) => {
     };
 
     const onSubmit = (data) => {
-        console.log(data);
         // Validación de contraseñas
         if (data.password !== data.confirmPassword) {
             Alert.alert("Error", "Las contraseñas no coinciden");

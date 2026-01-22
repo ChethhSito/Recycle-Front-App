@@ -75,14 +75,12 @@ export const LoginScreen = ({ navigation }) => {
             const token = await handleGoogleLogin();
 
             if (token) {
-                console.log("Login exitoso");
                 await AsyncStorage.setItem('user_token', token);
                 dispatch(login(token));
             } else {
-                console.log("Usuario canceló el login");
+                Alert.alert("Error", "Inténtalo de nuevo.");
             }
         } catch (error) {
-            console.error(error);
             Alert.alert("Error", "Inténtalo de nuevo.");
         } finally {
             setGoogleLoading(false);

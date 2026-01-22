@@ -132,8 +132,6 @@ export const CreateRequestScreen = ({ navigation }) => {
             materialLabel: selectedSubMaterial.label,
             imageUri
         };
-
-        console.log("Enviando...", finalData);
         navigation.goBack();
     };
 

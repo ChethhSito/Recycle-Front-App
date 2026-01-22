@@ -41,13 +41,7 @@ export const HomeScreen = () => {
 
     const userLevelNumber = user?.level || 1;
     const currentLevelData = levels?.find(l => l.levelNumber === userLevelNumber) || {};
-
-    const userName = user?.fullName
-    const userEmail = user?.email
-    const userPoints = user?.points
-    const userAvatarUrl = user?.avatarUrl
-    const levelName = currentLevelData.name
-    const levelIcon = currentLevelData.iconName
+    const nextLevelData = user.gamification.nextLevel.name;
     const targetPoints = currentLevelData.maxPoints
     const currentPoints = user?.points;
     // Calculamos el progreso (evitando división por cero)
@@ -176,7 +170,7 @@ export const HomeScreen = () => {
                 <CloudHeader
                     userName={`Hola, ${user.fullName || 'Usuario'}`}
                     userType={user.role === 'CITIZEN' ? 'Ciudadano' : 'Reciclador'}
-                    avatarUrl={user.avatarUrl} // Si es null, el componente CloudHeader debería manejar un default
+                    avatarUrl={user.avatar} // Si es null, el componente CloudHeader debería manejar un default
                     onMenuPress={() => setDrawerVisible(true)}
                 />
 
@@ -184,16 +178,17 @@ export const HomeScreen = () => {
 
                 {/* 5. TARJETA DE PROGRESO 100% DINÁMICA */}
                 <ProgressCard
-                    badgeIcon={currentLevelData.iconName || 'seed'}
-                    badgeTitle={currentLevelData.name || 'Semilla'}
+                    badgeIcon={currentLevelData.iconName}
+                    badgeTitle={currentLevelData.name}
                     rank={`Nivel ${userLevelNumber}`}
                     progress={progressValue}
                     currentPoints={currentPoints}
                     maxPoints={targetPoints}
 
                     // 👇 PASAMOS LOS COLORES DE LA BD
-                    bgColor={currentLevelData.primaryColor || '#F5E6D3'}
-                    iconColor={currentLevelData.bgColor || '#5D4037'}
+                    bgColor={currentLevelData.primaryColor}
+                    iconColor={currentLevelData.bgColor}
+                    nextLevelTitle={nextLevelData}
                 />
 
                 {/* Sección de Impacto */}
@@ -201,10 +196,10 @@ export const HomeScreen = () => {
                     <Text style={componentStyles.sectionTitle}>Tu impacto este mes:</Text>
                     <View style={componentStyles.filterContainer}>
                         <TouchableOpacity style={[componentStyles.filterButton, filterType === 'peso' && componentStyles.filterButtonActive]} onPress={() => setFilterType('peso')}>
-                            <Text style={[componentStyles.filterText, filterType === 'peso' && componentStyles.filterTextActive]}>ver por peso</Text>
+                            <Text style={[componentStyles.filterText, filterType === 'peso' && componentStyles.filterTextActive]}>Peso</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={[componentStyles.filterButton, filterType === 'cantidad' && componentStyles.filterButtonActive]} onPress={() => setFilterType('cantidad')}>
-                            <Text style={[componentStyles.filterText, filterType === 'cantidad' && componentStyles.filterTextActive]}>ver por cantidad</Text>
+                            <Text style={[componentStyles.filterText, filterType === 'cantidad' && componentStyles.filterTextActive]}>Cantidad</Text>
                         </TouchableOpacity>
                     </View>
 

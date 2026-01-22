@@ -120,7 +120,7 @@ export const DrawerMenu = ({ visible, onClose }) => {
                 {
                     icon: 'cog', label: 'Configuración', onPress: () => navigation.navigate('Settings', {
                         // Pasamos los datos del usuario que sacaste del store
-                        userAvatar: user.avatarUrl,
+                        userAvatar: user.avatar,
                         userName: user.fullName,
                         userEmail: user.email,
                         userPhone: user.phone // Agregamos el teléfono también
@@ -156,7 +156,7 @@ export const DrawerMenu = ({ visible, onClose }) => {
                         {/* Header del Drawer */}
                         <View style={styles.drawerHeader}>
                             <Image
-                                source={{ uri: user.avatarUrl }}
+                                source={{ uri: user.avatar }}
                                 style={styles.avatar}
                             />
                             <View style={styles.userInfo}>

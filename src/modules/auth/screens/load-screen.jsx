@@ -28,7 +28,6 @@ export const SplashScreen = ({ onFinish }) => {
                     onAnimationFinish={() => {
                         // Cuando termina la animación, ejecutamos la función que nos pasan
                         // para cambiar de pantalla
-                        console.log('Animación terminada');
                         if (onFinish) onFinish();
                     }}
                 />

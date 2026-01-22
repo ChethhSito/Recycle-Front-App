@@ -234,7 +234,7 @@ export const SettingsScreen = ({ onOpenDrawer }) => {
                     </TouchableOpacity>
 
                     <View style={styles.avatarContainer}>
-                        <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
+                        <Image source={{ uri: user.avatar }} style={styles.avatar} />
                         <View style={styles.avatarBorder} />
                     </View>
                 </View>
@@ -380,10 +380,10 @@ export const SettingsScreen = ({ onOpenDrawer }) => {
                 onClose={() => setEditProfileModalVisible(false)}
                 currentUser={{
                     fullName: user.fullName,
-                    phone: user?.phone, // Use optional chaining in case user is undefined initially
-                    avatarUrl: user.avatarUrl
+                    phone: user.phone,
+                    avatarUrl: user.avatar
                 }}
-                onUpdateSuccess={onOpenDrawer} // Or a specific function to refresh user data
+                onUpdateSuccess={onOpenDrawer}
             />
             {toggleModalConfig && (
                 <ToggleConfirmModal

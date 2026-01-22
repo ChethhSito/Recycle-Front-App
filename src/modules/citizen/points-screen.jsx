@@ -25,7 +25,7 @@ export const RankScreen = () => {
         const message = `🌿 *¡Mi Progreso en EcoRecicla!* 🌿\n\n🏆 *Rango Actual:* ${item.name} (Nivel ${item.levelNumber})\n✨ _"${item.description}"_\n\nPuntos: ${currentUserPoints} / ${item.maxPoints} XP\n\n♻️ ¡Ayúdame a salvar el planeta!`;
         try {
             await Share.share({ message: message, title: `Soy ${item.name} en EcoRecicla` });
-        } catch (error) { console.log(error.message); }
+        } catch (error) { }
     };
 
 

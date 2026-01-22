@@ -30,7 +30,6 @@ export const useAuthStore = () => {
             dispatch(onLogin(data.user));
 
         } catch (error) {
-            console.log('Error login:', error);
             // Manejo de error seguro
             const msg = error.response?.data?.message || 'Error al iniciar sesión';
             dispatch(onLogout(msg));
@@ -99,7 +98,6 @@ export const useAuthStore = () => {
 
         } catch (error) {
             // Si el token expiró o el backend falla, limpiamos todo
-            console.log("Token inválido o expirado");
             await AsyncStorage.clear();
             dispatch(onLogout());
         }
@@ -173,7 +171,6 @@ export const useAuthStore = () => {
             return true; // Retornamos éxito
 
         } catch (error) {
-            console.log('Error actualizando perfil:', error);
             // Aquí podrías despachar un mensaje de error si quieres
             return false; // Retornamos fallo
         }

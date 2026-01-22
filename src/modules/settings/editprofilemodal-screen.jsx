@@ -22,19 +22,17 @@ export const EditProfileModal = ({
     visible,
     onClose,
     currentUser = {},
-
     onUpdateSuccess
 }) => {
     const { startUpdateProfile } = useAuthStore();
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
-    const [avatarUri, setAvatarUri] = useState(null);
+    const [avatarUri, setAvatarUri] = useState('');
     const [hasNewAvatar, setHasNewAvatar] = useState(false);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (visible) {
-            console.log(currentUser);
             setName(currentUser.fullName || '');
             setPhone(currentUser.phone || '');
             setAvatarUri(currentUser.avatarUrl || '');
@@ -143,7 +141,7 @@ export const EditProfileModal = ({
                                         source={
                                             avatarUri
                                                 ? { uri: avatarUri }
-                                                : { uri: currentUser.avatarUrl }
+                                                : { uri: currentUser.avatar }
                                         }
                                         style={styles.avatar}
                                     />

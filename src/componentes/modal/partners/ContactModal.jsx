@@ -8,7 +8,7 @@ export const ContactModal = ({ visible, onClose }) => {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     const handleContact = (type) => {
-        switch(type) {
+        switch (type) {
             case 'email':
                 Linking.openURL('mailto:convenios@nosplanet.pe');
                 break;
@@ -64,7 +64,7 @@ export const ContactModal = ({ visible, onClose }) => {
                         {/* Introducción */}
                         <View style={styles.introSection}>
                             <Text style={styles.introText}>
-                                ¿Quieres formar parte de nuestra red de partners comprometidos con el medio ambiente? 
+                                ¿Quieres formar parte de nuestra red de partners comprometidos con el medio ambiente?
                                 Contáctanos y únete al cambio.
                             </Text>
                         </View>
@@ -72,22 +72,22 @@ export const ContactModal = ({ visible, onClose }) => {
                         {/* Beneficios */}
                         <View style={styles.benefitsSection}>
                             <Text style={styles.sectionTitle}>¿Por qué ser Partner?</Text>
-                            
+
                             <View style={styles.benefitItem}>
                                 <Icon name="check-circle" size={20} color="#018f64" />
                                 <Text style={styles.benefitText}>Visibilidad en nuestra plataforma</Text>
                             </View>
-                            
+
                             <View style={styles.benefitItem}>
                                 <Icon name="check-circle" size={20} color="#018f64" />
                                 <Text style={styles.benefitText}>Conexión con comunidad eco-consciente</Text>
                             </View>
-                            
+
                             <View style={styles.benefitItem}>
                                 <Icon name="check-circle" size={20} color="#018f64" />
                                 <Text style={styles.benefitText}>Promoción de productos sostenibles</Text>
                             </View>
-                            
+
                             <View style={styles.benefitItem}>
                                 <Icon name="check-circle" size={20} color="#018f64" />
                                 <Text style={styles.benefitText}>Contribuye al cuidado del planeta</Text>
@@ -97,8 +97,8 @@ export const ContactModal = ({ visible, onClose }) => {
                         {/* Información de Contacto */}
                         <View style={styles.contactSection}>
                             <Text style={styles.contactTitle}>Información de Contacto</Text>
-                            
-                            <TouchableOpacity 
+
+                            <TouchableOpacity
                                 style={styles.contactCard}
                                 onPress={() => handleContact('email')}
                             >
@@ -112,7 +112,7 @@ export const ContactModal = ({ visible, onClose }) => {
                                 <Icon name="chevron-right" size={20} color="#999" />
                             </TouchableOpacity>
 
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={styles.contactCard}
                                 onPress={() => handleContact('phone')}
                             >
@@ -126,7 +126,7 @@ export const ContactModal = ({ visible, onClose }) => {
                                 <Icon name="chevron-right" size={20} color="#999" />
                             </TouchableOpacity>
 
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={styles.contactCard}
                                 onPress={() => handleContact('web')}
                             >
@@ -142,7 +142,7 @@ export const ContactModal = ({ visible, onClose }) => {
                         </View>
 
                         {/* Botón Enviar Solicitud */}
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.sendButton}
                             onPress={handleSendRequest}
                             disabled={sending}
@@ -185,16 +185,16 @@ export const ContactModal = ({ visible, onClose }) => {
                                 <Icon name="check-circle" size={60} color="#fff" />
                             </View>
                         </LinearGradient>
-                        
+
                         <View style={styles.successContent}>
                             <Text style={styles.successTitle}>Solicitud Enviada Exitosamente</Text>
                             <Text style={styles.successMessage}>
-                                Hemos enviado a su correo electrónico un formulario detallado para que pueda proporcionarnos 
-                                más información sobre su empresa. Nuestro equipo revisará su solicitud y nos pondremos en 
+                                Hemos enviado a su correo electrónico un formulario detallado para que pueda proporcionarnos
+                                más información sobre su empresa. Nuestro equipo revisará su solicitud y nos pondremos en
                                 contacto con usted a la brevedad posible.
                             </Text>
-                            
-                            <TouchableOpacity 
+
+                            <TouchableOpacity
                                 style={styles.successButton}
                                 onPress={handleCloseSuccess}
                                 activeOpacity={0.8}

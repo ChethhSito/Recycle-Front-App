@@ -38,18 +38,18 @@ export const TwoFactorMethodScreen = () => {
 
     const sendOTPToMethod = async (method, destination) => {
         setIsSending(true);
-        
+
         // Generar código OTP seguro
         const verificationCode = generateSecureOTP();
-        
+
         console.log(`[2FA] Código generado: ${verificationCode}`);
         console.log(`[2FA] Método: ${method === 'sms' ? 'SMS' : 'Email'}`);
-        
+
         // Guardar OTP con expiración
         await storeOTP(verificationCode, destination);
-        
+
         let sentSuccessfully = false;
-        
+
         if (method === 'email') {
             // EMAIL: Intentar enviar real con Resend
             try {
@@ -58,9 +58,9 @@ export const TwoFactorMethodScreen = () => {
                     'Raúl',
                     verificationCode
                 );
-                
+
                 sentSuccessfully = result.success;
-                
+
                 if (!sentSuccessfully) {
                     console.log('[2FA] Email no enviado, mostrando modo testing');
                 }
@@ -73,31 +73,31 @@ export const TwoFactorMethodScreen = () => {
             console.log('[2FA] SMS - Modo simulación');
             sentSuccessfully = false; // Forzar modal de testing para SMS
         }
-        
+
         setIsSending(false);
-        
+
         // Mostrar modal de testing si no se envió
         if (!sentSuccessfully) {
             setTestingCode(verificationCode);
             setTestingMethod(method);
             setShowTestingModal(true);
-            
+
             // No navegar automáticamente, esperar a que el usuario cierre el modal
         } else {
             // Si se envió exitosamente (solo email), navegar directamente
-            navigation.navigate('TwoFactorVerify', { 
+            navigation.navigate('TwoFactorVerify', {
                 method,
                 destination
             });
         }
     };
-    
+
     const handleModalClose = () => {
         setShowTestingModal(false);
         // Navegar cuando se cierra el modal
         const method = testingMethod;
         const destination = method === 'email' ? 'raulquintanazinc@gmail.com' : '+51 982 109 407';
-        navigation.navigate('TwoFactorVerify', { 
+        navigation.navigate('TwoFactorVerify', {
             method,
             destination
         });
@@ -112,8 +112,8 @@ export const TwoFactorMethodScreen = () => {
         <View style={styles.container}>
             {/* Simple Header */}
             <View style={styles.header}>
-                <TouchableOpacity 
-                    style={styles.backButton} 
+                <TouchableOpacity
+                    style={styles.backButton}
                     onPress={handleBack}
                     activeOpacity={0.7}
                 >
@@ -122,7 +122,7 @@ export const TwoFactorMethodScreen = () => {
                 <Text style={styles.headerTitle}>Verificación en 2 pasos</Text>
             </View>
 
-            <ScrollView 
+            <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
@@ -134,7 +134,7 @@ export const TwoFactorMethodScreen = () => {
                     </Text>
 
                     {/* Opción SMS - Simulación */}
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.methodCard, isSending && styles.methodCardDisabled]}
                         onPress={() => handleMethodSelect('sms')}
                         activeOpacity={0.7}
@@ -155,7 +155,7 @@ export const TwoFactorMethodScreen = () => {
                     </TouchableOpacity>
 
                     {/* Opción Email - Real con Resend */}
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.methodCard, styles.methodCardPrimary, isSending && styles.methodCardDisabled]}
                         onPress={() => handleMethodSelect('email')}
                         activeOpacity={0.7}
