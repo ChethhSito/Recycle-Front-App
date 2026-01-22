@@ -2,11 +2,33 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
-export const VideoCard = ({ 
-    video, 
+export const VideoCard = ({
+    video,
     onPress,
     isCompleted = false
 }) => {
+
+    // Helper para extraer ID de YouTube
+    const getYouTubeId = (url) => {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
+
+    // Helper para obtener URL de la miniatura
+    const getThumbnailUrl = () => {
+        if (video.thumbnail) return video.thumbnail; // Si ya viene del backend, úsala
+
+        const videoId = getYouTubeId(video.videoUrl);
+        if (videoId) {
+            // Probamos la calidad media-alta (mqdefault) o alta (hqdefault)
+            return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+        }
+        return null;
+    };
+
+    const thumbnailUrl = getThumbnailUrl();
     const getCategoryColor = (category) => {
         const colors = {
             'Tutorial': '#00C6A0',
@@ -19,19 +41,19 @@ export const VideoCard = ({
     };
 
     return (
-        <TouchableOpacity 
-            style={styles.card} 
+        <TouchableOpacity
+            style={styles.card}
             onPress={onPress}
             activeOpacity={0.7}
         >
             {/* Franja Verde Lateral */}
             <View style={[styles.stripe, { backgroundColor: getCategoryColor(video.category) }]} />
-            
+
             {/* Thumbnail Section */}
             <View style={styles.thumbnailContainer}>
-                {video.thumbnail ? (
-                    <Image 
-                        source={{ uri: video.thumbnail }} 
+                {thumbnailUrl ? (
+                    <Image
+                        source={{ uri: thumbnailUrl }}
                         style={styles.thumbnail}
                         resizeMode="cover"
                     />
@@ -40,7 +62,7 @@ export const VideoCard = ({
                         <Icon name="play-circle" size={40} color="#FFFFFF" />
                     </View>
                 )}
-                
+
                 {/* Play Icon Overlay */}
                 <View style={styles.playOverlay}>
                     {isCompleted ? (
@@ -49,25 +71,25 @@ export const VideoCard = ({
                         <Icon name="play-circle" size={50} color="rgba(255,255,255,0.9)" />
                     )}
                 </View>
-                
+
                 {/* Duration Badge */}
                 <View style={styles.durationBadge}>
                     <Icon name="clock-outline" size={12} color="#FFFFFF" />
                     <Text style={styles.durationText}>{video.duration}</Text>
                 </View>
             </View>
-            
+
             {/* Content Section */}
             <View style={styles.content}>
                 <Text style={styles.title} numberOfLines={2}>
                     {video.title}
                 </Text>
-                
+
                 <View style={styles.footer}>
                     <View style={[styles.categoryChip, { backgroundColor: getCategoryColor(video.category) }]}>
                         <Text style={styles.categoryText}>{video.category}</Text>
                     </View>
-                    
+
                     {video.views && (
                         <View style={styles.viewsContainer}>
                             <Icon name="eye-outline" size={14} color="#666" />

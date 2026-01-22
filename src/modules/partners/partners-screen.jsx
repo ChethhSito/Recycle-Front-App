@@ -7,7 +7,7 @@ import { PartnerHeader } from '../../componentes/cards/partners/PartnerHeader';
 import { PartnerCard } from '../../componentes/cards/partners/PartnerCard';
 import { ContactModal } from '../../componentes/modal/partners/ContactModal';
 import { PartnerDetailModal } from '../../componentes/modal/partners/PartnerDetailModal';
-import { usePartners } from '../../api/partners/usePartners';
+import { usePartners } from '../../hooks/use-partners-store';
 
 export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     const navigation = useNavigation();

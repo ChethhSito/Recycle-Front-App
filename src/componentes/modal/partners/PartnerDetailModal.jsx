@@ -41,25 +41,29 @@ export const PartnerDetailModal = ({ visible, partner, onClose, onViewRewards })
                         </TouchableOpacity>
 
                         <View style={styles.headerContent}>
-                            {/* Logo Imagen */}
-                            <View style={styles.logoContainer}>
-                                <Image
-                                    source={{ uri: partner.logo }}
-                                    style={styles.logoImage}
-                                    resizeMode="cover"
-                                />
-                            </View>
+                            <View style={styles.headerRow}>
+                                {/* Logo Imagen - Izquierda */}
+                                <View style={styles.logoContainer}>
+                                    <Image
+                                        source={{ uri: partner.logo }}
+                                        style={styles.logoImage}
+                                        resizeMode="cover"
+                                    />
+                                </View>
 
-                            {/* Nombre y tipo */}
-                            <Text style={styles.partnerName}>{partner.name}</Text>
-                            <View style={styles.typeBadgeContainer}>
-                                <View style={styles.typeBadge}>
-                                    <Icon name="medal" size={16} color="#FFD700" />
-                                    <Text style={styles.typeText}>{partner.typeLabel}</Text>
+                                {/* Nombre y tipo - Derecha */}
+                                <View style={styles.headerTextContainer}>
+                                    <Text style={styles.partnerName}>{partner.name}</Text>
+                                    <View style={styles.typeBadgeContainer}>
+                                        <View style={styles.typeBadge}>
+                                            <Icon name="medal" size={16} color="#FFD700" />
+                                            <Text style={styles.typeText}>{partner.typeLabel}</Text>
+                                        </View>
+                                    </View>
                                 </View>
                             </View>
 
-                            {/* Stats rápidas */}
+                            {/* Stats rápidas (Debajo) */}
                             <View style={styles.quickStats}>
                                 <View style={styles.quickStatItem}>
                                     <Icon name="gift" size={20} color="#FFF" />
@@ -168,7 +172,7 @@ const styles = StyleSheet.create({
     gradientHeader: {
         padding: 20,
         paddingTop: 40,
-        alignItems: 'center',
+        // alignItems: 'center', // Removed to allow row layout
     },
     closeButton: {
         position: 'absolute',
@@ -183,47 +187,57 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerContent: {
-        alignItems: 'center',
         width: '100%',
     },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20, // Space for stats
+        paddingRight: 40, // Avoid close button overlap
+    },
     logoContainer: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        width: 90,
+        height: 90,
+        borderRadius: 45,
         backgroundColor: '#FFF',
-        marginBottom: 16,
-        borderWidth: 4,
+        borderWidth: 3,
         borderColor: 'rgba(255,255,255,0.3)',
         overflow: 'hidden',
         justifyContent: 'center',
         alignItems: 'center',
+        marginRight: 16, // Space between logo and text
     },
     logoImage: {
         width: '100%',
         height: '100%',
     },
+    headerTextContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'flex-start', // Left align text
+    },
     partnerName: {
-        fontSize: 26,
+        fontSize: 24, // Slightly smaller to fit
         fontWeight: 'bold',
         color: '#FFF',
-        marginBottom: 8,
-        textAlign: 'center',
+        marginBottom: 6,
+        textAlign: 'left',
     },
     typeBadgeContainer: {
-        marginBottom: 16,
+        // marginBottom: 16, // Removed
     },
     typeBadge: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        paddingHorizontal: 16,
-        paddingVertical: 6,
+        paddingHorizontal: 12,
+        paddingVertical: 5,
         borderRadius: 20,
         borderWidth: 1,
         borderColor: 'rgba(255, 255, 255, 0.4)',
     },
     typeText: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#FFF',
         fontWeight: '700',
         marginLeft: 6,
@@ -234,7 +248,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 255, 255, 0.15)',
         borderRadius: 16,
         paddingVertical: 10,
-        paddingHorizontal: 30,
+        paddingHorizontal: 20,
         width: '100%',
         justifyContent: 'space-around',
     },
@@ -242,7 +256,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     quickStatValue: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#FFF',
     },
