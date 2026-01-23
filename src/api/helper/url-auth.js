@@ -4,3 +4,4 @@ export const urlLevels = "http://192.168.18.8:3000/api/levels";
 export const urlUser = "http://192.168.18.8:3000/api/users";
 export const urlPartners = "http://192.168.18.8:3000/api/partners";
 export const urlInduction = "http://192.168.18.8:3000/api/induction";
+export const urlPrograms = "http://192.168.18.8:3000/api/programs";
