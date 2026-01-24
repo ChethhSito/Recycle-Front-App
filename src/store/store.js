@@ -5,6 +5,7 @@ import { levelsSlice } from './levels';
 import { partnersSlice } from './partners';
 import { inductionSlice } from './induction';
 import { programSlice } from './programs';
+import { rewardsSlice } from './reward';
 export const store = configureStore({
     reducer: {
         auth: authSlice.reducer,
@@ -12,6 +13,7 @@ export const store = configureStore({
         partners: partnersSlice.reducer,
         induction: inductionSlice.reducer,
         programs: programSlice.reducer,
+        rewards: rewardsSlice.reducer,
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 });

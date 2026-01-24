@@ -121,24 +121,27 @@ const MenuOption = ({
   );
 };
 import { useAuthStore } from '../../hooks/use-auth-store';
+import { useEffect } from 'react';
 export const ProfileScreen = ({ navigation, onOpenDrawer }) => {
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const { user } = useAuthStore();
   const [userData] = useState({
     name: user?.fullName,
     userType: "Ciudadano Eco",
-    level: "Semilla de Cambio 🌱",
+    level: user?.gamification?.currentLevel?.name,
     avatarUrl: user?.avatar,
-    progress: user?.progress,
+    progress: user?.gamification?.progress,
     currentPoints: user?.points,
-    nextLevelPoints: user?.nextLevelPoints,
+    nextLevelPoints: user?.gamification?.points?.max,
     stats: {
       recycled: '45.2kg',
       water: '120L',
       achievements: 12
     }
   });
-
+  useEffect(() => {
+    console.log("hola", user);
+  }, [user]);
   const handleMenuPress = () => {
     if (onOpenDrawer) {
       onOpenDrawer();
