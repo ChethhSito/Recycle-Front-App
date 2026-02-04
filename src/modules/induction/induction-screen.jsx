@@ -6,10 +6,11 @@ import { CloudHeader } from '../../componentes/cards/home/CloudHeader';
 import { VideoCard } from '../../componentes/cards/VideoCard';
 import { VideoPlayerModal } from '../../componentes/modal/shared/VideoPlayerModal';
 import { useInduction } from '../../hooks/use-induction-store';
+import { useAuthStore } from '../../hooks/use-auth-store';
 
 const CATEGORIES = ['Todos', 'Tutorial', 'Reciclaje', 'Eco-Tips', 'Premios'];
 
-export const InductionScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) => {
+export const InductionScreen = ({ navigation, onOpenDrawer }) => {
     const [selectedCategory, setSelectedCategory] = useState('Todos');
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
@@ -18,6 +19,7 @@ export const InductionScreen = ({ navigation, onOpenDrawer, userAvatar, userName
 
     // Custom Hook
     const { videos, loading, refetch, registerView } = useInduction();
+    const { user } = useAuthStore();
 
     useFocusEffect(
         useCallback(() => {
@@ -54,9 +56,9 @@ export const InductionScreen = ({ navigation, onOpenDrawer, userAvatar, userName
             <View style={styles.container}>
                 {/* Header */}
                 <CloudHeader
-                    userName={userName || 'Usuario'}
+                    userName={user.fullName}
                     userType="Aprende todo sobre el reciclaje"
-                    avatarUrl={userAvatar || 'https://i.pravatar.cc/150?img=33'}
+                    avatarUrl={user.avatar}
                     onMenuPress={onOpenDrawer}
                 />
 

@@ -9,9 +9,11 @@ import { DrawerMenu } from '../../componentes/navigation/DrawerMenu';
 import {
   CloudHeader,
 } from '../../componentes/cards/home';
+import { useAuthStore } from '../../hooks/use-auth-store';
 const { width } = Dimensions.get('window');
 
-export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) => {
+export const ForumScreen = ({ navigation, onOpenDrawer }) => {
+  const { user } = useAuthStore();
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -116,9 +118,9 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header con CloudHeader */}
         <CloudHeader
-          userName={userName}
+          userName={user.fullName}
           userType="¡Bienvenido al Foro!"
-          avatarUrl={userAvatar}
+          avatarUrl={user.avatar}
           onMenuPress={() => setDrawerVisible(true)}
         />
 
@@ -203,10 +205,10 @@ export const ForumScreen = ({ navigation, onOpenDrawer, userAvatar, userName }) 
       <DrawerMenu
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
-        userName={userName || 'Juan David'}
-        userEmail="jdavidhuay@gmail.com"
-        userPoints={330}
-        avatarUrl={userAvatar || 'https://i.pravatar.cc/150?img=33'}
+        userName={user.fullName}
+        userEmail={user.email}
+        userPoints={user.gamification.points}
+        avatarUrl={user.avatar}
       />
     </SafeAreaView>
   );

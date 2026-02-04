@@ -35,7 +35,7 @@ export const PartnerCard = ({ partner, onPress }) => {
                     <Image
                         source={{ uri: partner.logo }}
                         style={styles.logoImage}
-                        resizeMode="cover"
+                        resizeMode="contain"
                     />
                 </View>
             </LinearGradient>

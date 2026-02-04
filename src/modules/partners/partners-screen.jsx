@@ -41,13 +41,26 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
         setRefreshing(false);
     };
 
+    const fixPartnerLogo = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        return `https://${url}`;
+    };
+
     // Filtrar partners
     const filteredPartners = selectedFilter === 'all'
         ? partners
         : partners.filter(partner => partner.filterType === selectedFilter);
 
     const handlePartnerPress = (partner) => {
-        setSelectedPartner(partner);
+        // Aseguramos que al abrir el modal también lleve la imagen corregida
+        const fixedPartner = {
+            ...partner,
+            logo: fixPartnerLogo(partner.logo)
+        };
+        setSelectedPartner(fixedPartner);
         setDetailModalVisible(true);
     };
 
@@ -118,14 +131,24 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                     <>
                         {/* Lista de Partners */}
                         <View style={styles.partnersGrid}>
-                            {filteredPartners.map((partner) => (
-                                <PartnerCard
-                                    key={partner._id || partner.id}
-                                    partner={partner}
-                                    onPress={() => handlePartnerPress(partner)}
-                                />
-                            ))}
+                            {filteredPartners.map((partner) => {
+                                // 👇 2. AQUÍ APLICAMOS EL ARREGLO
+                                // Creamos una copia del partner con el logo corregido antes de pasarlo a la Card
+                                const partnerFixed = {
+                                    ...partner,
+                                    logo: fixPartnerLogo(partner.logo) // Asumiendo que el campo se llama 'logo'
+                                };
+                                console.log(`Partner: ${partnerFixed.name}, Logo URL: ${partnerFixed.logo}`);
+                                return (
+                                    <PartnerCard
+                                        key={partner._id || partner.id}
+                                        partner={partnerFixed} // 👈 Pasamos el objeto corregido
+                                        onPress={() => handlePartnerPress(partnerFixed)}
+                                    />
+                                );
+                            })}
                         </View>
+
 
                         {filteredPartners.length === 0 && (
                             <View style={styles.emptyState}>

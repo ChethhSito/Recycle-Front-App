@@ -41,9 +41,12 @@ export const HomeScreen = () => {
 
     const userLevelNumber = user?.level || 1;
     const currentLevelData = levels?.find(l => l.levelNumber === userLevelNumber) || {};
-    const nextLevelData = user.gamification.nextLevel.name;
-    const targetPoints = currentLevelData.maxPoints
-    const currentPoints = user?.points;
+
+    // 👇 AQUÍ ESTABA EL ERROR. Agregamos 'user?.gamification?.nextLevel?.name'
+    const nextLevelData = user?.gamification?.nextLevel?.name || 'Siguiente Nivel';
+
+    const targetPoints = currentLevelData.maxPoints || 100; // Valor por defecto para evitar división por cero
+    const currentPoints = user?.points || 0;
     // Calculamos el progreso (evitando división por cero)
     const progressValue = targetPoints > 0 ? (currentPoints / targetPoints) : 0;
 
