@@ -14,7 +14,7 @@ export const CreatePostModal = ({ visible, onClose, onSubmit }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const slideAnim = React.useRef(new Animated.Value(height)).current;
 
-  const categories = ['Dudas', 'Proyectos', 'Eventos', 'Trueque'];
+  const categories = ['Todos', 'Dudas', 'Proyectos', 'Eventos', 'Trueque'];
 
   useEffect(() => {
     if (visible) {
@@ -43,7 +43,7 @@ export const CreatePostModal = ({ visible, onClose, onSubmit }) => {
   }, [visible]);
 
   const pickImage = async () => {
-    const { status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permiso denegado', 'Necesitamos permiso para acceder a tus fotos');
       return;
@@ -88,13 +88,13 @@ export const CreatePostModal = ({ visible, onClose, onSubmit }) => {
       onRequestClose={onClose}
     >
       <View style={styles.modalContainer}>
-        <TouchableOpacity 
-          style={styles.overlay} 
+        <TouchableOpacity
+          style={styles.overlay}
           activeOpacity={1}
           onPress={onClose}
         />
-        
-        <Animated.View 
+
+        <Animated.View
           style={[
             styles.modalContent,
             { transform: [{ translateY: slideAnim }] }
@@ -169,7 +169,7 @@ export const CreatePostModal = ({ visible, onClose, onSubmit }) => {
             <View style={styles.section}>
               <Text style={styles.label}>Imagen (opcional)</Text>
               {selectedImage ? (
-                <ImagePreview 
+                <ImagePreview
                   imageUri={selectedImage}
                   onRemove={() => setSelectedImage(null)}
                   size="large"

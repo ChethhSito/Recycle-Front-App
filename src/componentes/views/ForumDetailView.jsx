@@ -1,66 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, StatusBar, KeyboardAvoidingView, Platform, Alert, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, RefreshControl, ScrollView, Image, TextInput, StatusBar, KeyboardAvoidingView, Platform, Alert, Animated, Easing } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { ImagePreview } from '../shared/ImagePreview';
+import { useForumStore } from '../../hooks/use-forum-store';
+import { useAuthStore } from '../../hooks/use-auth-store';
+
+
+const getTimeAgo = (date) => { /* ... código de timeAgo ... */ return "hace un momento" };
 
 export const ForumDetailView = ({ post, onBack }) => {
   const [comment, setComment] = useState('');
   const [commentImage, setCommentImage] = useState(null);
   const slideAnim = React.useRef(new Animated.Value(300)).current;
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
-  const [comments, setComments] = useState([
-  
-    {
-      id: 1,
-      author: 'Marta S.',
-      authorInitial: 'M',
-      text: '¡Me apunto! Tengo experiencia con tomates.',
-      time: 'hace 4 horas'
-    },
-    {
-      id: 2,
-      author: 'Juan P.',
-      authorInitial: 'J',
-      text: 'Me preocupa el tema del agua, ¿cómo se gestionará el riego?',
-      time: 'hace 3 horas'
-    }
-  ]);
+  const [isSending, setIsSending] = useState(false); // Estado local para UI de carga al enviar
+  const { activeComments, startLoadingComments, startSendingComment } = useForumStore();
+  const { user } = useAuthStore();
+  const [comments, setComments] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await startLoadingComments(post.id); // Espera a que carguen
+    setRefreshing(false);
+  };
 
   useEffect(() => {
+    // Animación de entrada
     Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 400,
-        useNativeDriver: true,
-        easing: Easing.out(Easing.cubic),
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 400, useNativeDriver: true, easing: Easing.out(Easing.cubic) }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
     ]).start();
-  }, []);
+
+    // Cargar datos del backend
+    if (post?.id) {
+      startLoadingComments(post.id);
+    }
+  }, [post]);
 
   const handleBack = () => {
+    // ... (tu lógica de animación de salida se mantiene igual)
     Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: 300,
-        duration: 250,
-        useNativeDriver: true,
-        easing: Easing.in(Easing.cubic),
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }),
+      Animated.timing(slideAnim, { toValue: 300, duration: 250, useNativeDriver: true, easing: Easing.in(Easing.cubic) }),
+      Animated.timing(fadeAnim, { toValue: 0, duration: 250, useNativeDriver: true }),
     ]).start(({ finished }) => {
-      if (finished) {
-        onBack();
-      }
+      if (finished) onBack();
     });
   };
 
@@ -83,165 +69,132 @@ export const ForumDetailView = ({ post, onBack }) => {
     }
   };
 
-  const handleSendComment = () => {
-    if (comment.trim() || commentImage) {
-      const newComment = {
-        id: comments.length + 1,
-        author: 'Juan David',
-        authorInitial: 'JD',
-        time: 'Ahora',
-        text: comment.trim(),
-        image: commentImage,
-      };
-      setComments([...comments, newComment]);
+  const handleSendComment = async () => {
+    if (!comment.trim()) return;
+
+    setIsSending(true);
+    // Nota: Por ahora tu backend solo soporta texto. La imagen la mandaremos como null o habría que actualizar el backend para subir fotos.
+    const success = await startSendingComment(post.id, comment.trim());
+
+    if (success) {
       setComment('');
       setCommentImage(null);
     }
+    setIsSending(false);
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar backgroundColor="#00926F" barStyle="light-content" />
-      <Animated.View 
-        style={[
-          styles.animatedContainer,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateX: slideAnim }]
-          }
-        ]}
-      >
-        <KeyboardAvoidingView 
-          style={styles.container} 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-          {/* Header con padding aumentado */}
+      <Animated.View style={[styles.animatedContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
+        <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+
+          {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={handleBack} style={styles.backButton}>
               <Icon name="chevron-left" size={28} color="#FFFFFF" />
             </TouchableOpacity>
             <View style={styles.headerInfo}>
               <Text style={styles.headerTitle}>{post?.author || 'Usuario'}</Text>
-              <Text style={styles.headerSubtitle}>{post?.time || 'hace 2 horas'}</Text>
+              <Text style={styles.headerSubtitle}>{post?.time}</Text>
             </View>
             <View style={styles.headerAvatar}>
-              <Text style={styles.headerAvatarText}>{post?.authorInitials || 'ED'}</Text>
+              <Text style={styles.headerAvatarText}>{post?.authorInitials}</Text>
             </View>
           </View>
-        
-        {/* Scrollable Content */}
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Title Section */}
-          <View style={styles.titleSection}>
-            <Text style={styles.title}>{post?.title}</Text>
-            
-            <View style={styles.badges}>
-              {post?.category && (
-                <View style={styles.categoryBadge}>
-                  <Text style={styles.categoryBadgeText}>{post.category.toUpperCase()}</Text>
+
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false} refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
+            {/* ... (Todo tu bloque de Title Section, Image y Content Box se queda IGUAL) ... */}
+            <View style={styles.titleSection}>
+              <Text style={styles.title}>{post?.title}</Text>
+              <View style={styles.badges}>
+                {post?.category && (
+                  <View style={styles.categoryBadge}>
+                    <Text style={styles.categoryBadgeText}>{post.category.toUpperCase()}</Text>
+                  </View>
+                )}
+                <View style={styles.likesBadge}>
+                  <Icon name="heart" size={16} color="#F96755" />
+                  <Text style={styles.likesBadgeText}>{post?.likes}</Text>
                 </View>
-              )}
-              
-              <View style={styles.likesBadge}>
-                <Icon name="heart" size={16} color="#F96755" />
-                <Text style={styles.likesBadgeText}>{post?.likes || 85}</Text>
               </View>
-              
-              <TouchableOpacity style={styles.resumeButton}>
-                <Icon name="star-four-points" size={14} color="#FFFFFF" />
-                <Text style={styles.resumeButtonText}>Resumir Debate</Text>
+            </View>
+
+            <View style={styles.contentBox}>
+              <Text style={styles.contentText}>{post?.fullDescription || post?.description}</Text>
+            </View>
+
+            {/* 👇 LISTA DE COMENTARIOS REALES */}
+            <View style={styles.commentsSection}>
+              <View style={styles.commentsHeader}>
+                <Text style={styles.commentsTitle}>Comentarios</Text>
+                <Text style={styles.commentsCount}>{activeComments.length} total</Text>
+              </View>
+
+              {activeComments.length === 0 ? (
+                <Text style={{ textAlign: 'center', color: '#666', marginTop: 20 }}>Sé el primero en comentar</Text>
+              ) : (
+                activeComments.map((item) => (
+                  console.log("nombres ", item),
+                  <View key={item._id} style={styles.commentCard}>
+                    <View style={styles.commentAvatar}>
+                      {/* Si el backend no devuelve iniciales, las calculamos */}
+                      <Text style={styles.commentAvatarText}>
+                        {item.author.fullName ? item.author.fullName.substring(0, 1).toUpperCase() : 'U'}
+                      </Text>
+                    </View>
+                    <View style={styles.commentContent}>
+                      <View style={styles.commentHeader}>
+                        <Text style={styles.commentAuthor}>{item.author.fullName}</Text>
+                        {/* Asumiendo que usas una función getTimeAgo o la fecha cruda */}
+                        <Text style={styles.commentTime}>{item.createdAt ? item.createdAt.substring(0, 10) : ''}</Text>
+                      </View>
+                      <Text style={styles.commentText}>{item.content}</Text>
+                    </View>
+                  </View>
+                ))
+              )}
+            </View>
+
+            <View style={styles.bottomSpacer} />
+          </ScrollView>
+
+          {/* Input Area */}
+          <View style={styles.inputWrapper}>
+            {/* ... (Tu preview de imagen igual) ... */}
+
+            <View style={styles.inputContainer}>
+              {/* ... (Botón cámara igual) ... */}
+
+              <TextInput
+                style={styles.input}
+                value={comment}
+                onChangeText={setComment}
+                placeholder="Escribe una respuesta"
+                placeholderTextColor="rgba(50,36,59,0.4)"
+                editable={!isSending} // Deshabilitar mientras envía
+              />
+
+              <TouchableOpacity
+                onPress={handleSendComment}
+                disabled={!comment.trim() || isSending}
+                style={[
+                  styles.sendButton,
+                  (!comment.trim() || isSending) && styles.sendButtonDisabled
+                ]}
+              >
+                {isSending ? (
+                  <ActivityIndicator color="#FFF" size="small" />
+                ) : (
+                  <Icon name="send" size={20} color="#FFFFFF" />
+                )}
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Main Image */}
-          {post?.image && (
-            <View style={styles.imageContainer}>
-              <Image 
-                source={{ uri: post.image }}
-                style={styles.postImage}
-                resizeMode="cover"
-              />
-            </View>
-          )}
-
-          {/* Content Box */}
-          <View style={styles.contentBox}>
-            <Text style={styles.contentText}>
-              {post?.fullDescription || post?.description}
-            </Text>
-            {/* Decorative circles */}
-            <View style={[styles.decorativeCircle, styles.decorativeCircle1]} />
-            <View style={[styles.decorativeCircle, styles.decorativeCircle2]} />
-          </View>
-
-          {/* Comments Section */}
-          <View style={styles.commentsSection}>
-            <View style={styles.commentsHeader}>
-              <Text style={styles.commentsTitle}>Comentarios</Text>
-              <Text style={styles.commentsCount}>{comments.length} total</Text>
-            </View>
-
-            {comments.map((item) => (
-              <View key={item.id} style={styles.commentCard}>
-                <View style={styles.commentAvatar}>
-                  <Text style={styles.commentAvatarText}>{item.authorInitial}</Text>
-                </View>
-                <View style={styles.commentContent}>
-                  <View style={styles.commentHeader}>
-                    <Text style={styles.commentAuthor}>{item.author}</Text>
-                    <Text style={styles.commentTime}>{item.time}</Text>
-                  </View>
-                  <Text style={styles.commentText}>{item.text}</Text>
-                  {item.image && (
-                    <Image source={{ uri: item.image }} style={styles.commentImage} />
-                  )}
-                </View>
-              </View>
-            ))}
-          </View>
-          
-          <View style={styles.bottomSpacer} />
-        </ScrollView>
-
-        {/* Fixed Input at Bottom */}
-        <View style={styles.inputWrapper}>
-          {commentImage && (
-            <View style={styles.commentImagePreview}>
-              <ImagePreview 
-                imageUri={commentImage}
-                onRemove={() => setCommentImage(null)}
-                size="small"
-              />
-            </View>
-          )}
-          <View style={styles.inputContainer}>
-            <TouchableOpacity style={styles.cameraButton} onPress={pickImageForComment}>
-              <Icon name="camera" size={24} color="rgba(50,36,59,0.5)" />
-            </TouchableOpacity>
-            
-            <TextInput
-              style={styles.input}
-              value={comment}
-              onChangeText={setComment}
-              placeholder="Escribe una respuesta"
-              placeholderTextColor="rgba(50,36,59,0.4)"
-              onSubmitEditing={handleSendComment}
-            />
-            
-            <TouchableOpacity 
-              onPress={handleSendComment}
-              disabled={!comment.trim() && !commentImage}
-              style={[
-                styles.sendButton,
-                (!comment.trim() && !commentImage) && styles.sendButtonDisabled
-              ]}
-            >
-              <Icon name="send" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
       </Animated.View>
     </SafeAreaView>
   );

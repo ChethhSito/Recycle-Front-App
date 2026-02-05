@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
-export const PostCard = ({ post, onPress }) => {
+export const PostCard = ({ post, onPress, onLikePress }) => {
   const isAdmin = post.isAdmin || false;
 
   return (
@@ -66,23 +66,35 @@ export const PostCard = ({ post, onPress }) => {
 
       {/* Interactions */}
       <View style={styles.interactions}>
-        <View style={styles.interaction}>
-          <Icon
-            name={post.liked ? 'heart' : 'heart-outline'}
-            size={20}
-            color="#F96755"
-          />
-          <Text style={[styles.interactionText, isAdmin && styles.interactionTextAdmin]}>
-            {post.likes}
-          </Text>
+        <View style={styles.interactions}>
+
+          {/* LIKE BUTTON (Icono + Texto juntos) */}
+          <TouchableOpacity
+            onPress={onLikePress}
+            style={styles.interaction} // Usamos el estilo interaction aquí
+            activeOpacity={0.6}
+          >
+            <Icon
+              name={post.isLiked ? "heart" : "heart-outline"}
+              size={20}
+              color={post.isLiked ? "#FF4D4D" : (isAdmin ? '#999' : '#32243B')}
+            />
+            <Text style={[styles.interactionText, isAdmin && styles.interactionTextAdmin]}>
+              {post.likes}
+            </Text>
+          </TouchableOpacity>
+
+          {/* COMMENTS BUTTON (Solo visual por ahora) */}
+          <View style={styles.interaction}>
+            <Icon name="message-outline" size={20} color={isAdmin ? '#999' : '#32243B'} />
+            <Text style={[styles.interactionText, isAdmin && styles.interactionTextAdmin]}>
+              {post.comments}
+            </Text>
+          </View>
+
         </View>
 
-        <View style={styles.interaction}>
-          <Icon name="message-outline" size={20} color={isAdmin ? '#999' : '#32243B'} />
-          <Text style={[styles.interactionText, isAdmin && styles.interactionTextAdmin]}>
-            {post.comments}
-          </Text>
-        </View>
+
       </View>
     </TouchableOpacity>
   );
