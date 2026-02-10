@@ -14,7 +14,6 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
 
     useEffect(() => {
         startLoadingPrograms();
-        console.log(programs);
     }, []);
 
     const safePrograms = Array.isArray(programs) ? programs : [];
@@ -23,9 +22,7 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
         ? safePrograms
         : safePrograms.filter(p => p.organizationType === filterType);
 
-    const handleProgramPress = (program) => {
-        setSelectedProgram(program);
-    };
+    const [modalVisible, setModalVisible] = useState(false);
 
     return (
         <View style={styles.container}>
@@ -129,7 +126,23 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
                                         ? { uri: program.imageUrl }
                                         : require('../../../assets/program1.jpg') // Tu imagen por defecto
                                 }
-                                onPress={() => handleProgramPress(program)}
+                                onPress={() => {
+                                    const programForModal = {
+                                        ...program,
+                                        contactInfo: program.contactInfo
+                                            ? `${program.contactInfo.email || ''}\n${program.contactInfo.phone || ''}`
+                                            : 'Sin contacto',
+
+                                        // 🚨 Pasamos la imagen YA RESUELTA (objeto o número de recurso)
+                                        // Esto evita que el Modal tenga que hacer require() y fallar
+                                        image: (program.imageUrl && program.imageUrl.startsWith('http'))
+                                            ? { uri: program.imageUrl }
+                                            : defaultImage
+                                    };
+
+                                    setSelectedProgram(programForModal);
+                                    setModalVisible(true);
+                                }}
                             />
                         ))
                     )}

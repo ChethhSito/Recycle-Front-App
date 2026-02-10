@@ -17,12 +17,16 @@ import { AssistantNotification, getRandomMessage } from '../../componentes/share
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../hooks/use-auth-store';
 import { useLevels } from '../../hooks/use-levels-store';
+import { useProgramStore } from '../../hooks/use-program-store';
+import { EnvironmentalProgramModal } from '../../componentes/modal/programs/EnvironmentalProgramModal';
+import { EnvironmentalProgramCard } from '../../componentes/cards/programs/EnvironmentalProgramCard';
 
 
 export const HomeScreen = () => {
 
     const { user } = useAuthStore();
     const { levels } = useLevels();
+    const { programs, startLoadingPrograms, isLoading } = useProgramStore();
 
     const navigation = useNavigation();
     const theme = useTheme();
@@ -49,6 +53,10 @@ export const HomeScreen = () => {
     const currentPoints = user?.points || 0;
     // Calculamos el progreso (evitando división por cero)
     const progressValue = targetPoints > 0 ? (currentPoints / targetPoints) : 0;
+
+    useEffect(() => {
+        startLoadingPrograms();
+    }, []);
 
     // Animación de pulso continua para el FAB
     useEffect(() => {
@@ -103,6 +111,8 @@ export const HomeScreen = () => {
         navigation.navigate('VirtualAssistant');
     };
 
+    const popularPrograms = Array.isArray(programs) ? programs.slice(0, 5) : [];
+
     // Datos según el tipo de filtro
     const impactData = {
         peso: [
@@ -121,44 +131,6 @@ export const HomeScreen = () => {
 
     const toggleFilter = () => {
         setFilterType(prev => prev === 'peso' ? 'cantidad' : 'peso');
-    };
-
-    const programsData = [
-        {
-            id: 1,
-            image: require('../../../assets/reciclaje.jpg'),
-            title: 'Sector 3\nHorario de recojo',
-            badge: { text: 'Hoy', icon: 'calendar', type: 'today' },
-            schedule: '6:00 PM - 9:00 PM',
-            location: 'Sector 3',
-            description: 'Programa de recojo de residuos en el Sector 3. Participa y ayuda a mantener limpia tu comunidad.',
-            contact: 'Tel: (01) 234-5678',
-        },
-        {
-            id: 2,
-            image: require('../../../assets/reciclaje.png'),
-            title: 'Horarios\ndel recojo de basura',
-            badge: { text: 'Actividad', icon: 'calendar-check', type: 'activity' },
-            schedule: '6:00 PM - 9:00 PM',
-            location: 'Plaza de Armas - Campaña del limpieza',
-            description: 'Campaña de limpieza comunitaria. Únete y haz la diferencia en tu barrio.',
-            contact: 'Email: limpieza@ecolloy.pe',
-        },
-        {
-            id: 3,
-            image: require('../../../assets/program1.jpg'),
-            title: 'Taller de\nReciclaje Creativo',
-            badge: { text: 'Próximo', icon: 'calendar-clock', type: 'today' },
-            schedule: 'Sábados 10:00 AM - 1:00 PM',
-            location: 'Centro Comunitario - Sector 5',
-            description: 'Aprende a crear objetos útiles a partir de materiales reciclados. Talleres prácticos para toda la familia.',
-            contact: 'Tel: (01) 987-6543\nEmail: talleres@ecolloy.pe',
-        },
-    ];
-
-    const handleProgramPress = (program) => {
-        setSelectedProgram(program);
-        setModalVisible(true);
     };
 
     return (
@@ -219,13 +191,56 @@ export const HomeScreen = () => {
                 {/* Programas */}
                 <View style={componentStyles.programsSection}>
                     <View style={[componentStyles.programsHeader, { paddingHorizontal: 20 }]}>
-                        <Icon name="leaf" size={50} color="#018f64" />
-                        <Text style={[componentStyles.sectionTitle, { color: '#31253B', marginBottom: 0, marginLeft: 10 }]}>Programas Populares</Text>
+                        <Icon name="leaf" size={20} color="#018f64" />
+                        <Text style={[componentStyles.sectionTitle, { color: '#31253B', marginBottom: 0, marginLeft: 10 }]}>
+                            Programas Populares
+                        </Text>
                     </View>
+
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 10 }}>
-                        {programsData.map((program) => (
-                            <ProgramCard key={program.id} {...program} onPress={() => handleProgramPress(program)} />
-                        ))}
+                        {popularPrograms.length > 0 ? (
+                            popularPrograms.map((program) => (
+                                <View key={program._id} style={{ width: 280, marginRight: 15 }}>
+                                    <EnvironmentalProgramCard
+                                        key={program._id}
+                                        {...program} // Pasamos todo (title, imageUrl, etc.)
+
+                                        // 1. Para la TARJETA (Visualización en lista):
+                                        // La tarjeta sí espera una prop 'image' que sea un objeto source ({uri: ...})
+                                        image={
+                                            (program.imageUrl && program.imageUrl.startsWith('http'))
+                                                ? { uri: program.imageUrl }
+                                                : require('../../../assets/program1.jpg')
+                                        }
+
+                                        // 2. Para el MODAL (Al hacer click):
+                                        onPress={() => {
+                                            // 🚨 CAMBIO IMPORTANTE:
+                                            // No modifiques la estructura de la imagen para el modal.
+                                            // Pasa el programa crudo + el arreglo del contacto.
+                                            const programForModal = {
+                                                ...program,
+                                                // Solo arreglamos el contacto (que sabemos que era el problema anterior)
+                                                image: program.imageUrl
+                                                    ? { uri: program.imageUrl }
+                                                    : require('../../../assets/program1.jpg'),
+                                                contactInfo: program.contactInfo
+                                                    ? `${program.contactInfo.email || ''}\n${program.contactInfo.phone || ''}`
+                                                    : 'Sin contacto'
+                                            };
+
+                                            setSelectedProgram(programForModal);
+                                            setModalVisible(true);
+                                        }}
+                                    />
+                                </View>
+                            ))
+                        ) : (
+                            // Estado vacío o de carga
+                            <Text style={{ marginLeft: 10, color: '#555' }}>
+                                {isLoading ? 'Cargando programas...' : 'No hay programas destacados hoy.'}
+                            </Text>
+                        )}
                     </ScrollView>
                 </View>
             </ScrollView>
@@ -238,7 +253,7 @@ export const HomeScreen = () => {
             </View>
 
             {/* Modales y Drawer */}
-            <ProgramDetailModal visible={modalVisible} onClose={() => setModalVisible(false)} program={selectedProgram} />
+
 
             {/* 6. DRAWER CONECTADO A REDUX (Ya lo tenías bien) */}
             <DrawerMenu
@@ -256,6 +271,11 @@ export const HomeScreen = () => {
                     <View style={componentStyles.fabBadge}><Icon name="lightning-bolt" size={12} color="#FFF" /></View>
                 </TouchableOpacity>
             </Animated.View>
+            <EnvironmentalProgramModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                program={selectedProgram}
+            />
         </View>
     );
 };

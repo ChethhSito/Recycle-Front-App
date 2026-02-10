@@ -32,7 +32,7 @@ export const EnvironmentalProgramModal = ({ visible, onClose, program }) => {
     };
 
     const getOrgColor = () => {
-        switch(program.organizationType) {
+        switch (program.organizationType) {
             case 'ONG': return '#FF6B6B';
             case 'NOS_PLANET': return '#018f64';
             case 'ESTADO': return '#4A90E2';
@@ -41,7 +41,7 @@ export const EnvironmentalProgramModal = ({ visible, onClose, program }) => {
     };
 
     const getOrgLabel = () => {
-        switch(program.organizationType) {
+        switch (program.organizationType) {
             case 'ONG': return 'ONG Ambiental';
             case 'NOS_PLANET': return 'Nos Planet';
             case 'ESTADO': return 'Estado Peruano';
@@ -60,7 +60,10 @@ export const EnvironmentalProgramModal = ({ visible, onClose, program }) => {
                 <View style={styles.modalContent}>
                     {/* Header con imagen */}
                     <View style={styles.headerContainer}>
-                        <Image source={program.image} style={styles.headerImage} />
+                        <Image source={
+                            program.image
+                        }
+                            style={styles.headerImage} />
                         <LinearGradient
                             colors={['transparent', 'rgba(0,0,0,0.8)']}
                             style={styles.headerGradient}
@@ -69,7 +72,7 @@ export const EnvironmentalProgramModal = ({ visible, onClose, program }) => {
                                 <Text style={styles.orgBadgeText}>{getOrgLabel()}</Text>
                             </View>
                         </LinearGradient>
-                        
+
                         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                             <Icon name="close" size={28} color="#fff" />
                         </TouchableOpacity>
@@ -93,13 +96,13 @@ export const EnvironmentalProgramModal = ({ visible, onClose, program }) => {
                                 <Text style={styles.statNumber}>{program.participants}</Text>
                                 <Text style={styles.statLabel}>Participantes</Text>
                             </View>
-                            
+
                             <View style={styles.statBox}>
                                 <Icon name="map-marker" size={28} color={getOrgColor()} />
                                 <Text style={styles.statNumber}>{program.location}</Text>
                                 <Text style={styles.statLabel}>Ubicación</Text>
                             </View>
-                            
+
                             <View style={styles.statBox}>
                                 <Icon name="star-circle" size={28} color="#FFA500" />
                                 <Text style={styles.statNumber}>{program.points}</Text>
@@ -177,7 +180,7 @@ export const EnvironmentalProgramModal = ({ visible, onClose, program }) => {
                         )}
 
                         {/* Botón Participar */}
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.participateButton}
                             activeOpacity={0.8}
                         >
@@ -191,7 +194,7 @@ export const EnvironmentalProgramModal = ({ visible, onClose, program }) => {
                         </TouchableOpacity>
 
                         {/* Botón Compartir */}
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.shareButton}
                             activeOpacity={0.8}
                             onPress={handleShare}

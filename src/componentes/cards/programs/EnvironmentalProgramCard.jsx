@@ -2,19 +2,23 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useEffect } from 'react';
 
-export const EnvironmentalProgramCard = ({ 
-    image, 
-    title, 
-    organization, 
+export const EnvironmentalProgramCard = ({
+    image,
+    title,
+    organization,
     organizationType, // 'ONG', 'NOS_PLANET', 'ESTADO'
-    participants, 
+    participants,
     location,
     points,
-    onPress 
+    onPress
 }) => {
+    useEffect(() => {
+        console.log("estas son las iamgenes", image);
+    }, []);
     const getOrgColor = () => {
-        switch(organizationType) {
+        switch (organizationType) {
             case 'ONG': return '#FF6B6B';
             case 'NOS_PLANET': return '#018f64';
             case 'ESTADO': return '#4A90E2';
@@ -23,7 +27,7 @@ export const EnvironmentalProgramCard = ({
     };
 
     const getOrgLabel = () => {
-        switch(organizationType) {
+        switch (organizationType) {
             case 'ONG': return 'ONG';
             case 'NOS_PLANET': return 'Nos Planet';
             case 'ESTADO': return 'Estado Peruano';
@@ -32,8 +36,8 @@ export const EnvironmentalProgramCard = ({
     };
 
     return (
-        <TouchableOpacity 
-            style={styles.card} 
+        <TouchableOpacity
+            style={styles.card}
             onPress={onPress}
             activeOpacity={0.9}
         >
@@ -44,13 +48,13 @@ export const EnvironmentalProgramCard = ({
                     colors={['transparent', 'rgba(0,0,0,0.7)']}
                     style={styles.imageGradient}
                 />
-                
+
                 {/* Badge de puntos - Izquierda */}
                 <View style={styles.pointsBadge}>
                     <Icon name="star" size={14} color="#FFA500" />
                     <Text style={styles.pointsBadgeText}>{points} ecopuntos</Text>
                 </View>
-                
+
                 {/* Badge de tipo de organización - Derecha */}
                 <View style={[styles.orgBadge, { backgroundColor: getOrgColor() }]}>
                     <Text style={styles.orgBadgeText}>{getOrgLabel()}</Text>
@@ -60,7 +64,7 @@ export const EnvironmentalProgramCard = ({
             {/* Contenido */}
             <View style={styles.content}>
                 <Text style={styles.title} numberOfLines={2}>{title}</Text>
-                
+
                 <View style={styles.infoRow}>
                     <Icon name="domain" size={16} color="#666" />
                     <Text style={styles.infoText}>{organization}</Text>
@@ -71,7 +75,7 @@ export const EnvironmentalProgramCard = ({
                         <Icon name="account-group" size={18} color="#018f64" />
                         <Text style={styles.statText}>{participants} participantes</Text>
                     </View>
-                    
+
                     <View style={styles.statItem}>
                         <Icon name="map-marker" size={18} color="#018f64" />
                         <Text style={styles.statText}>{location}</Text>
@@ -95,6 +99,7 @@ export const EnvironmentalProgramCard = ({
 
 const styles = StyleSheet.create({
     card: {
+        width: '100%', // 👈 ADD THIS LINE
         backgroundColor: '#fff',
         borderRadius: 16,
         marginBottom: 16,
