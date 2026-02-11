@@ -6,6 +6,7 @@ import { Text, TextInput, Button, IconButton, useTheme, Icon } from 'react-nativ
 import { useForm, Controller } from 'react-hook-form';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { useRequestStore } from '../../hooks/use-request-store';
 
 // 1. IMPORTAR SVG Y PATH
 import { Svg, Path } from 'react-native-svg';
@@ -71,8 +72,11 @@ export const CreateRequestScreen = ({ navigation }) => {
     // ... (Tus estados anteriores se mantienen) ...
     const [loadingLocation, setLoadingLocation] = useState(false);
     const [addressText, setAddressText] = useState("Toca para localizarte");
+
     const [imageUri, setImageUri] = useState(null);
     const [measureType, setMeasureType] = useState('peso');
+
+    const { startCreatingRequest, isLoading } = useRequestStore();
 
     // NUEVOS ESTADOS PARA LA LÓGICA DE CATEGORÍAS
     const [activeCategory, setActiveCategory] = useState(null); // La categoría padre seleccionada (ej. Metal)
@@ -91,7 +95,10 @@ export const CreateRequestScreen = ({ navigation }) => {
                 setLoadingLocation(false);
                 return;
             }
-            let location = await Location.getCurrentPositionAsync({});
+            let location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Balanced,
+                timeout: 10000 // 10 segundos es más seguro en emuladores lentos
+            });
             const { latitude, longitude } = location.coords;
             setValue('locationCoords', { latitude, longitude });
             let addressResponse = await Location.reverseGeocodeAsync({ latitude, longitude });
@@ -100,8 +107,14 @@ export const CreateRequestScreen = ({ navigation }) => {
                 const formatted = `${addr.street || 'Calle s/n'} ${addr.streetNumber || ''}, ${addr.district || ''}`;
                 setAddressText(formatted);
             }
+            else {
+                setAddressText(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+            }
         } catch (error) {
-            setAddressText("No se pudo obtener la dirección.");
+            console.log("Error GPS (Usando Fallback):", error);
+            const defaultLocation = { latitude: -12.0464, longitude: -77.0428 };
+            setValue('locationCoords', defaultLocation);
+            setAddressText("Ubicación por defecto (Lima)");
         } finally {
             setLoadingLocation(false);
         }
@@ -120,19 +133,30 @@ export const CreateRequestScreen = ({ navigation }) => {
         if (!result.canceled) setImageUri(result.assets[0].uri);
     };
 
-    const onSubmit = (data) => {
-        if (!selectedSubMaterial) return Alert.alert('Falta dato', 'Selecciona un tipo de material específico.');
+    const onSubmit = async (data) => {
+        if (!selectedSubMaterial) return Alert.alert('Falta dato', 'Selecciona un tipo de material.');
         if (!imageUri) return Alert.alert('Falta evidencia', 'Debes tomar una foto.');
+        if (!data.locationCoords) return Alert.alert('Falta ubicación', 'Espera a que detectemos tu ubicación.');
 
-        // Ahora enviamos tanto la categoría como el sub-material
-        const finalData = {
-            ...data,
+        const success = await startCreatingRequest({
             category: activeCategory.id,
             materialType: selectedSubMaterial.id,
-            materialLabel: selectedSubMaterial.label,
-            imageUri
-        };
-        navigation.goBack();
+            quantity: data.quantity,
+            measureType: measureType, // 'peso' o 'cantidad'
+            locationCoords: data.locationCoords,
+            imageUri: imageUri,
+            address: addressText,
+            description: data.description
+        });
+        console.log("success", success);
+
+        if (success) {
+            Alert.alert("¡Éxito!", "Solicitud creada correctamente", [
+                { text: "OK", onPress: () => navigation.goBack() }
+            ]);
+        } else {
+            Alert.alert("Error", "No se pudo enviar la solicitud. Intenta nuevamente.");
+        }
     };
 
     const resetSelection = () => {
@@ -312,6 +336,29 @@ export const CreateRequestScreen = ({ navigation }) => {
                         </TouchableOpacity>
                     </View>
 
+
+                    <Text style={[styles.sectionTitle, { marginTop: 20 }]}>2.1. Descripción (Opcional)</Text>
+                    <Controller
+                        control={control}
+
+                        name="description"
+                        render={({ field: { onChange, value } }) => (
+                            <TextInput
+                                mode="flat"
+                                placeholder="Ej: 'Son 2 bolsas grandes negras...'"
+                                placeholderTextColor="#5A7A70"
+                                style={[styles.input, { height: 80, paddingTop: 10 }]} // Más alto
+                                value={value}
+                                onChangeText={onChange}
+                                underlineColor="transparent"
+                                activeUnderlineColor="transparent"
+                                multiline={true}
+                                numberOfLines={3}
+
+                            />
+                        )}
+                    />
+
                     {/* BOTÓN FINAL */}
                     <Button
                         mode="contained"
@@ -320,7 +367,7 @@ export const CreateRequestScreen = ({ navigation }) => {
                         labelStyle={{ fontSize: 18, color: '#31253B', fontWeight: 'bold' }}
                         icon="send"
                     >
-                        Enviar Solicitud
+                        {isLoading ? "Enviando..." : "Enviar Solicitud"}
                     </Button>
                 </View>
             </ScrollView>

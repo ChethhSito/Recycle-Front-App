@@ -3,60 +3,100 @@ import { View, StyleSheet, FlatList, TouchableOpacity, Image, Dimensions } from 
 import { Text, FAB, Chip, useTheme, ActivityIndicator } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { Svg, Path } from 'react-native-svg'; // Para la nube
+import { useRequestStore } from '../../hooks/use-request-store';
 
 const { width } = Dimensions.get('window');
 
 // Datos de prueba (Cámbialo a [] para ver el estado vacío)
-const MOCK_DATA = [
-    { id: '1', material: 'Plástico', quantity: '2.5 kg', date: 'Hoy, 10:30 AM', status: 'pending' },
-    { id: '2', material: 'Cartón', quantity: '10 cajas', date: 'Ayer', status: 'completed' },
-    { id: '3', material: 'Vidrio', quantity: '5 kg', date: '12 Oct', status: 'cancelled' },
-];
+
 
 export const RequestListScreen = ({ navigation }) => {
-    const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
+
+    const { requests, isLoading, startLoadingRequests } = useRequestStore();
 
     useEffect(() => {
         // Simulamos carga de API
-        setTimeout(() => {
-            setRequests(MOCK_DATA); // Pon MOCK_DATA o [] para probar
-            setLoading(false);
-        }, 1000);
+        startLoadingRequests();
     }, []);
 
     // --- RENDERIZADO DE CADA TARJETA ---
     const renderItem = ({ item }) => {
-        // Colores y textos según estado
+        // A. Configuración de Estado
         const getStatusStyle = (status) => {
-            switch (status) {
-                case 'pending': return { color: '#FAC96E', label: 'Buscando...', icon: 'clock-outline' };
-                case 'completed': return { color: '#00C7A1', label: 'Recogido', icon: 'check-circle' };
-                case 'cancelled': return { color: '#EF4444', label: 'Cancelado', icon: 'close-circle' };
-                default: return { color: '#999', label: 'Desconocido' };
+            const s = status ? status.toUpperCase() : 'PENDING';
+            switch (s) {
+                // 🟠 PENDING: Usamos un Naranja Quemado (Amber) fuerte en vez de amarillo pálido
+                case 'PENDING':
+                    return { color: '#EA580C', label: 'Buscando...', icon: 'clock-outline' };
+
+                // 🔵 ACCEPTED: Un Azul Real intenso
+                case 'ACCEPTED':
+                    return { color: '#2563EB', label: 'Aceptado', icon: 'account-check' };
+
+                // 🟣 IN_PROGRESS: Morado/Violeta para diferenciarlo del "Aceptado"
+                case 'IN_PROGRESS':
+                    return { color: '#7C3AED', label: 'En camino', icon: 'truck-delivery' };
+
+                // 🟢 COMPLETED: Verde Bosque oscuro (para que resalte sobre el verde claro de la tarjeta)
+                case 'COMPLETED':
+                    return { color: '#15803D', label: 'Recogido', icon: 'check-circle' };
+
+                // 🔴 CANCELLED: Rojo Fuego
+                case 'CANCELLED':
+                    return { color: '#DC2626', label: 'Cancelado', icon: 'close-circle' };
+
+                // ⚫ Default: Gris oscuro
+                default:
+                    return { color: '#4B5563', label: s };
             }
         };
         const statusConfig = getStatusStyle(item.status);
 
+        // B. Formateo de Fecha
+        const dateString = item.createdAt
+            ? new Date(item.createdAt).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+            : 'Fecha pendiente';
+
+        // C. Traducción de Materiales (Según tus logs: steel, hdpe)
+        const LABELS = {
+            'steel': 'Metal (Acero)',
+            'hdpe': 'Plástico (Duro)',
+            'pet': 'Botellas PET',
+            'copper': 'Cobre',
+            'aluminum': 'Aluminio',
+            'paper': 'Papel',
+            'box': 'Cartón',
+            // Fallbacks generales
+            'plastic': 'Plástico',
+            'metal': 'Metal',
+            'cardboard': 'Cartón',
+            'electronics': 'RAEE'
+        };
+
+        const title = LABELS[item.materialType] || LABELS[item.category] || item.category?.toUpperCase();
+
+        // D. Unidad
+        const unit = item.measureType === 'peso' ? 'kg' : 'unid.';
+
         return (
             <TouchableOpacity style={styles.card} activeOpacity={0.9}>
                 <View style={styles.cardIcon}>
-                    {/* Icono dinámico según material */}
-                    <Icon name="recycle" size={24} color="#018f64" />
+                    <Image source={{ uri: item.imageUrl }} style={{ width: 24, height: 24 }} />
                 </View>
 
                 <View style={styles.cardContent}>
                     <View style={styles.cardHeader}>
-                        <Text style={styles.materialTitle}>{item.material}</Text>
-                        <Text style={styles.dateText}>{item.date}</Text>
+                        <Text style={styles.materialTitle}>{title}</Text>
+
                     </View>
-                    <Text style={styles.quantityText}>{item.quantity}</Text>
+                    <Text style={styles.dateText}>{dateString}</Text>
+                    <Text style={styles.quantityText}>{item.quantity} {unit}</Text>
                 </View>
 
                 <View style={styles.statusContainer}>
                     <Chip
                         icon={statusConfig.icon}
-                        style={{ backgroundColor: statusConfig.color + '20' }} // 20% opacidad fondo
+                        style={{ backgroundColor: statusConfig.color + '20' }}
                         textStyle={{ color: statusConfig.color, fontSize: 11, fontWeight: 'bold' }}
                     >
                         {statusConfig.label}
@@ -85,28 +125,31 @@ export const RequestListScreen = ({ navigation }) => {
             </View>
 
             {/* CONTENIDO PRINCIPAL */}
-            {loading ? (
+            {isLoading ? (
                 <View style={styles.center}>
                     <ActivityIndicator size="large" color="#018f64" />
                 </View>
             ) : (
-                <FlatList
-                    data={requests}
-                    renderItem={renderItem}
-                    keyExtractor={item => item.id}
-                    contentContainerStyle={styles.listContainer}
-                    showsVerticalScrollIndicator={false}
-                    // --- ESTADO VACÍO (Si no hay solicitudes) ---
-                    ListEmptyComponent={() => (
-                        <View style={styles.emptyContainer}>
-
-                            <Text style={styles.emptyTitle}>Aún no has reciclado</Text>
-                            <Text style={styles.emptyText}>
-                                ¡Es momento de empezar! Crea tu primera solicitud y ayuda al planeta.
-                            </Text>
-                        </View>
-                    )}
-                />
+                // 👇 CAMBIO CLAVE: Envolvemos en un View con flex: 1
+                <View style={{ flex: 1, width: '100%' }}>
+                    <FlatList
+                        data={requests}
+                        renderItem={renderItem}
+                        keyExtractor={(item) => item._id} // Asegúrate que sea _id
+                        contentContainerStyle={styles.listContainer}
+                        showsVerticalScrollIndicator={false}
+                        // 👇 CAMBIO CLAVE: Añadimos estilo flex a la lista misma
+                        style={{ flex: 1 }}
+                        ListEmptyComponent={() => (
+                            <View style={styles.emptyContainer}>
+                                <Text style={styles.emptyTitle}>Aún no has reciclado</Text>
+                                <Text style={styles.emptyText}>
+                                    ¡Es momento de empezar! Crea tu primera solicitud y ayuda al planeta.
+                                </Text>
+                            </View>
+                        )}
+                    />
+                </View>
             )}
 
             {/* BOTÓN FLOTANTE (FAB) PARA AGREGAR NUEVA */}

@@ -4,6 +4,7 @@ import { WebView } from 'react-native-webview';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'; // Importamos MaterialCommunityIcons para mejores iconos de reciclaje
 import { useNavigation } from '@react-navigation/native';
 import * as Location from 'expo-location';
+import { useRequestStore } from '../../hooks/use-request-store';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -15,77 +16,53 @@ const CATEGORIES = {
     METAL: { color: '#EF5350', label: 'Metal/RAEE', icon: 'screw-machine-flat-top' } // Rojo Suave
 };
 
-// 2. DATOS DE PRUEBA AMPLIADOS (Para probar el Scroll)
-const MOCK_REQUESTS = [
-    {
-        id: '1',
-        title: 'Botellas Plásticas',
-        category: 'PLASTIC',
-        distance: '0.2 km', // <--- Dato importante
-        quantity: '3 Kg',
-        user: 'Juan Pérez'
-    },
-    {
-        id: '2',
-        title: 'Cajas de Cartón',
-        category: 'PAPER',
-        distance: '0.5 km',
-        quantity: '5 Kg',
-        user: 'María Lopez'
-    },
-    {
-        id: '3',
-        title: 'Latas de Aluminio',
-        category: 'METAL',
-        distance: '1.2 km',
-        quantity: '2 Kg',
-        user: 'Carlos Ruiz'
-    },
-    {
-        id: '4',
-        title: 'Botellas de Vidrio',
-        category: 'GLASS',
-        distance: '2.5 km',
-        quantity: '10 Kg',
-        user: 'Ana Díaz'
-    },
-    {
-        id: '5',
-        title: 'Monitores Viejos (RAEE)',
-        category: 'METAL',
-        distance: '3.1 km',
-        quantity: '2 Unid.',
-        user: 'Pedro S.'
-    },
-    {
-        id: '6',
-        title: 'Revistas y Periódicos',
-        category: 'PAPER',
-        distance: '4.0 km',
-        quantity: '8 Kg',
-        user: 'Luisa M.'
-    },
-];
-
 export const MapScreen = () => {
     const navigation = useNavigation();
-    const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
 
     // OBTENER UBICACIÓN (Igual que antes)
+    const [location, setLocation] = useState(null);
+    // 👇 Usamos el store
+    const { nearbyRequests, startLoadingNearbyRequests } = useRequestStore();
+
     useEffect(() => {
+        console.log("mapMarkers", mapMarkers);
         (async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
-                setErrorMsg('Permiso de ubicación denegado');
                 Alert.alert("Permiso necesario", "Necesitamos tu ubicación para mostrar el mapa.");
-                setLocation({ coords: { latitude: -12.046374, longitude: -77.042793 } });
                 return;
             }
-            let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-            setLocation(location);
+
+            let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+            setLocation(loc);
+
+            // Fetch nearby requests using store
+            if (loc) {
+                startLoadingNearbyRequests({
+                    lat: loc.coords.latitude,
+                    lng: loc.coords.longitude
+                });
+            }
+
         })();
     }, []);
+
+    const mapMarkers = nearbyRequests.map(req => ({
+        id: req._id,
+        title: req.materialType || req.category,
+        // GeoJSON format: coordinates[1] is Lat, [0] is Lng
+        lat: req.location.coordinates[1],
+        lng: req.location.coordinates[0],
+        distance: 'Cerca',
+        quantity: `${req.quantity} ${req.measureType === 'peso' ? 'Kg' : 'Unid'}`,
+        user: req.citizen?.fullName || 'Usuario Anónimo', // <--- ESTO EVITA EL ERROR
+        image: req.imageUrl,
+        description: req.description || 'Sin descripción adicional.',
+        distance: 'Cerca', // O calcula la distancia real
+        address: req.location.address
+    }));
+
 
     const getMapHTML = (lat, lng) => `
         <!DOCTYPE html>
@@ -105,62 +82,75 @@ export const MapScreen = () => {
                 const userLat = ${lat};
                 const userLng = ${lng};
                 const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([userLat, userLng], 15);
+                
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
                 
+                // User Marker
                 const userIcon = L.icon({
                     iconUrl: 'https://cdn-icons-png.flaticon.com/512/3082/3082383.png',
                     iconSize: [40, 40],
                     iconAnchor: [20, 40],
                     popupAnchor: [0, -40]
                 });
-                L.marker([userLat, userLng], {icon: userIcon}).addTo(map).bindPopup("<b>Tú estás aquí</b>").openPopup();
+                L.marker([userLat, userLng], {icon: userIcon}).addTo(map).bindPopup("<b>Tú estás aquí</b>");
 
-                // Simulamos marcadores para las solicitudes MOCK
-                // Generamos puntos aleatorios cercanos
-                const requests = ${JSON.stringify(MOCK_REQUESTS)};
-                requests.forEach((req, index) => {
-                    const offset = (Math.random() - 0.5) * 0.01; 
-                    L.marker([userLat + offset, userLng + offset])
-                     .addTo(map)
-                     .bindPopup('<b>' + req.title + '</b><br>' + req.distance);
+                // Request Markers from Store Data
+                const requests = ${JSON.stringify(mapMarkers)};
+                
+                requests.forEach((req) => {
+                    L.marker([req.lat, req.lng])
+                      .addTo(map)
+                      .bindPopup('<b>' + req.title + '</b><br>' + req.quantity);
                 });
             </script>
         </body>
         </html>
     `;
 
-    // 3. RENDERIZADO MEJORADO DE LA TARJETA
     const renderRequestItem = ({ item }) => {
-        // Obtenemos configuración visual según categoría
-        const categoryStyle = CATEGORIES[item.category] || CATEGORIES.PLASTIC;
+        // Fallback to PLASTIC if category not found or convert to uppercase just in case
+        const catKey = item.category ? item.category.toUpperCase() : 'PLASTIC';
+        const categoryStyle = CATEGORIES[catKey] || CATEGORIES.PLASTIC;
+
+        // Calculate distance logic or use placeholder
+        const displayDistance = "Cerca";
+
+        const cleanItem = {
+
+            id: item._id,
+            title: item.materialType || item.category,
+            // Ensure user string exists. Check citizen.fullName first, then direct user prop, then fallback.
+            user: item.citizen?.fullName || item.user || 'Usuario Anónimo',
+            image: item.imageUrl || item.image, // Handle both potential property names
+            quantity: `${item.quantity} ${item.measureType === 'peso' ? 'kg' : 'unid'}`,
+            description: item.description,
+            distance: displayDistance,
+            lat: item.location?.coordinates ? item.location.coordinates[1] : 0,
+            lng: item.location?.coordinates ? item.location.coordinates[0] : 0,
+            address: item.location?.address
+        };
 
         return (
             <View style={styles.card}>
-                {/* Línea de color a la izquierda */}
                 <View style={[styles.categoryIndicator, { backgroundColor: categoryStyle.color }]} />
-
-                {/* Icono con fondo de color suave */}
                 <View style={[styles.cardIcon, { backgroundColor: categoryStyle.color + '20' }]}>
                     <MaterialCommunityIcons name={categoryStyle.icon} size={24} color={categoryStyle.color} />
                 </View>
-
                 <View style={styles.cardContent}>
-                    <Text style={styles.cardTitle}>{item.title}</Text>
-
-                    {/* Fila de Distancia y Cantidad */}
+                    <Text style={styles.cardTitle}>{cleanItem.title}</Text>
                     <View style={styles.metaRow}>
                         <View style={styles.metaItem}>
                             <Ionicons name="location-sharp" size={14} color="#666" />
-                            <Text style={styles.metaText}>A {item.distance}</Text>
+                            <Text style={styles.metaText}>{cleanItem.distance}</Text>
                         </View>
                         <Text style={styles.separator}>•</Text>
-                        <Text style={styles.metaText}>{item.quantity}</Text>
+                        <Text style={styles.metaText}>{cleanItem.quantity}</Text>
                     </View>
                 </View>
-
                 <TouchableOpacity
-                    style={[styles.actionButton, { backgroundColor: categoryStyle.color }]} // Botón del color de la categoría
-                    onPress={() => navigation.navigate('RequestDetail', { request: item })}
+                    style={[styles.actionButton, { backgroundColor: categoryStyle.color }]}
+                    // 👇 PASS THE CLEAN OBJECT
+                    onPress={() => navigation.navigate('RequestDetail', { request: cleanItem })}
                 >
                     <Text style={styles.actionText}>Ver</Text>
                 </TouchableOpacity>
@@ -193,18 +183,23 @@ export const MapScreen = () => {
                 <View style={styles.dragHandle} />
                 <Text style={styles.sheetTitle}>Solicitudes Cercanas</Text>
 
-                {/* Lista Scrolleable */}
                 <FlatList
-                    data={MOCK_REQUESTS}
+                    data={nearbyRequests} // 👈 Use real data from store
                     renderItem={renderRequestItem}
-                    keyExtractor={item => item.id}
+                    keyExtractor={item => item._id} // 👈 Use _id for MongoDB keys
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 20 }} // Espacio al final para scrollear bien
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                    ListEmptyComponent={
+                        <Text style={{ textAlign: 'center', marginTop: 20, color: '#fff' }}>
+                            No hay solicitudes cercanas.
+                        </Text>
+                    }
                 />
             </View>
         </View>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#018f64' },
