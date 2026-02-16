@@ -9,59 +9,78 @@ import { useRequestStore } from '../../hooks/use-request-store';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // 1. CONFIGURACIÓN DE CATEGORÍAS (4 COLORES)
+
+const MAP_ICONS = {
+    // Categorías de la Base de Datos (en mayúsculas)
+    PLASTIC: 'https://cdn-icons-png.flaticon.com/512/3082/3082383.png', // Botella
+    CARDBOARD: 'https://cdn-icons-png.flaticon.com/512/6890/6890332.png', // Caja Cartón (NUEVO)
+    PAPER: 'https://cdn-icons-png.flaticon.com/512/2541/2541991.png', // Papel
+    GLASS: 'https://cdn-icons-png.flaticon.com/512/3082/3082060.png', // Vidrio
+    METAL: 'https://cdn-icons-png.flaticon.com/512/3225/3225257.png', // Metal
+    ELECTRONICS: 'https://cdn-icons-png.flaticon.com/512/3474/3474360.png', // RAEE / Electro (NUEVO)
+
+    // Icono por defecto (Bolsa de basura genérica)
+    DEFAULT: 'https://cdn-icons-png.flaticon.com/512/8662/8662892.png'
+};
+
+const USER_PIN_ICON = 'https://cdn-icons-png.flaticon.com/512/9131/9131529.png';
 const CATEGORIES = {
-    PLASTIC: { color: '#29B6F6', label: 'Plástico', icon: 'bottle-soda' }, // Azul Cielo
-    PAPER: { color: '#FFA726', label: 'Cartón/Papel', icon: 'package-variant' }, // Naranja
-    GLASS: { color: '#66BB6A', label: 'Vidrio', icon: 'glass-fragile' }, // Verde Claro
-    METAL: { color: '#EF5350', label: 'Metal/RAEE', icon: 'screw-machine-flat-top' } // Rojo Suave
+    PLASTIC: { color: '#29B6F6', label: 'Plástico', icon: 'bottle-soda' },
+    PAPER: { color: '#FFA726', label: 'Cartón/Papel', icon: 'package-variant' },
+    CARDBOARD: { color: '#FFA726', label: 'Cartón/Papel', icon: 'package-variant' }, // Agregado Cardboard
+    GLASS: { color: '#66BB6A', label: 'Vidrio', icon: 'glass-fragile' },
+    METAL: { color: '#EF5350', label: 'Metal', icon: 'screw-machine-flat-top' },
+    ELECTRONICS: { color: '#EF4444', label: 'RAEE', icon: 'monitor' } // Agregado Electronics
 };
 
 export const MapScreen = () => {
     const navigation = useNavigation();
-    const [errorMsg, setErrorMsg] = useState(null);
-
-    // OBTENER UBICACIÓN (Igual que antes)
     const [location, setLocation] = useState(null);
-    // 👇 Usamos el store
     const { nearbyRequests, startLoadingNearbyRequests } = useRequestStore();
 
     useEffect(() => {
-        console.log("mapMarkers", mapMarkers);
         (async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
-                Alert.alert("Permiso necesario", "Necesitamos tu ubicación para mostrar el mapa.");
+                Alert.alert("Permiso necesario", "Necesitamos tu ubicación.");
                 return;
             }
 
             let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
             setLocation(loc);
 
-            // Fetch nearby requests using store
             if (loc) {
                 startLoadingNearbyRequests({
                     lat: loc.coords.latitude,
                     lng: loc.coords.longitude
                 });
             }
-
         })();
     }, []);
 
-    const mapMarkers = nearbyRequests.map(req => ({
-        id: req._id,
-        title: req.materialType || req.category,
-        // GeoJSON format: coordinates[1] is Lat, [0] is Lng
-        lat: req.location.coordinates[1],
-        lng: req.location.coordinates[0],
-        distance: 'Cerca',
-        quantity: `${req.quantity} ${req.measureType === 'peso' ? 'Kg' : 'Unid'}`,
-        user: req.citizen?.fullName || 'Usuario Anónimo', // <--- ESTO EVITA EL ERROR
-        image: req.imageUrl,
-        description: req.description || 'Sin descripción adicional.',
-        distance: 'Cerca', // O calcula la distancia real
-        address: req.location.address
-    }));
+    const mapMarkers = nearbyRequests.map(req => {
+        // Convertimos la categoría que viene de BD a mayúsculas para buscar en el objeto
+        const catKey = req.category ? req.category.toUpperCase() : 'DEFAULT';
+
+        // Seleccionamos el icono correcto o el default si no existe
+        const iconUrl = MAP_ICONS[catKey] || MAP_ICONS.DEFAULT;
+
+        return {
+            id: req._id,
+            title: req.materialType || req.category,
+            lat: req.location.coordinates[1],
+            lng: req.location.coordinates[0],
+            quantity: `${req.quantity} ${req.measureType === 'peso' ? 'Kg' : 'Unid'}`,
+            icon: iconUrl, // 👈 Aquí va la URL correcta
+
+            // Datos para la navegación al detalle
+            user: req.citizen?.fullName || 'Usuario Anónimo',
+            image: req.imageUrl,
+            description: req.description,
+            distance: 'Cerca',
+            address: req.location.address
+        };
+    });
 
 
     const getMapHTML = (lat, lng) => `
@@ -79,26 +98,31 @@ export const MapScreen = () => {
         <body>
             <div id="map"></div>
             <script>
-                const userLat = ${lat};
-                const userLng = ${lng};
-                const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([userLat, userLng], 15);
+                const map = L.map('map', { zoomControl: false }).setView([${lat}, ${lng}], 15);
                 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
                 
-                // User Marker
+                // --- MARCADOR DE TU UBICACIÓN (Diferente a la basura) ---
                 const userIcon = L.icon({
-                    iconUrl: 'https://cdn-icons-png.flaticon.com/512/3082/3082383.png',
+                    iconUrl: '${USER_PIN_ICON}', 
                     iconSize: [40, 40],
                     iconAnchor: [20, 40],
                     popupAnchor: [0, -40]
                 });
-                L.marker([userLat, userLng], {icon: userIcon}).addTo(map).bindPopup("<b>Tú estás aquí</b>");
+                L.marker([${lat}, ${lng}], {icon: userIcon}).addTo(map).bindPopup("<b>Estás aquí</b>");
 
-                // Request Markers from Store Data
+                // --- MARCADORES DE SOLICITUDES ---
                 const requests = ${JSON.stringify(mapMarkers)};
                 
                 requests.forEach((req) => {
-                    L.marker([req.lat, req.lng])
+                    const itemIcon = L.icon({
+                        iconUrl: req.icon, 
+                        iconSize: [32, 32], // Tamaño del icono de residuo
+                        iconAnchor: [16, 32],
+                        popupAnchor: [0, -32]
+                    });
+
+                    L.marker([req.lat, req.lng], { icon: itemIcon })
                       .addTo(map)
                       .bindPopup('<b>' + req.title + '</b><br>' + req.quantity);
                 });
@@ -139,17 +163,14 @@ export const MapScreen = () => {
                 <View style={styles.cardContent}>
                     <Text style={styles.cardTitle}>{cleanItem.title}</Text>
                     <View style={styles.metaRow}>
-                        <View style={styles.metaItem}>
-                            <Ionicons name="location-sharp" size={14} color="#666" />
-                            <Text style={styles.metaText}>{cleanItem.distance}</Text>
-                        </View>
+                        <Ionicons name="location-sharp" size={14} color="#666" />
+                        <Text style={styles.metaText}>Cerca de ti</Text>
                         <Text style={styles.separator}>•</Text>
                         <Text style={styles.metaText}>{cleanItem.quantity}</Text>
                     </View>
                 </View>
                 <TouchableOpacity
                     style={[styles.actionButton, { backgroundColor: categoryStyle.color }]}
-                    // 👇 PASS THE CLEAN OBJECT
                     onPress={() => navigation.navigate('RequestDetail', { request: cleanItem })}
                 >
                     <Text style={styles.actionText}>Ver</Text>
@@ -162,7 +183,7 @@ export const MapScreen = () => {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#018f64" />
-                <Text style={{ marginTop: 10 }}>Ubicando...</Text>
+                <Text style={{ marginTop: 10 }}>Buscando...</Text>
             </View>
         );
     }

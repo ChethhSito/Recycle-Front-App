@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, StatusBar, Alert, Platform } from 'react-native';
 import { Text, Button, IconButton, Avatar, Card, Divider, Appbar } from 'react-native-paper';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRequestStore } from '../../hooks/use-request-store';
 
 const { width } = Dimensions.get('window');
 
@@ -9,8 +10,11 @@ export const RequestDetailScreen = ({ route, navigation }) => {
     // Recibimos los datos de la solicitud desde la pantalla anterior
     const { request } = route.params || {};
 
+    const { startAcceptingRequest, isLoading } = useRequestStore();
+
     // Datos de respaldo por si algo falla (Fallback)
     const item = {
+        id: request?.id || request?._id,
         title: request?.title || 'Material Reciclable',
         user: request?.user || 'Usuario Anónimo', // Esto evita el crash del substring
         image: request?.image || 'https://via.placeholder.com/400x300?text=Sin+Imagen',
@@ -24,12 +28,28 @@ export const RequestDetailScreen = ({ route, navigation }) => {
     };
 
     const handleAccept = () => {
+        // Validación de seguridad por si el ID sigue fallando
+        if (!item.id) {
+            Alert.alert("Error", "No se encontró el ID de la solicitud");
+            return;
+        }
+
         Alert.alert(
             "Confirmar Recojo",
             `¿Deseas aceptar el recojo de ${item.quantity} de ${item.title}?`,
             [
                 { text: "Cancelar", style: "cancel" },
-                { text: "Aceptar", onPress: () => console.log("Recojo aceptado", item.id) }
+                {
+                    text: "Aceptar",
+                    onPress: async () => {
+                        console.log("Enviando ID:", item.id); // Para depurar
+                        const success = await startAcceptingRequest(item.id);
+                        if (success) {
+                            Alert.alert("¡Éxito!", "Solicitud aceptada correctamente.");
+                            navigation.goBack();
+                        }
+                    }
+                }
             ]
         );
     };
@@ -125,6 +145,7 @@ export const RequestDetailScreen = ({ route, navigation }) => {
                     mode="contained"
                     icon="truck-fast"
                     onPress={handleAccept}
+                    loading={isLoading}
                     style={styles.acceptButton}
                     contentStyle={{ height: 54 }}
                     labelStyle={{ fontSize: 18, fontWeight: 'bold' }}

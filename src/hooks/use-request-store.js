@@ -103,6 +103,29 @@ export const useRequestStore = () => {
         }
     };
 
+    const startAcceptingRequest = async (requestId) => {
+        dispatch(onLoading());
+        try {
+            const config = await getAuthHeader(); // Headers con Token
+
+            // Llamada al Backend: PATCH /requests/{id}/accept
+            const { data } = await axios.patch(`${urlRequests}/${requestId}/accept`, {}, config);
+
+            // Opcional: Actualizar la lista local quitando la solicitud aceptada de "cercanos"
+            // dispatch(onRemoveFromNearby(requestId)); // Si quisieras crear esa acción en Redux
+
+            dispatch(onSetRequests(data)); // O simplemente recargamos
+            return true;
+
+        } catch (error) {
+            // Manejo de error si alguien más la ganó
+            const msg = error.response?.data?.message || 'Error al aceptar la solicitud';
+            Alert.alert('Error', msg);
+            dispatch(onError(msg));
+            return false;
+        }
+    };
+
     return {
         requests,
         isLoading,
@@ -110,6 +133,7 @@ export const useRequestStore = () => {
 
         startLoadingRequests,
         startCreatingRequest,
-        startLoadingNearbyRequests
+        startLoadingNearbyRequests,
+        startAcceptingRequest
     };
 };
