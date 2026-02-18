@@ -98,9 +98,9 @@ export const DrawerMenu = ({ visible, onClose }) => {
                 { icon: 'home', label: 'Inicio', onPress: () => navigation.navigate('Home') },
                 { icon: 'robot-happy', label: 'Asistente Virtual', onPress: () => navigation.navigate('VirtualAssistant'), highlight: true },
                 { icon: 'leaf', label: 'EcoPuntos', onPress: () => navigation.navigate('Rank') },
-                { icon: 'gift', label: 'Premios', onPress: () => navigation.navigate('Rewards') },
                 { icon: 'sprout', label: 'Tu huella verde', onPress: () => navigation.navigate('GreenFootprint') },
                 { icon: 'account', label: 'Mi perfil', onPress: () => navigation.navigate('Profile') },
+                { icon: 'handshake', label: 'Donaciones', onPress: () => navigation.navigate('Donation') },
                 // { icon: 'map', label: 'Solicitudes', onPress: () => navigation.navigate('Map') },
             ]
         },
