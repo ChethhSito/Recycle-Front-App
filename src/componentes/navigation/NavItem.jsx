@@ -1,37 +1,54 @@
+// componentes/navigation/NavItem.js
 import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
+import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
 export const NavItem = ({ icon, label, active, onPress }) => {
-    const theme = useTheme();
-    const componentStyles = styles(theme);
-    const activeColor = theme.colors.background;
+    // DEFINIMOS COLORES CLAROS PARA EL FONDO OSCURO DEL NAV
+    const ACTIVE_COLOR = '#FFFFFF'; // Blanco puro para el activo
+    const INACTIVE_COLOR = 'rgba(255, 255, 255, 0.5)'; // Blanco transparente para inactivos
 
     return (
-        <TouchableOpacity style={componentStyles.navItem} onPress={onPress}>
-            <Icon name={icon} size={26} color={active ? activeColor : '#1a1a1aff'} />
-            <Text style={[componentStyles.navLabel, active && componentStyles.navLabelActive]}>
+        <TouchableOpacity
+            style={styles.container}
+            onPress={onPress}
+            activeOpacity={0.7}
+        >
+            <Icon
+                name={icon}
+                size={24}
+                color={active ? ACTIVE_COLOR : INACTIVE_COLOR}
+            />
+            <Text style={[
+                styles.label,
+                { color: active ? ACTIVE_COLOR : INACTIVE_COLOR, fontWeight: active ? 'bold' : '500' }
+            ]}>
                 {label}
             </Text>
+
+            {/* Opcional: Una pequeña barrita indicadora abajo */}
+            {active && <View style={styles.indicator} />}
         </TouchableOpacity>
     );
 };
 
-const styles = (theme) => StyleSheet.create({
-    navItem: {
+const styles = StyleSheet.create({
+    container: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 8,
-        paddingHorizontal: 0,
-        minWidth: 70,
+        paddingVertical: 12,
+        flex: 1,
     },
-    navLabel: {
-        fontSize: 14,
-        color: '#1a1a1aff',
+    label: {
+        fontSize: 12,
         marginTop: 5,
     },
-    navLabelActive: {
-        color: theme.colors.background,
-    },
+    indicator: {
+        position: 'absolute',
+        bottom: -2,
+        width: 20,
+        height: 3,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 2,
+    }
 });

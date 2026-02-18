@@ -5,200 +5,159 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 export const PartnerHeader = ({ userName, avatarUrl, onMenuPress }) => {
     return (
-        <LinearGradient
-            colors={['#018f64', '#00695C', '#004D40']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.container}
-        >
-            {/* Elementos decorativos */}
-            <View style={styles.decorativeIconLeft}>
-                <Icon name="handshake-outline" size={70} color="rgba(255, 255, 255, 0.1)" />
-            </View>
-            <View style={styles.decorativeIconRight}>
-                <Icon name="account-multiple-outline" size={50} color="rgba(255, 255, 255, 0.1)" />
-            </View>
+        <View style={styles.mainWrapper}>
+            {/* Header con gradiente más suave y bordes redondeados abajo */}
+            <LinearGradient
+                colors={['#018f64', '#01a374']}
+                style={styles.container}
+            >
+                {/* Top Bar simplificada */}
+                <View style={styles.topBar}>
+                    <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
+                        <Icon name="menu" size={26} color="#000" />
+                    </TouchableOpacity>
 
-            {/* Top Bar con Avatar y Menu */}
-            <View style={styles.topBar}>
-                <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
-                    <Icon name="menu" size={28} color="#FFF" />
-                </TouchableOpacity>
+                    <View style={styles.headerInfo}>
 
-                <View style={styles.avatarContainer}>
-                    <Image source={{ uri: avatarUrl }} style={styles.avatar} />
-                    <View style={styles.avatarBorder} />
-                </View>
-            </View>
+                        <Text style={styles.headerTitle}>Aliados Estratégicos</Text>
+                    </View>
 
-            {/* Contenido Principal */}
-            <View style={styles.content}>
-                <View style={styles.titleSection}>
-                    <Icon name="handshake" size={36} color="#FFD700" />
-                    <View style={styles.titleTextContainer}>
-                        <Text style={styles.greeting}>Hola, {userName}</Text>
-                        <Text style={styles.title}>Nuestros Convenios</Text>
-                        <Text style={styles.subtitle}>Empresas y organizaciones aliadas</Text>
+                    <View style={styles.avatarWrapper}>
+                        <Image source={{ uri: avatarUrl }} style={styles.avatar} />
                     </View>
                 </View>
 
-                {/* Info Card */}
-                <View style={styles.infoCard}>
-                    <View style={styles.infoRow}>
-                        <View style={styles.infoItem}>
-                            <Icon name="domain" size={24} color="#018f64" />
-                            <View style={styles.infoTextContainer}>
-                                <Text style={styles.infoLabel}>Partners</Text>
-                                <Text style={styles.infoValue}>6+</Text>
-                            </View>
+                {/* Tarjeta de Estadísticas Flotante */}
+                <View style={styles.statsCard}>
+                    <View style={styles.statBox}>
+                        <View style={styles.iconCircle}>
+                            <Icon name="handshake" size={22} color="#018f64" />
                         </View>
-                        <View style={styles.divider} />
-                        <View style={styles.infoItem}>
-                            <Icon name="gift" size={24} color="#018f64" />
-                            <View style={styles.infoTextContainer}>
-                                <Text style={styles.infoLabel}>Beneficios</Text>
-                                <Text style={styles.infoValue}>20+</Text>
-                            </View>
+                        <View>
+                            <Text style={styles.statValue}>12+</Text>
+                            <Text style={styles.statLabel}>Aliados</Text>
                         </View>
                     </View>
-                    <Text style={styles.infoFooter}>
-                        Descubre beneficios exclusivos con nuestras organizaciones aliadas
-                    </Text>
+
+                    <View style={styles.divider} />
+
+                    <View style={styles.statBox}>
+                        <View style={[styles.iconCircle, { backgroundColor: '#FFF9C4' }]}>
+                            <Icon name="gift" size={22} color="#FBC02D" />
+                        </View>
+                        <View>
+                            <Text style={styles.statValue}>45+</Text>
+                            <Text style={styles.statLabel}>Premios</Text>
+                        </View>
+                    </View>
                 </View>
-            </View>
-        </LinearGradient>
+            </LinearGradient>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
+    mainWrapper: {
+        backgroundColor: '#b1eedc', // Color de fondo de la pantalla
+        paddingBottom: 30, // Espacio para que la tarjeta de stats sobresalga
+    },
     container: {
         paddingTop: 50,
-        paddingBottom: 20,
+        paddingBottom: 40,
         paddingHorizontal: 20,
-        position: 'relative',
-        overflow: 'hidden',
-    },
-    decorativeIconLeft: {
-        position: 'absolute',
-        top: -15,
-        left: -25,
-        transform: [{ rotate: '-20deg' }],
-    },
-    decorativeIconRight: {
-        position: 'absolute',
-        top: 40,
-        right: -15,
-        transform: [{ rotate: '25deg' }],
+        borderBottomLeftRadius: 32,
+        borderBottomRightRadius: 32,
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
     },
     topBar: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
+        justifyContent: 'space-between',
         marginBottom: 20,
-        zIndex: 1,
+        marginTop: 20,
     },
     menuButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: '#ffffff0a',
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+
+
         justifyContent: 'center',
         alignItems: 'center',
     },
-    avatarContainer: {
-        position: 'relative',
-    },
-    avatar: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        borderWidth: 3,
-        borderColor: '#FFF',
-    },
-    avatarBorder: {
-        position: 'absolute',
-        width: 58,
-        height: 58,
-        borderRadius: 29,
-        borderWidth: 2,
-        borderColor: 'rgba(255, 255, 255, 0.3)',
-        top: -4,
-        left: -4,
-    },
-    content: {
-        zIndex: 1,
-    },
-    titleSection: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    titleTextContainer: {
-        marginLeft: 12,
+    headerInfo: {
         flex: 1,
+        marginLeft: 15,
     },
     greeting: {
-        fontSize: 14,
-        color: '#B7ECDC',
-        marginBottom: 2,
+        fontSize: 19,
+        color: '#000',
+
     },
-    title: {
-        fontSize: 26,
+    headerTitle: {
+        fontSize: 19,
+
+        color: '#000000',
+    },
+    avatarWrapper: {
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.3)',
+        borderRadius: 20,
+        padding: 2,
+    },
+    avatar: {
+        width: 38,
+        height: 38,
+        borderRadius: 18,
+    },
+    // --- ESTILOS DE LA TARJETA DE STATS ---
+    statsCard: {
+        position: 'absolute',
+        bottom: -30, // La mitad fuera del header verde
+        left: 20,
+        right: 20,
+        backgroundColor: '#31253B',
+        borderRadius: 20,
+        flexDirection: 'row',
+        paddingVertical: 15,
+        paddingHorizontal: 10,
+        elevation: 6,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.15,
+        shadowRadius: 6,
+    },
+    statBox: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+    },
+    iconCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: '#E8F5F1',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    statValue: {
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#FFF',
-        marginBottom: 2,
     },
-    subtitle: {
-        fontSize: 14,
-        color: '#FFD700',
-        fontWeight: '600',
-    },
-    infoCard: {
-        backgroundColor: '#FFF',
-        borderRadius: 16,
-        padding: 16,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-    },
-    infoRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        marginBottom: 12,
-    },
-    infoItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-    },
-    infoTextContainer: {
-        marginLeft: 10,
-    },
-    infoLabel: {
+    statLabel: {
         fontSize: 12,
-        color: '#666',
-    },
-    infoValue: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#018f64',
+        color: '#FFF',
     },
     divider: {
         width: 1,
-        height: 40,
-        backgroundColor: '#E0E0E0',
-        marginHorizontal: 16,
-    },
-    infoFooter: {
-        fontSize: 12,
-        color: '#666',
-        textAlign: 'center',
-        paddingTop: 12,
-        borderTopWidth: 1,
-        borderTopColor: '#F0F0F0',
-        lineHeight: 18,
-    },
+        height: '100%',
+        backgroundColor: '#F3F4F6',
+    }
 });

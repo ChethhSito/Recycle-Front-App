@@ -43,7 +43,7 @@ export const CloudHeader = ({ userName, userType, avatarUrl, onMenuPress }) => {
           preserveAspectRatio="none"
         >
           <Path
-            fill="#B7ECDD"
+            fill="#018f64"
             d="M0,192L48,197.3C96,203,192,213,288,192C384,171,480,117,576,112C672,107,768,149,864,165.3C960,181,1056,171,1152,149.3C1248,128,1344,96,1392,80L1440,64L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
           />
         </Svg>
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   contentContainer: {
-    backgroundColor: '#B7ECDD',
+    backgroundColor: '#018f64',
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 10,
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   },
   userType: {
     fontSize: 14,
-    color: '#666',
+    color: '#000',
   },
   avatar: {
     width: 48,

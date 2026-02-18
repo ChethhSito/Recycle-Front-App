@@ -1,477 +1,201 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  StatusBar,
-  Modal,
-  Share
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Modal, Share, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CloudHeader } from '../../componentes/cards/home/CloudHeader';
 import { MemberCard } from '../../componentes/cards/profile/MemberCard';
-import {
-  Recycle,
-  Droplet,
-  Trophy,
-  User,
-  History,
-  UserPlus,
-  Settings,
-  LogOut,
-  ChevronRight
-} from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path } from 'react-native-svg';
+import { Recycle, Droplet, Trophy, User, History, UserPlus, Settings, LogOut, ChevronRight, Share2 } from 'lucide-react-native';
+import { useAuthStore } from '../../hooks/use-auth-store';
 
-// Componente Modal de Confirmación de Cierre de Sesión
-const LogoutModal = ({ visible, onClose, onConfirm }) => {
-  return (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalIconContainer}>
-            <LogOut color="#D32F2F" size={40} />
-          </View>
-
-          <Text style={styles.modalTitle}>Cerrar Sesión</Text>
-          <Text style={styles.modalMessage}>
-            ¿Estás seguro que deseas cerrar sesión?
-          </Text>
-
-          <View style={styles.modalButtons}>
-            <TouchableOpacity
-              style={[styles.modalButton, styles.cancelButton]}
-              onPress={onClose}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.cancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.modalButton, styles.confirmButton]}
-              onPress={onConfirm}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.confirmButtonText}>Cerrar Sesión</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
+const { width } = Dimensions.get('window');
+const CLOUD_HEIGHT = 50;
+// PALETA DE COLORES UNIFICADA
+const COLORS = {
+  primary: '#31253B',
+  background: '#018f64',
+  lightMint: '#b1eedc', // Tu color de inputs
+  white: '#FFFFFF',
+  danger: '#D32F2F',
+  accentGreen: '#00C7A1'
 };
 
-// Componente para las estadísticas rápidas
-const QuickStat = ({ icon: Icon, value, label, color }) => {
+export const ProfileScreen = ({ navigation, onOpenDrawer }) => {
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const { user } = useAuthStore();
+
+
+  const handleInviteFriends = async () => {
+    try {
+      const message = `🌱 ¡Únete a Nos Planet! \nRecicla, gana puntos y canjea premios sostenibles. \nhttps://nosplanet.org/app`;
+      await Share.share({ message });
+    } catch (error) { console.error(error); }
+  };
+
   return (
-    <View style={styles.statCard}>
-      <View style={[styles.statIconContainer, { backgroundColor: color + '20' }]}>
-        <Icon color={color} size={28} />
-      </View>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
+    <View style={styles.mainWrapper}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
+
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* 1. HEADER CON FONDO VERDE OSCURO */}
+
+        <CloudHeader
+          userName={user?.fullName}
+          userType="Ciudadano Eco"
+          avatarUrl={user?.avatar}
+          onMenuPress={onOpenDrawer}
+        />
+
+        <MemberCard
+          userName={user?.fullName}
+          level={user?.gamification?.currentLevel?.name}
+          avatarUrl={user?.avatar}
+          progress={user?.gamification?.progress}
+          currentPoints={user?.points}
+          nextLevelPoints={user?.gamification?.points?.max}
+        />
+
+        {/* 2. TARJETA DE MEMBRESÍA (Overlap) */}
+
+
+        {/* 3. WIDGETS DE ESTADÍSTICAS (Diseño más limpio) */}
+        <View style={styles.statsGrid}>
+          <QuickStat icon={Recycle} value="45.2" unit="kg" label="Reciclado" color={COLORS.background} />
+          <QuickStat icon={Droplet} value="120" unit="L" label="Agua" color="#00C6A0" />
+          <QuickStat icon={Trophy} value="12" unit="" label="Logros" color="#FAC96E" />
+        </View>
+
+        {/* 4. MENÚ DE OPCIONES (Estilo Apple/Premium) */}
+        <View style={styles.menuWrapper}>
+          <Text style={styles.menuSectionTitle}>Cuenta y Seguridad</Text>
+          <View style={styles.menuGroup}>
+            <MenuOption
+              icon={User}
+              title="Datos Personales"
+              onPress={() => navigation.navigate('PersonalData', { userName: user?.fullName, userEmail: user?.email })}
+            />
+            <View style={styles.innerDivider} />
+            <MenuOption icon={History} title="Historial" onPress={() => navigation.navigate('History')} />
+          </View>
+
+          <Text style={styles.menuSectionTitle}>Comunidad</Text>
+          <View style={styles.menuGroup}>
+            <MenuOption icon={Share2} title="Invitar Amigos" onPress={handleInviteFriends} />
+            <View style={styles.innerDivider} />
+            <MenuOption icon={Settings} title="Configuración" onPress={() => navigation.navigate('Settings')} />
+          </View>
+
+          <TouchableOpacity
+            style={styles.logoutBtn}
+            onPress={() => setLogoutModalVisible(true)}
+          >
+            <LogOut color={COLORS.danger} size={20} />
+            <Text style={styles.logoutText}>Cerrar Sesión</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={{ height: 50 }} />
+      </ScrollView>
+
+      <LogoutModal
+        visible={logoutModalVisible}
+        onClose={() => setLogoutModalVisible(false)}
+        onConfirm={() => navigation.reset({ index: 0, routes: [{ name: 'Login' }] })}
+      />
     </View>
   );
 };
 
-// Componente para las opciones del menú
-const MenuOption = ({
-  icon: Icon,
-  title,
-  onPress,
-  destructive = false,
-  separator = false
-}) => {
-  return (
-    <>
-      <TouchableOpacity
-        style={styles.menuItem}
-        onPress={onPress}
-        activeOpacity={0.7}
-      >
-        <View style={styles.menuItemLeft}>
-          <View style={[
-            styles.menuIconContainer,
-            destructive && styles.menuIconDestructive
-          ]}>
-            <Icon
-              color={destructive ? '#D32F2F' : '#00926F'}
-              size={22}
-            />
-          </View>
-          <Text style={[
-            styles.menuItemText,
-            destructive && styles.menuItemTextDestructive
-          ]}>
-            {title}
-          </Text>
+// COMPONENTES INTERNOS MEJORADOS
+const QuickStat = ({ icon: Icon, value, unit, label, color }) => (
+  <View style={styles.statBox}>
+    <View style={[styles.statIconCircle, { backgroundColor: color + '15' }]}>
+      <Icon color={color} size={22} />
+    </View>
+    <Text style={styles.statValueText}>{value}<Text style={styles.statUnit}> {unit}</Text></Text>
+    <Text style={styles.statLabelText}>{label}</Text>
+  </View>
+);
+
+const MenuOption = ({ icon: Icon, title, onPress }) => (
+  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+    <View style={styles.menuItemLeft}>
+      <View style={styles.menuIconBg}>
+        <Icon color={COLORS.primary} size={20} />
+      </View>
+      <Text style={styles.menuItemTitle}>{title}</Text>
+    </View>
+    <ChevronRight color="#CCC" size={18} />
+  </TouchableOpacity>
+);
+
+const LogoutModal = ({ visible, onClose, onConfirm }) => (
+  <Modal animationType="fade" transparent visible={visible}>
+    <View style={styles.modalOverlay}>
+      <View style={styles.modalContent}>
+        <View style={styles.modalAlertCircle}>
+          <LogOut color={COLORS.danger} size={32} />
         </View>
-        <ChevronRight color={destructive ? '#D32F2F' : '#999'} size={20} />
-      </TouchableOpacity>
-      {separator && <View style={styles.separator} />}
-    </>
-  );
-};
-import { useAuthStore } from '../../hooks/use-auth-store';
-import { useEffect } from 'react';
-export const ProfileScreen = ({ navigation, onOpenDrawer }) => {
-  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
-  const { user } = useAuthStore();
-  const [userData] = useState({
-    name: user?.fullName,
-    userType: "Ciudadano Eco",
-    level: user?.gamification?.currentLevel?.name,
-    avatarUrl: user?.avatar,
-    progress: user?.gamification?.progress,
-    currentPoints: user?.points,
-    nextLevelPoints: user?.gamification?.points?.max,
-    stats: {
-      recycled: '45.2kg',
-      water: '120L',
-      achievements: 12
-    }
-  });
-  useEffect(() => {
-    console.log("hola", user);
-  }, [user]);
-  const handleMenuPress = () => {
-    if (onOpenDrawer) {
-      onOpenDrawer();
-    }
-  };
-
-  const handleLogout = () => {
-    setLogoutModalVisible(true);
-  };
-
-  const confirmLogout = () => {
-    setLogoutModalVisible(false);
-    // Navegar al Login y resetear la navegación
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Login' }],
-    });
-  };
-
-  const handleInviteFriends = async () => {
-    try {
-      const message = `🌱 ¡Únete a Nos Planet!
-
-¿Quieres ganar puntos mientras ayudas al medio ambiente? Con Nos Planet puedes:
-
-✅ Reciclar y ganar puntos eco
-✅ Canjear premios sostenibles
-✅ Ver tu impacto ambiental
-✅ Unirte a una comunidad verde
-
-📲 Descarga la app ahora:
-https://nosplanet.org/app
-
-¡Juntos por un planeta más limpio! 🌍♻️`;
-
-      await Share.share({
-        message: message,
-        title: 'Nos Planet - Reciclaje Inteligente',
-      });
-    } catch (error) {
-      console.error('Error al compartir:', error);
-    }
-  };
-
-  return (
-    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <StatusBar barStyle="dark-content" backgroundColor="#B7ECDC" />
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header con nubes */}
-        <CloudHeader
-          userName={userData.name}
-          userType={userData.userType}
-          avatarUrl={userData.avatarUrl}
-          onMenuPress={handleMenuPress}
-        />
-
-        {/* Tarjeta de Membresía / Eco-ID */}
-        <MemberCard
-          userName={userData.name}
-          level={userData.level}
-          avatarUrl={userData.avatarUrl}
-          progress={userData.progress}
-          currentPoints={userData.currentPoints}
-          nextLevelPoints={userData.nextLevelPoints}
-        />
-
-        {/* Estadísticas Rápidas */}
-        <View style={styles.statsContainer}>
-          <QuickStat
-            icon={Recycle}
-            value={userData.stats.recycled}
-            label="Reciclado"
-            color="#018f64"
-          />
-          <QuickStat
-            icon={Droplet}
-            value={userData.stats.water}
-            label="Agua Ahorrada"
-            color="#00C6A0"
-          />
-          <QuickStat
-            icon={Trophy}
-            value={userData.stats.achievements}
-            label="Logros"
-            color="#FAC96E"
-          />
+        <Text style={styles.modalTitle}>¿Ya te vas?</Text>
+        <Text style={styles.modalMsg}>Tu impacto ambiental es muy valioso. ¿Estás seguro de cerrar sesión?</Text>
+        <View style={styles.modalBtnsRow}>
+          <TouchableOpacity style={styles.btnCancel} onPress={onClose}><Text style={styles.btnCancelText}>Cancelar</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.btnConfirm} onPress={onConfirm}><Text style={styles.btnConfirmText}>Cerrar Sesión</Text></TouchableOpacity>
         </View>
-
-        {/* Menú de Opciones */}
-        <View style={styles.menuContainer}>
-          <MenuOption
-            icon={User}
-            title="Datos Personales"
-            onPress={() => navigation.navigate('PersonalData', {
-              userName: user?.fullName,
-              userEmail: user?.email,
-              userAvatar: user?.avatar,
-
-            })}
-          />
-          <View style={styles.sectionDivider} />
-          <MenuOption
-            icon={History}
-            title="Historial de Actividad"
-            onPress={() => {
-              navigation.navigate('History');
-            }}
-          />
-
-          {/* Separador de sección */}
-          <View style={styles.sectionDivider} />
-
-          <MenuOption
-            icon={UserPlus}
-            title="Invitar Amigos"
-            onPress={handleInviteFriends}
-          />
-          <View style={styles.sectionDivider} />
-          <MenuOption
-            icon={Settings}
-            title="Configuración"
-            onPress={() => navigation.navigate('Settings')}
-          />
-
-          {/* Separador antes de cerrar sesión */}
-          <View style={styles.logoutSeparator} />
-
-          <MenuOption
-            icon={LogOut}
-            title="Cerrar Sesión"
-            onPress={handleLogout}
-            destructive={true}
-          />
-        </View>
-
-        {/* Espaciado inferior */}
-        <View style={{ height: 40 }} />
-      </ScrollView>
-
-      {/* Modal de Confirmación de Cierre de Sesión */}
-      <LogoutModal
-        visible={logoutModalVisible}
-        onClose={() => setLogoutModalVisible(false)}
-        onConfirm={confirmLogout}
-      />
-    </SafeAreaView>
-  );
-};
+      </View>
+    </View>
+  </Modal>
+);
 
 const styles = StyleSheet.create({
-  container: {
+  mainWrapper: {
     flex: 1,
-    backgroundColor: '#018f64',
+    backgroundColor: '#b1eedc'
   },
-  scrollView: {
-    flex: 1,
-  },
-  // Estadísticas
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginVertical: 16,
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  statIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#32243B',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#32243B',
-    textAlign: 'center',
-  },
-  // Menú
-  menuContainer: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    borderRadius: 16,
-    padding: 8,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-  },
-  menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  menuIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#B7ECDC',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  menuIconDestructive: {
-    backgroundColor: '#FFEBEE',
-  },
-  menuItemText: {
-    fontSize: 16,
-    color: '#32243B',
-    fontWeight: '500',
-  },
-  menuItemTextDestructive: {
-    color: '#D32F2F',
-  },
-  separator: {
-    height: 1,
-    backgroundColor: '#F0F0F0',
-    marginHorizontal: 12,
-  },
-  sectionDivider: {
-    height: 1,
-    backgroundColor: '#F3F4F6',
+  headerBackground: {
+    backgroundColor: COLORS.background,
+    // Ajustamos el padding para reducir el tamaño
 
-    marginHorizontal: 12,
   },
-  logoutSeparator: {
-    height: 1,
-    backgroundColor: '#F3F4F6',
-    marginHorizontal: 12,
-  },
-  // Modal de Logout
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
-    width: '100%',
-    maxWidth: 340,
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-  },
-  modalIconContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: '#FFEBEE',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#32243B',
-    marginBottom: 8,
-  },
-  modalMessage: {
-    fontSize: 15,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 22,
-  },
-  modalButtons: {
+  scrollView: { flex: 1 },
+
+  // Stats Grid - Reducimos el margen vertical para compactar más la pantalla
+  statsGrid: {
     flexDirection: 'row',
     gap: 12,
-    width: '100%',
+    paddingHorizontal: 20,
+    marginVertical: 15 // Reducido de 25 a 15
   },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#F3F4F6',
-  },
-  confirmButton: {
-    backgroundColor: '#D32F2F',
-  },
-  cancelButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#32243B',
-  },
-  confirmButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
+  statBox: { flex: 1, backgroundColor: COLORS.white, borderRadius: 24, padding: 16, alignItems: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10 },
+  statIconCircle: { width: 44, height: 44, borderRadius: 15, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  statValueText: { fontSize: 17, fontWeight: 'bold', color: COLORS.primary },
+  statUnit: { fontSize: 11, color: '#6B7280' },
+  statLabelText: { fontSize: 11, color: '#9CA3AF', marginTop: 2, fontWeight: '600' },
+
+  // Menu
+  menuWrapper: { paddingHorizontal: 20 },
+  menuSectionTitle: { fontSize: 13, fontWeight: 'bold', color: '#5A7A70', marginBottom: 10, marginLeft: 5, textTransform: 'uppercase' },
+  menuGroup: { backgroundColor: COLORS.white, borderRadius: 24, padding: 8, marginBottom: 20, elevation: 2 },
+  menuItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 12 },
+  menuItemLeft: { flexDirection: 'row', alignItems: 'center', gap: 15 },
+  menuIconBg: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' },
+  menuItemTitle: { fontSize: 15, fontWeight: '600', color: COLORS.primary },
+  innerDivider: { height: 1, backgroundColor: '#F9FAFB', marginLeft: 50 },
+
+  // Logout
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 10, borderColor: COLORS.danger, borderWidth: 1, borderRadius: 24 },
+  logoutText: { color: COLORS.danger, fontWeight: 'bold', fontSize: 16, },
+
+  // Modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(49, 37, 59, 0.6)', justifyContent: 'center', alignItems: 'center', padding: 30 },
+  modalContent: { backgroundColor: '#FFF', borderRadius: 30, padding: 25, width: '100%', alignItems: 'center' },
+  modalAlertCircle: { width: 70, height: 70, borderRadius: 35, backgroundColor: '#FFEBEE', justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  modalTitle: { fontSize: 22, fontWeight: 'bold', color: COLORS.primary, marginBottom: 10 },
+  modalMsg: { textAlign: 'center', color: '#6B7280', lineHeight: 22, marginBottom: 25 },
+  modalBtnsRow: { flexDirection: 'row', gap: 12 },
+  btnCancel: { flex: 1, paddingVertical: 14, alignItems: 'center' },
+  btnCancelText: { color: '#9CA3AF', fontWeight: 'bold' },
+  btnConfirm: { flex: 2, backgroundColor: COLORS.danger, paddingVertical: 14, borderRadius: 16, alignItems: 'center' },
+  btnConfirmText: { color: '#FFF', fontWeight: 'bold' }
 });
 
 export default ProfileScreen;

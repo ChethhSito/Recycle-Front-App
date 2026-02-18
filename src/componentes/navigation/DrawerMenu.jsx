@@ -101,7 +101,7 @@ export const DrawerMenu = ({ visible, onClose }) => {
                 { icon: 'gift', label: 'Premios', onPress: () => navigation.navigate('Rewards') },
                 { icon: 'sprout', label: 'Tu huella verde', onPress: () => navigation.navigate('GreenFootprint') },
                 { icon: 'account', label: 'Mi perfil', onPress: () => navigation.navigate('Profile') },
-                { icon: 'map', label: 'Mapa', onPress: () => navigation.navigate('Map') },
+                // { icon: 'map', label: 'Solicitudes', onPress: () => navigation.navigate('Map') },
             ]
         },
         {
@@ -187,7 +187,7 @@ export const DrawerMenu = ({ visible, onClose }) => {
                                         <Icon
                                             name={item.icon}
                                             size={20}
-                                            color={item.highlight ? '#018f64' : '#000'}
+                                            color={item.highlight ? '#000' : '#000'}
                                         />
                                         <Text style={[
                                             styles.menuItemText,
@@ -233,7 +233,6 @@ export const DrawerMenu = ({ visible, onClose }) => {
     );
 };
 
-// ... Styles se mantienen igual ...
 const styles = StyleSheet.create({
     modalContainer: {
         flex: 1,
@@ -249,7 +248,7 @@ const styles = StyleSheet.create({
         top: 0,
         bottom: 0,
         width: DRAWER_WIDTH,
-        backgroundColor: '#B7ECDC',
+        backgroundColor: '#018f64',
         shadowColor: '#000',
         shadowOffset: { width: 4, height: 0 },
         shadowOpacity: 0.3,
@@ -281,12 +280,12 @@ const styles = StyleSheet.create({
     userName: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#FFFFFF',
+        color: '#000',
         marginBottom: 2,
     },
     userEmail: {
         fontSize: 12,
-        color: '#FFFFFF',
+        color: '#000',
         marginBottom: 8,
     },
     pointsBadge: {
@@ -307,9 +306,9 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 12,
-        color: '#666',
+        color: '#000',
         marginBottom: 10,
-        fontWeight: '600',
+
     },
     menuItem: {
         flexDirection: 'row',
@@ -329,7 +328,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     menuItemTextHighlight: {
-        color: '#018f64',
+        color: '#000',
         fontWeight: '600',
     },
     newBadge: {
@@ -350,8 +349,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     versionText: {
-        fontSize: 12,
-        color: '#666',
+        fontSize: 14,
+        color: '#FFFFFF',
         marginBottom: 15,
     },
     logoutButton: {

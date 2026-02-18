@@ -89,20 +89,19 @@ export const CreateRequestScreen = ({ navigation }) => {
     const getLocation = async () => {
         setLoadingLocation(true);
         try {
-            // let { status } = await Location.requestForegroundPermissionsAsync();
-            // if (status !== 'granted') {
-            //     Alert.alert('Permiso denegado', 'Activa el GPS.');
-            //     setLoadingLocation(false);
-            //     return;
-            // }
-            // let location = await Location.getCurrentPositionAsync({
-            //     accuracy: Location.Accuracy.Balanced,
-            //     timeout: 10000 // 10 segundos es más seguro en emuladores lentos
-            // });
-            // const { latitude, longitude } = location.coords;
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permiso denegado', 'Activa el GPS.');
+                setLoadingLocation(false);
+                return;
+            }
+            let location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.BestForNavigation,
+                timeout: 10000 // 10 segundos es más seguro en emuladores lentos
+            });
+            const { latitude, longitude } = location.coords;
 
-            const latitude = -12.1390 - 0.005; // Mueve un poco al sur
-            const longitude = -76.9626 - 0.005;
+
             setValue('locationCoords', { latitude, longitude });
             let addressResponse = await Location.reverseGeocodeAsync({ latitude, longitude });
             if (addressResponse.length > 0) {

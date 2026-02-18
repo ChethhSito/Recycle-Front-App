@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { Svg, Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { EnvironmentalProgramCard } from '../../componentes/cards/programs/EnvironmentalProgramCard';
 import { EnvironmentalProgramModal } from '../../componentes/modal/programs/EnvironmentalProgramModal';
@@ -17,6 +18,8 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
     }, []);
 
     const safePrograms = Array.isArray(programs) ? programs : [];
+    const { width } = Dimensions.get('window');
+    const CLOUD_HEIGHT = 100;
 
     const filteredPrograms = filterType === 'ALL'
         ? safePrograms
@@ -33,7 +36,7 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
             >
                 <View style={styles.headerContent}>
                     <TouchableOpacity onPress={onOpenDrawer} style={styles.menuButton}>
-                        <Icon name="menu" size={28} color="#ffffffff" />
+                        <Icon name="menu" size={28} color="#000" />
                     </TouchableOpacity>
 
                     <View style={styles.headerTextContainer}>
@@ -52,6 +55,20 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
                     </TouchableOpacity>
                 </View>
             </LinearGradient>
+            <View style={styles.svgContainer}>
+                <Svg
+                    width={width}
+                    height={40} // Altura mucho menor (antes era gigante)
+                    viewBox="0 0 1440 320"
+                    preserveAspectRatio="none"
+                >
+                    <Path
+                        fill="#018f64" // El mismo color de tu Header
+                        // Esta ruta dibuja una curva suave en la parte inferior
+                        d="M0,0 L1440,0 L1440,160 Q720,320 0,160 Z"
+                    />
+                </Svg>
+            </View>
 
             {/* Filtros */}
             <View style={styles.filtersContainer}>
@@ -100,10 +117,8 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
 
             {/* Lista de programas */}
             {isLoading ? (
-                // 4. Mostrar Spinner mientras carga
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#018f64" />
-                    <Text style={{ marginTop: 10, color: '#666' }}>Buscando iniciativas...</Text>
                 </View>
             ) : (
                 <ScrollView
@@ -116,35 +131,47 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
                             <Text style={{ color: '#666' }}>No se encontraron programas en esta categoría.</Text>
                         </View>
                     ) : (
-                        filteredPrograms.map((program) => (
-                            <EnvironmentalProgramCard
-                                key={program._id} // 👈 OJO: MongoDB usa _id, no id
-                                {...program}
-                                // 5. Adaptar la imagen: Si viene URL, úsala. Si no, usa placeholder.
-                                image={
-                                    program.imageUrl
-                                        ? { uri: program.imageUrl }
-                                        : require('../../../assets/program1.jpg') // Tu imagen por defecto
-                                }
-                                onPress={() => {
-                                    const programForModal = {
-                                        ...program,
-                                        contactInfo: program.contactInfo
-                                            ? `${program.contactInfo.email || ''}\n${program.contactInfo.phone || ''}`
-                                            : 'Sin contacto',
+                        <ScrollView
+                            style={styles.scrollView}
+                            contentContainerStyle={styles.scrollContent}
+                            showsVerticalScrollIndicator={false}
+                        >
+                            {filteredPrograms.map((program) => (
+                                <EnvironmentalProgramCard
+                                    key={program._id} // 👈 OJO: MongoDB usa _id, no id
+                                    {...program}
+                                    // 5. Adaptar la imagen: Si viene URL, úsala. Si no, usa placeholder.
+                                    image={
+                                        { uri: program.imageUrl }
+                                    }
 
-                                        // 🚨 Pasamos la imagen YA RESUELTA (objeto o número de recurso)
-                                        // Esto evita que el Modal tenga que hacer require() y fallar
-                                        image: (program.imageUrl && program.imageUrl.startsWith('http'))
-                                            ? { uri: program.imageUrl }
-                                            : defaultImage
-                                    };
+                                    containerStyle={{
+                                        width: '100%',
+                                        marginRight: 0,
+                                        marginBottom: 20
+                                    }}
+                                    onPress={() => {
+                                        const programForModal = {
+                                            ...program,
+                                            contactInfo: program.contactInfo
+                                                ? `${program.contactInfo.email || ''}\n${program.contactInfo.phone || ''}`
+                                                : 'Sin contacto',
 
-                                    setSelectedProgram(programForModal);
-                                    setModalVisible(true);
-                                }}
-                            />
-                        ))
+                                            // 🚨 Pasamos la imagen YA RESUELTA (objeto o número de recurso)
+                                            // Esto evita que el Modal tenga que hacer require() y fallar
+                                            image: (program.imageUrl && program.imageUrl.startsWith('http'))
+                                                ? { uri: program.imageUrl }
+                                                : defaultImage
+                                        };
+
+                                        setSelectedProgram(programForModal);
+                                        setModalVisible(true);
+                                    }}
+                                />
+                            ))
+                            }
+                            <View style={{ height: 20 }} />
+                        </ScrollView>
                     )}
                 </ScrollView>
             )}
@@ -160,12 +187,16 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
 };
 
 const styles = StyleSheet.create({
+
+    svgContainer: {
+        marginTop: -1,
+    },
     container: {
         flex: 1,
         backgroundColor: '#b1eedc',
     },
     header: {
-        paddingTop: 50,
+        paddingTop: 80,
         paddingBottom: 20,
         paddingHorizontal: 20,
     },
@@ -191,19 +222,20 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
 
-        color: '#ffffffff',
+        color: '#000',
     },
     headerSubtitle: {
         fontSize: 13,
-        color: '#cfcfcfff',
+        color: '#000',
         opacity: 0.9,
         marginTop: 2,
     },
     filtersContainer: {
-        backgroundColor: '#b1eedc',
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#018f64',
+        marginTop: 10, // Sube los filtros para que toquen el header
+        paddingBottom: 0,
+        // Quita el background color o ponlo transparente si quieres que floten
+        backgroundColor: 'transparent',
+        // borderBottomWidth: 0, // Quita la línea si prefieres limpieza
     },
     filtersScroll: {
         paddingHorizontal: 20,
@@ -238,6 +270,12 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        padding: 16,
+        padding: 20, // Un poco más de padding general se ve mejor
+        paddingBottom: 40,
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+    }
 });

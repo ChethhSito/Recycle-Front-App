@@ -36,8 +36,6 @@ const getTimeAgo = (dateString) => {
 
 export const ForumScreen = ({ navigation }) => {
   const { user } = useAuthStore();
-
-  // 👇 1. CONECTAMOS CON REDUX
   const { posts, isLoading, startLoadingPosts, startSavingPost, startTogglingLike } = useForumStore();
 
   const [activeCategory, setActiveCategory] = useState('Todos');
@@ -45,7 +43,7 @@ export const ForumScreen = ({ navigation }) => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
-  // 👇 2. CARGAR POSTS AL ENTRAR A LA PANTALLA
+
   useFocusEffect(
     useCallback(() => {
       startLoadingPosts();
@@ -58,12 +56,12 @@ export const ForumScreen = ({ navigation }) => {
 
   const categories = ['Todos', 'Dudas', 'Proyectos', 'General']; // Asegúrate que coincidan con tu Enum del backend
 
-  // 👇 3. FILTRADO (Sobre los datos de Redux)
+
   const filteredPosts = activeCategory === 'Todos'
     ? posts
     : posts.filter(post => post.category === activeCategory);
 
-  // 👇 4. CREAR POST (Conectado al Backend)
+
   const handleCreatePost = async (newPostData) => {
 
     // 1. Validar categorías si es necesario
@@ -83,7 +81,7 @@ export const ForumScreen = ({ navigation }) => {
     }
   };
 
-  // Si hay un post seleccionado, mostrar la vista de detalle
+
   if (selectedPost) {
     return (
       <ForumDetailView
@@ -221,14 +219,14 @@ export const ForumScreen = ({ navigation }) => {
 
 // ... Tus estilos se mantienen IGUALES ...
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#018f64' },
-  categoriesContainer: { paddingHorizontal: 20, paddingTop: 8, backgroundColor: '#018f64' },
+  container: { flex: 1, backgroundColor: '#b1eedc' },
+  categoriesContainer: { paddingHorizontal: 20, paddingTop: 8, backgroundColor: '#b1eedc' },
   categories: { flexDirection: 'row' },
   categoryButton: { paddingHorizontal: 20, paddingVertical: 8, borderRadius: 20, backgroundColor: '#00C7A1', marginRight: 8 },
   categoryButtonActive: { backgroundColor: '#32243B' },
   categoryText: { color: '#000000', fontSize: 14, fontFamily: 'System' }, // Cambié font por System por si acaso
   categoryTextActive: { color: '#FFFFFF' },
-  content: { paddingHorizontal: 20, paddingTop: 16, backgroundColor: '#018f64' },
+  content: { paddingHorizontal: 20, paddingTop: 16, backgroundColor: '#b1eedc' },
   banner: { backgroundColor: '#00C7A1', borderRadius: 24, padding: 20, marginBottom: 16, overflow: 'hidden' },
   bannerContent: { zIndex: 10 },
   bannerHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },

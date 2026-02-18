@@ -16,7 +16,7 @@ export const QuoteCard = ({ quote }) => {
 
 const styles = (theme) => StyleSheet.create({
     quoteCard: {
-        backgroundColor: '#B7ECDC',
+        backgroundColor: '#018f64',
         margin: 20,
         padding: 15,
         borderRadius: 15,

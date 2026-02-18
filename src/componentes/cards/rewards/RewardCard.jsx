@@ -1,79 +1,36 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, Image, View } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { useRewardsStore } from '../../../hooks/use-reward-store';
+
 
 export const RewardCard = ({ reward, onPress, userPoints }) => {
     const canRedeem = userPoints >= reward.points;
     const pointsNeeded = reward.points - userPoints;
 
     return (
-        <TouchableOpacity
-            style={[
-                styles.card,
-                !canRedeem && styles.cardDisabled
-            ]}
-            onPress={onPress}
-            activeOpacity={0.7}
-        >
-            {/* Imagen del premio */}
+        <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
             <View style={styles.imageContainer}>
-                <Image
-                    source={reward.image}
-                    style={styles.image}
-                    resizeMode="cover"
-                />
-                {!canRedeem && (
-                    <View style={styles.lockedOverlay}>
-                        <Icon name="lock" size={32} color="#FFF" />
-                    </View>
-                )}
-                {reward.stock > 0 && reward.stock <= 5 && (
+                <Image source={reward.image} style={styles.image} resizeMode="cover" />
+                {reward.stock <= 5 && (
                     <View style={styles.stockBadge}>
                         <Text style={styles.stockText}>¡Solo {reward.stock}!</Text>
                     </View>
                 )}
             </View>
 
-            {/* Información del premio */}
             <View style={styles.content}>
-                <Text style={styles.title} numberOfLines={2}>
-                    {reward.title}
-                </Text>
-                
-                <Text style={styles.description} numberOfLines={2}>
-                    {reward.description}
-                </Text>
+                <Text style={styles.title}>{reward.title}</Text>
 
-                {/* Puntos */}
-                <View style={styles.footer}>
-                    <View style={styles.pointsContainer}>
-                        <Icon name="leaf" size={18} color="#018f64" />
-                        <Text style={styles.pointsText}>{reward.points} puntos</Text>
-                    </View>
-
-                    {!canRedeem && (
-                        <Text style={styles.needText}>
-                            Te faltan {pointsNeeded} pts
-                        </Text>
-                    )}
+                <View style={styles.pointsRow}>
+                    <Text style={styles.pointsLarge}>{reward.points} <Text style={styles.ptsLabel}>pts</Text></Text>
+                    {!canRedeem && <Text style={styles.neededText}>-{pointsNeeded}</Text>}
                 </View>
 
-                {/* Botón de canje */}
-                <TouchableOpacity
-                    style={[
-                        styles.redeemButton,
-                        !canRedeem && styles.redeemButtonDisabled
-                    ]}
-                    onPress={onPress}
-                    disabled={!canRedeem}
-                >
-                    <Text style={[
-                        styles.redeemButtonText,
-                        !canRedeem && styles.redeemButtonTextDisabled
-                    ]}>
-                        {canRedeem ? 'Canjear' : 'Bloqueado'}
+                <View style={[styles.button, { backgroundColor: canRedeem ? '#018f64' : '#F3F4F6' }]}>
+                    <Text style={[styles.buttonText, { color: canRedeem ? '#FFF' : '#9CA3AF' }]}>
+                        {canRedeem ? 'Obtener' : 'Bloqueado'}
                     </Text>
-                </TouchableOpacity>
+                </View>
             </View>
         </TouchableOpacity>
     );
@@ -82,48 +39,53 @@ export const RewardCard = ({ reward, onPress, userPoints }) => {
 const styles = StyleSheet.create({
     card: {
         backgroundColor: '#FFF',
-        borderRadius: 16,
+        borderRadius: 24,
         overflow: 'hidden',
-        marginHorizontal: 16,
-        marginBottom: 16,
-        elevation: 3,
+        elevation: 4,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 8,
-    },
-    cardDisabled: {
-        opacity: 0.7,
+        shadowRadius: 10,
+        marginBottom: 16,
     },
     imageContainer: {
+        height: 150,
         width: '100%',
-        height: 180,
-        backgroundColor: '#F5F5F5',
-        position: 'relative',
+        backgroundColor: '#F0F0F0',
     },
     image: {
         width: '100%',
         height: '100%',
     },
-    lockedOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    stockBadge: {
+    partnerBadge: {
         position: 'absolute',
-        top: 12,
-        right: 12,
-        backgroundColor: '#FF5252',
+        bottom: 12,
+        left: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingHorizontal: 12,
         paddingVertical: 6,
-        borderRadius: 20,
+        borderRadius: 12,
+        gap: 6,
     },
-    stockText: {
+    partnerText: {
         color: '#FFF',
         fontSize: 12,
         fontWeight: 'bold',
+    },
+    lockOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(255,255,255,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    lockCircle: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#FFF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 3,
     },
     content: {
         padding: 16,
@@ -131,55 +93,45 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#32243B',
-        marginBottom: 8,
+        color: '#1F2937',
+        marginBottom: 4,
     },
     description: {
-        fontSize: 14,
-        color: '#666',
+        fontSize: 13,
+        color: '#6B7280',
         marginBottom: 12,
-        lineHeight: 20,
     },
-    footer: {
+    pointsRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 12,
+        marginBottom: 15,
     },
-    pointsContainer: {
+    pointsBadge: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#E8F5F1',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
+        gap: 4,
     },
     pointsText: {
-        fontSize: 14,
-        fontWeight: 'bold',
         color: '#018f64',
-        marginLeft: 6,
+        fontWeight: 'bold',
     },
-    needText: {
+    neededText: {
+        color: '#EF4444',
         fontSize: 12,
-        color: '#FF5252',
         fontWeight: '600',
     },
-    redeemButton: {
-        backgroundColor: '#018f64',
+    button: {
         paddingVertical: 12,
-        borderRadius: 12,
+        borderRadius: 14,
         alignItems: 'center',
     },
-    redeemButtonDisabled: {
-        backgroundColor: '#E0E0E0',
-    },
-    redeemButtonText: {
-        color: '#FFF',
-        fontSize: 15,
+    buttonText: {
         fontWeight: 'bold',
-    },
-    redeemButtonTextDisabled: {
-        color: '#999',
+        fontSize: 14,
     },
 });

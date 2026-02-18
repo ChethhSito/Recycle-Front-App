@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#018f64',
+        backgroundColor: '#b1eedc',
     },
     filtersSection: {
         marginBottom: 12,
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
-        color: '#EEE',
+        color: '#000000ff',
         textAlign: 'center',
     },
 });

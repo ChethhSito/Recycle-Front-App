@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert, ActivityIndicator, Dimensions } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -11,30 +11,28 @@ import { RedeemConfirmModal } from '../../componentes/modal/rewards/RedeemConfir
 import { useAuthStore } from '../../hooks/use-auth-store';
 import { useRewardsStore } from '../../hooks/use-reward-store';
 
+const { width } = Dimensions.get('window');
+
 export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     const navigation = useNavigation();
-
-    // Hooks del Store
     const { user } = useAuthStore();
     const { rewards, isLoading, startLoadingRewards } = useRewardsStore();
 
-    // Estados Locales
     const [refreshing, setRefreshing] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedReward, setSelectedReward] = useState(null);
     const [detailModalVisible, setDetailModalVisible] = useState(false);
     const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
-    // 👇 2. Usamos los puntos reales del usuario (0 si no carga aún)
     const userPoints = user?.points || 0;
 
     const categories = [
-        { id: 'all', label: 'Todos', icon: 'gift' },
-        { id: 'partners', label: 'Convenios', icon: 'handshake' },
-        { id: 'products', label: 'Productos', icon: 'shopping' },
-        { id: 'discounts', label: 'Descuentos', icon: 'ticket-percent' },
-        { id: 'experiences', label: 'Experiencias', icon: 'star' },
-        { id: 'donations', label: 'Donaciones', icon: 'heart' },
+        { id: 'all', label: 'Todos', icon: 'gift-outline' },
+        { id: 'partners', label: 'Convenios', icon: 'handshake-outline' },
+        { id: 'products', label: 'Productos', icon: 'shopping-outline' },
+        { id: 'discounts', label: 'Descuentos', icon: 'ticket-percent-outline' },
+        { id: 'experiences', label: 'Experiencias', icon: 'star-outline' },
+        { id: 'donations', label: 'Donaciones', icon: 'heart-outline' },
     ];
 
     useEffect(() => {
@@ -42,15 +40,13 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     }, []);
 
     const safeRewards = Array.isArray(rewards) ? rewards : [];
-
     const filteredRewards = selectedCategory === 'all'
         ? safeRewards
         : safeRewards.filter(r => r.category === selectedCategory);
 
-    // Pull to Refresh real
     const onRefresh = async () => {
         setRefreshing(true);
-        await startLoadingRewards(); // Recarga del backend
+        await startLoadingRewards();
         setRefreshing(false);
     };
 
@@ -61,35 +57,24 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
 
     const handleRedeemFromDetail = () => {
         setDetailModalVisible(false);
-        setTimeout(() => {
-            setConfirmModalVisible(true);
-        }, 300);
+        setTimeout(() => setConfirmModalVisible(true), 300);
     };
 
     const handleConfirmRedeem = () => {
         setConfirmModalVisible(false);
-
-        // AQUÍ DEBERÍAS LLAMAR A UNA ACCIÓN DEL BACKEND PARA CANJEAR
-        // Por ahora simulamos el éxito visualmente:
-
         setTimeout(() => {
             Alert.alert(
                 '¡Canje Exitoso! 🎉',
-                `Has canjeado "${selectedReward.title}".\n\nCódigo: RW${Math.random().toString(36).substr(2, 9).toUpperCase()}\n\nRevisa tu correo.`,
-                [
-                    { text: 'Aceptar', style: 'default' }
-                ]
+                `Has canjeado "${selectedReward.title}".\n\nRevisa tu correo para las instrucciones.`,
+                [{ text: 'Aceptar', style: 'default' }]
             );
             setSelectedReward(null);
-            // Opcional: Recargar usuario para ver puntos descontados
-            // checkAuthStatus(); 
         }, 300);
     };
 
     return (
         <View style={styles.container}>
             <ScrollView
-                style={styles.scrollView}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#018f64']} />
@@ -103,79 +88,79 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                     onMenuPress={onOpenDrawer}
                 />
 
-                {/* Categorías */}
-                <View style={styles.categoriesSection}>
+                {/* Sección de Categorías (Chips) */}
+                <View style={styles.filtersSection}>
+                    <Text style={styles.sectionTitle}>Explorar categorías</Text>
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={styles.categoriesContainer}
                     >
-                        {categories.map((category) => (
-                            <TouchableOpacity
-                                key={category.id}
-                                style={[
-                                    styles.categoryButton,
-                                    selectedCategory === category.id && styles.categoryButtonActive
-                                ]}
-                                onPress={() => setSelectedCategory(category.id)}
-                            >
-                                <Icon
-                                    name={category.icon}
-                                    size={20}
-                                    color={selectedCategory === category.id ? '#FFF' : '#018f64'}
-                                />
-                                <Text style={[
-                                    styles.categoryButtonText,
-                                    selectedCategory === category.id && styles.categoryButtonTextActive
-                                ]}>
-                                    {category.label}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
+                        {categories.map((category) => {
+                            const isActive = selectedCategory === category.id;
+                            return (
+                                <TouchableOpacity
+                                    key={category.id}
+                                    style={[styles.categoryChip, isActive && styles.categoryChipActive]}
+                                    onPress={() => setSelectedCategory(category.id)}
+                                    activeOpacity={0.8}
+                                >
+                                    <Icon
+                                        name={category.icon}
+                                        size={18}
+                                        color={isActive ? '#FFF' : '#444'}
+                                    />
+                                    <Text style={[styles.categoryText, isActive && styles.categoryTextActive]}>
+                                        {category.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
                     </ScrollView>
                 </View>
 
                 {/* Lista de Premios */}
                 {isLoading && !refreshing ? (
-                    <View style={{ padding: 50 }}>
+                    <View style={styles.loaderContainer}>
                         <ActivityIndicator size="large" color="#018f64" />
+                        <Text style={styles.loaderText}>Buscando recompensas...</Text>
                     </View>
                 ) : (
                     <View style={styles.rewardsGrid}>
                         {filteredRewards.map((reward) => {
-                            // 👇 5. Lógica de Imagen: Si hay URL, la usa. Si no, usa placeholder.
-                            // Esto evita que la app explote si imageUrl es null.
                             const imageSource = reward.imageUrl
                                 ? { uri: reward.imageUrl }
-                                : require('../../../assets/reciclaje.png'); // Asegúrate de tener esta imagen o cambia la ruta
+                                : require('../../../assets/reciclaje.png');
 
-                            // Inyectamos la imagen procesada al objeto reward para que el componente Card no sufra
                             const rewardWithImage = { ...reward, image: imageSource };
 
-                            return reward.isPartner ? (
-                                <PartnerRewardCard
-                                    key={reward._id} // MongoDB usa _id
-                                    reward={rewardWithImage}
-                                    userPoints={userPoints}
-                                    onPress={() => handleRewardPress(rewardWithImage)}
-                                />
-                            ) : (
-                                <RewardCard
-                                    key={reward._id}
-                                    reward={rewardWithImage}
-                                    userPoints={userPoints}
-                                    onPress={() => handleRewardPress(rewardWithImage)}
-                                />
+                            return (
+                                <View key={reward._id} style={styles.rewardCardWrapper}>
+                                    {reward.isPartner ? (
+                                        <PartnerRewardCard
+                                            reward={rewardWithImage}
+                                            userPoints={userPoints}
+                                            onPress={() => handleRewardPress(rewardWithImage)}
+                                        />
+                                    ) : (
+                                        <RewardCard
+                                            reward={rewardWithImage}
+                                            userPoints={userPoints}
+                                            onPress={() => handleRewardPress(rewardWithImage)}
+                                        />
+                                    )}
+                                </View>
                             );
                         })}
                     </View>
                 )}
 
+                {/* Estado Vacío */}
                 {!isLoading && filteredRewards.length === 0 && (
                     <View style={styles.emptyState}>
-                        <Icon name="gift-off" size={64} color="#CCC" />
+                        <Icon name="gift-off-outline" size={64} color="rgba(0,0,0,0.15)" />
                         <Text style={styles.emptyStateText}>
-                            No hay premios en esta categoría
+                            No hay premios disponibles en esta categoría por ahora.
                         </Text>
                     </View>
                 )}
@@ -183,10 +168,9 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                 <View style={styles.bottomSpacing} />
             </ScrollView>
 
-            {/* Modales */}
             <RewardDetailModal
                 visible={detailModalVisible}
-                reward={selectedReward} // Ya lleva la imagen procesada
+                reward={selectedReward}
                 userPoints={userPoints}
                 onClose={() => setDetailModalVisible(false)}
                 onRedeem={handleRedeemFromDetail}
@@ -206,61 +190,89 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#b1eedc',
+        backgroundColor: '#b1eedc', // Mantenemos el fondo menta de la marca
     },
-    scrollView: {
-        flex: 1,
+    // --- FILTROS ---
+    filtersSection: {
+        marginTop: 20,
+        marginBottom: 10,
     },
-    categoriesSection: {
-        backgroundColor: '#b1eedc',
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#018f64',
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#0D3E32',
+        marginLeft: 20,
+        marginBottom: 12,
     },
     categoriesContainer: {
-        paddingHorizontal: 16,
-        gap: 12,
+        paddingHorizontal: 20,
+        paddingBottom: 10,
+        gap: 10,
     },
-    categoryButton: {
+    categoryChip: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 10,
-        borderRadius: 20,
-        backgroundColor: '#E8F5F1',
+        borderRadius: 25,
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        gap: 6,
         borderWidth: 1,
-        borderColor: '#018f64',
+        borderColor: '#FFF',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
     },
-    categoryButtonActive: {
+    categoryChipActive: {
         backgroundColor: '#018f64',
         borderColor: '#018f64',
+        elevation: 4,
+        shadowOpacity: 0.2,
     },
-    categoryButtonText: {
-        fontSize: 14,
+    categoryText: {
+        fontSize: 13,
         fontWeight: '600',
-        color: '#030303ff',
-        marginLeft: 6,
+        color: '#333',
     },
-    categoryButtonTextActive: {
+    categoryTextActive: {
         color: '#FFF',
     },
-    scrollView: {
-        flex: 1,
-    },
+    // --- GRID ---
     rewardsGrid: {
-        paddingTop: 16,
+        paddingHorizontal: 16,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+    },
+    rewardCardWrapper: {
+        width: '100%', // Se puede cambiar a '48%' si prefieres 2 columnas
+        marginBottom: 16,
+    },
+    // --- ESTADOS ---
+    loaderContainer: {
+        padding: 60,
+        alignItems: 'center',
+    },
+    loaderText: {
+        marginTop: 12,
+        color: '#018f64',
+        fontWeight: '600',
     },
     emptyState: {
         alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 60,
+        paddingVertical: 80,
+        paddingHorizontal: 40,
     },
     emptyStateText: {
-        fontSize: 16,
-        color: '#999',
+        fontSize: 15,
+        color: 'rgba(0,0,0,0.5)',
+        textAlign: 'center',
         marginTop: 16,
+        lineHeight: 22,
     },
     bottomSpacing: {
-        height: 20,
+        height: 40,
     },
 });

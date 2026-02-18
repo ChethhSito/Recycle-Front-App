@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -9,6 +9,8 @@ import { ContactModal } from '../../componentes/modal/partners/ContactModal';
 import { PartnerDetailModal } from '../../componentes/modal/partners/PartnerDetailModal';
 import { usePartners } from '../../hooks/use-partners-store';
 
+const { width } = Dimensions.get('window');
+
 export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     const navigation = useNavigation();
     const [refreshing, setRefreshing] = useState(false);
@@ -17,15 +19,13 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     const [selectedPartner, setSelectedPartner] = useState(null);
     const [detailModalVisible, setDetailModalVisible] = useState(false);
 
-    // Use custom hook
     const { partners, loading, refetch } = usePartners();
 
-    // Filtros de tipo de partner
     const filters = [
-        { id: 'all', label: 'Todos', icon: 'view-grid' },
-        { id: 'financial', label: 'Financieros', icon: 'bank' },
-        { id: 'government', label: 'Gobierno', icon: 'shield-account' },
-        { id: 'ong', label: 'ONGs', icon: 'hand-heart' },
+        { id: 'all', label: 'Todos', icon: 'view-grid-outline' },
+        { id: 'financial', label: 'Financieros', icon: 'bank-outline' },
+        { id: 'government', label: 'Gobierno', icon: 'shield-account-outline' },
+        { id: 'ong', label: 'ONGs', icon: 'hand-heart-outline' },
         { id: 'corporate', label: 'Corporativos', icon: 'domain' },
     ];
 
@@ -43,23 +43,16 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
 
     const fixPartnerLogo = (url) => {
         if (!url) return null;
-        if (url.startsWith('http://') || url.startsWith('https://')) {
-            return url;
-        }
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
         return `https://${url}`;
     };
 
-    // Filtrar partners
     const filteredPartners = selectedFilter === 'all'
         ? partners
         : partners.filter(partner => partner.filterType === selectedFilter);
 
     const handlePartnerPress = (partner) => {
-        // Aseguramos que al abrir el modal también lleve la imagen corregida
-        const fixedPartner = {
-            ...partner,
-            logo: fixPartnerLogo(partner.logo)
-        };
+        const fixedPartner = { ...partner, logo: fixPartnerLogo(partner.logo) };
         setSelectedPartner(fixedPartner);
         setDetailModalVisible(true);
     };
@@ -77,9 +70,8 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
         <View style={styles.container}>
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#018f64']} />
-                }
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#018f64']} />}
+                contentContainerStyle={{ paddingBottom: 40 }}
             >
                 {/* Header */}
                 <PartnerHeader
@@ -88,71 +80,67 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                     onMenuPress={onOpenDrawer}
                 />
 
-                {/* Filtros */}
-                <View style={styles.filtersSection}>
-                    <Text style={styles.filtersTitle}>Filtrar por tipo</Text>
+                {/* --- NUEVA SECCIÓN DE FILTROS --- */}
+                <View style={styles.filtersContainer}>
+                    <Text style={styles.sectionTitle}>Categorías</Text>
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.filtersContainer}
+                        contentContainerStyle={styles.filtersScroll}
                     >
-                        {filters.map((filter) => (
-                            <TouchableOpacity
-                                key={filter.id}
-                                style={[
-                                    styles.filterButton,
-                                    selectedFilter === filter.id && styles.filterButtonActive
-                                ]}
-                                onPress={() => setSelectedFilter(filter.id)}
-                            >
-                                <Icon
-                                    name={filter.icon}
-                                    size={20}
-                                    color={selectedFilter === filter.id ? '#FFF' : '#018f64'}
-                                />
-                                <Text style={[
-                                    styles.filterText,
-                                    selectedFilter === filter.id && styles.filterTextActive
-                                ]}>
-                                    {filter.label}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
+                        {filters.map((filter) => {
+                            const isActive = selectedFilter === filter.id;
+                            return (
+                                <TouchableOpacity
+                                    key={filter.id}
+                                    style={[styles.filterChip, isActive && styles.filterChipActive]}
+                                    onPress={() => setSelectedFilter(filter.id)}
+                                    activeOpacity={0.8}
+                                >
+                                    <Icon
+                                        name={filter.icon}
+                                        size={18}
+                                        color={isActive ? '#FFF' : '#555'}
+                                    />
+                                    <Text style={[styles.filterText, isActive && styles.filterTextActive]}>
+                                        {filter.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
                     </ScrollView>
                 </View>
 
-                {/* Loading State or List */}
+                {/* Loading o Lista */}
                 {loading && !refreshing ? (
                     <View style={styles.loadingContainer}>
                         <ActivityIndicator size="large" color="#018f64" />
-                        <Text style={styles.loadingText}>Cargando aliados...</Text>
+                        <Text style={styles.loadingText}>Buscando aliados...</Text>
                     </View>
                 ) : (
                     <>
-                        {/* Lista de Partners */}
-                        <View style={styles.partnersGrid}>
+                        <View style={styles.partnersList}>
                             {filteredPartners.map((partner) => {
-                                // 👇 2. AQUÍ APLICAMOS EL ARREGLO
-                                // Creamos una copia del partner con el logo corregido antes de pasarlo a la Card
+                                // Corrección del logo
                                 const partnerFixed = {
                                     ...partner,
-                                    logo: fixPartnerLogo(partner.logo) // Asumiendo que el campo se llama 'logo'
+                                    logo: fixPartnerLogo(partner.logo)
                                 };
-                                console.log(`Partner: ${partnerFixed.name}, Logo URL: ${partnerFixed.logo}`);
+
                                 return (
-                                    <PartnerCard
-                                        key={partner._id || partner.id}
-                                        partner={partnerFixed} // 👈 Pasamos el objeto corregido
-                                        onPress={() => handlePartnerPress(partnerFixed)}
-                                    />
+                                    <View key={partner._id || partner.id} style={styles.cardWrapper}>
+                                        <PartnerCard
+                                            partner={partnerFixed}
+                                            onPress={() => handlePartnerPress(partnerFixed)}
+                                        />
+                                    </View>
                                 );
                             })}
                         </View>
 
-
                         {filteredPartners.length === 0 && (
                             <View style={styles.emptyState}>
-                                <Icon name="briefcase-off" size={64} color="#CCC" />
+                                <Icon name="folder-search-outline" size={60} color="#b0d6cc" />
                                 <Text style={styles.emptyStateText}>
                                     No hay convenios en esta categoría
                                 </Text>
@@ -161,32 +149,28 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                     </>
                 )}
 
-                {/* Sección de información */}
+                {/* Banner de Información */}
                 <View style={styles.infoSection}>
-                    <View style={styles.infoBox}>
-                        <Icon name="information" size={24} color="#018f64" />
-                        <Text style={styles.infoText}>
-                            ¿Eres una empresa u organización interesada en formar parte de nuestros convenios?
-                        </Text>
+                    <View style={styles.infoContent}>
+                        <Icon name="handshake" size={32} color="#FFF" />
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.infoTitle}>¿Quieres ser un aliado?</Text>
+                            <Text style={styles.infoText}>
+                                Únete a nuestra red de empresas sostenibles.
+                            </Text>
+                        </View>
                     </View>
                     <TouchableOpacity
                         style={styles.contactButton}
                         onPress={() => setContactModalVisible(true)}
                     >
-                        <Icon name="email" size={20} color="#FFF" />
-                        <Text style={styles.contactButtonText}>Contáctanos</Text>
+                        <Text style={styles.contactButtonText}>Contactar</Text>
+                        <Icon name="arrow-right" size={16} color="#FFF" />
                     </TouchableOpacity>
                 </View>
-
-                <View style={styles.bottomSpacing} />
             </ScrollView>
 
-            {/* Modales */}
-            <ContactModal
-                visible={contactModalVisible}
-                onClose={() => setContactModalVisible(false)}
-            />
-
+            <ContactModal visible={contactModalVisible} onClose={() => setContactModalVisible(false)} />
             <PartnerDetailModal
                 visible={detailModalVisible}
                 partner={selectedPartner}
@@ -200,108 +184,141 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#b1eedc',
+        backgroundColor: '#b1eedc', // Fondo general más limpio (gris muy claro)
     },
-    filtersSection: {
-        backgroundColor: '#b1eedc',
-        paddingVertical: 16,
-        paddingHorizontal: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#018f64',
-    },
-    filtersTitle: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#000000ff',
-        marginBottom: 12,
-    },
+    // --- ESTILOS DE FILTROS ---
     filtersContainer: {
+        marginTop: 15,
+        marginBottom: 5,
+        backgroundColor: '#b1eedc',
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#1F2937',
+        marginLeft: 20,
+        marginBottom: 10,
+    },
+    filtersScroll: {
+        paddingHorizontal: 20,
+        paddingBottom: 10, // Espacio para la sombra
         gap: 10,
     },
-    filterButton: {
+
+    partnersList: {
+        paddingHorizontal: 20, // Margen lateral general para la lista
+        paddingTop: 10,
+        paddingBottom: 20,
+    },
+
+    cardWrapper: {
+        width: '100%', // Ocupa todo el ancho disponible
+        marginBottom: 20, // Espacio vertical entre tarjetas
+        // Ya no necesitamos paddings raros ni widths al 50%
+    },
+    filterChip: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 10,
-        borderRadius: 20,
-        backgroundColor: '#E8F5F1',
-        borderWidth: 1,
-        borderColor: '#018f64',
+        borderRadius: 25,
+        backgroundColor: '#FFFFFF', // Inactivo: Fondo blanco
         gap: 6,
-    },
-    filterButtonActive: {
-        backgroundColor: '#018f64',
-        borderColor: '#018f64',
-    },
-    filterText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#000000ff',
-    },
-    filterTextActive: {
-        color: '#FFF',
-    },
-    partnersGrid: {
-        paddingTop: 16,
-    },
-    loadingContainer: {
-        padding: 40,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    loadingText: {
-        marginTop: 10,
-        color: '#666',
-    },
-    emptyState: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 60,
-    },
-    emptyStateText: {
-        fontSize: 16,
-        color: '#999',
-        marginTop: 16,
-    },
-    infoSection: {
-        backgroundColor: '#FFF',
-        marginHorizontal: 16,
-        marginTop: 16,
-        borderRadius: 16,
-        padding: 20,
+        // Sombra suave para que floten
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.05,
         shadowRadius: 4,
+        borderWidth: 1,
+        borderColor: 'transparent',
     },
-    infoBox: {
+    filterChipActive: {
+        backgroundColor: '#018f64', // Activo: Verde
+        elevation: 4,
+        shadowOpacity: 0.2,
+    },
+    filterText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#555', // Inactivo: Texto gris
+    },
+    filterTextActive: {
+        color: '#FFF', // Activo: Texto blanco
+    },
+
+    // --- ESTILOS DEL GRID ---
+    partnersGrid: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
-        marginBottom: 16,
-        gap: 12,
+        flexWrap: 'wrap',
+        paddingHorizontal: 12, // Reducimos el padding lateral (antes era 20 o más)
+        justifyContent: 'space-between', // Empuja las tarjetas a los extremos
+    },
+    gridItem: {
+        width: '48%', // Ocupa casi la mitad exacta (-2% para el hueco del medio)
+        marginBottom: 16, // Espacio vertical
+        // Eliminamos padding interno aquí para que la card crezca
+    },
+
+    // --- ESTILOS DE CARGA Y VACÍO ---
+    loadingContainer: {
+        padding: 50,
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 10,
+        color: '#018f64',
+        fontWeight: '500',
+    },
+    emptyState: {
+        alignItems: 'center',
+        paddingVertical: 60,
+    },
+    emptyStateText: {
+        fontSize: 15,
+        color: '#888',
+        marginTop: 10,
+    },
+
+    // --- ESTILOS DEL INFO BANNER ---
+    infoSection: {
+        backgroundColor: '#018f64', // Verde muy pálido
+        marginHorizontal: 20,
+        marginTop: 20,
+        borderRadius: 20,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(1, 143, 100, 0.1)',
+    },
+    infoContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 15,
+        marginBottom: 15,
+    },
+    infoTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#FFF',
     },
     infoText: {
-        flex: 1,
-        fontSize: 14,
-        color: '#666',
-        lineHeight: 20,
+        fontSize: 13,
+        color: '#FFF',
+        marginTop: 2,
     },
     contactButton: {
-        backgroundColor: '#018f64',
+        backgroundColor: '#FFF',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 14,
+        paddingVertical: 12,
         borderRadius: 12,
         gap: 8,
+        elevation: 2,
     },
     contactButtonText: {
-        color: '#FFF',
-        fontSize: 15,
+        color: '#018f64',
+        fontSize: 14,
         fontWeight: 'bold',
-    },
-    bottomSpacing: {
-        height: 20,
     },
 });

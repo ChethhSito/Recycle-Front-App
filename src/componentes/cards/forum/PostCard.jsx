@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   cardNormal: {
-    backgroundColor: '#B7ECDC',
+    backgroundColor: '#018f64',
   },
   cardAdmin: {
     backgroundColor: '#32243B',
@@ -147,12 +147,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   avatarTextAdmin: {
-    color: '#32243B',
+    color: '#000',
   },
   author: {
     fontSize: 18,
     fontFamily: 'InclusiveSans-Regular',
-    color: '#32243B',
+    color: '#000000ff',
   },
   authorAdmin: {
     color: '#FFCB4D',

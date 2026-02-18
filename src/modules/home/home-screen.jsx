@@ -27,6 +27,7 @@ export const HomeScreen = () => {
     const { user } = useAuthStore();
     const { levels } = useLevels();
     const { programs, startLoadingPrograms, isLoading } = useProgramStore();
+    const [isCitizen, setIsCitizen] = useState(user.role === 'CITIZEN');
 
     const navigation = useNavigation();
     const theme = useTheme();
@@ -46,7 +47,6 @@ export const HomeScreen = () => {
     const userLevelNumber = user?.level || 1;
     const currentLevelData = levels?.find(l => l.levelNumber === userLevelNumber) || {};
 
-    // 👇 AQUÍ ESTABA EL ERROR. Agregamos 'user?.gamification?.nextLevel?.name'
     const nextLevelData = user?.gamification?.nextLevel?.name || 'Siguiente Nivel';
 
     const targetPoints = currentLevelData.maxPoints || 100; // Valor por defecto para evitar división por cero
@@ -116,16 +116,41 @@ export const HomeScreen = () => {
     // Datos según el tipo de filtro
     const impactData = {
         peso: [
-            { icon: 'bottle-soda', label: 'Plástico', value: '5.2 kg', backgroundColor: '#D4E7FF', iconColor: '#3B82F6' },
-            { icon: 'package-variant', label: 'Cartón', value: '3.8 kg', backgroundColor: '#FFE4CC', iconColor: '#F97316' },
-            { icon: 'silverware-fork-knife', label: 'Metal', value: '2.1 kg', backgroundColor: '#F3F4F6', iconColor: '#6B7280' },
-            { icon: 'trash-can', label: 'RAEE', value: '1.5 kg', backgroundColor: '#FFDDDD', iconColor: '#EF4444' },
+            {
+                image: require('../../../assets/botella.jpg'),
+                label: 'Plástico',
+                value: '5.2 kg',
+                // Azul pastel sólido o casi sólido
+                overlayColor: '#D4E7FF'
+            },
+            {
+                image: require('../../../assets/papelcarton.jpg'),
+                label: 'Cartón',
+                value: '3.8 kg',
+                // Naranja pastel
+                overlayColor: '#FFE4CC'
+            },
+            {
+                image: require('../../../assets/metales.jpg'),
+                label: 'Metal',
+                value: '2.1 kg',
+                // Gris claro
+                overlayColor: '#F3F4F6'
+            },
+            {
+                image: require('../../../assets/electrodomesticos.jpg'),
+                label: 'RAEE',
+                value: '1.5 kg',
+                // Rojo pastel
+                overlayColor: '#FFDDDD'
+            },
         ],
+
         cantidad: [
-            { icon: 'bottle-soda', label: 'Plástico', value: '100 unidades', backgroundColor: '#D4E7FF', iconColor: '#3B82F6' },
-            { icon: 'package-variant', label: 'Cartón', value: '10 unidades', backgroundColor: '#FFE4CC', iconColor: '#F97316' },
-            { icon: 'silverware-fork-knife', label: 'Metal', value: '5 unidades', backgroundColor: '#F3F4F6', iconColor: '#6B7280' },
-            { icon: 'trash-can', label: 'RAEE', value: '1 unidad', backgroundColor: '#FFDDDD', iconColor: '#EF4444' },
+            { image: require('../../../assets/botella.jpg'), label: 'Plástico', value: '100 und', overlayColor: '#D4E7FF' },
+            { image: require('../../../assets/papelcarton.jpg'), label: 'Cartón', value: '10 und', overlayColor: '#FFE4CC' },
+            { image: require('../../../assets/metales.jpg'), label: 'Metal', value: '5 und', overlayColor: '#F3F4F6' },
+            { image: require('../../../assets/electrodomesticos.jpg'), label: 'RAEE', value: '1 und', overlayColor: '#FFDDDD' },
         ]
     };
 
@@ -159,8 +184,6 @@ export const HomeScreen = () => {
                     progress={progressValue}
                     currentPoints={currentPoints}
                     maxPoints={targetPoints}
-
-                    // 👇 PASAMOS LOS COLORES DE LA BD
                     bgColor={currentLevelData.primaryColor}
                     iconColor={currentLevelData.bgColor}
                     nextLevelTitle={nextLevelData}
@@ -185,14 +208,12 @@ export const HomeScreen = () => {
                     </View>
                 </View>
 
-                {/* Decoración */}
-                <Image source={require('../../../assets/nube.png')} style={componentStyles.nubeImage} resizeMode="stretch" />
+
 
                 {/* Programas */}
                 <View style={componentStyles.programsSection}>
                     <View style={[componentStyles.programsHeader, { paddingHorizontal: 20 }]}>
-                        <Icon name="leaf" size={20} color="#018f64" />
-                        <Text style={[componentStyles.sectionTitle, { color: '#31253B', marginBottom: 0, marginLeft: 10 }]}>
+                        <Text style={[componentStyles.sectionTitle, { color: '#31253B' }]}>
                             Programas Populares
                         </Text>
                     </View>
@@ -210,20 +231,15 @@ export const HomeScreen = () => {
                                         image={
                                             (program.imageUrl && program.imageUrl.startsWith('http'))
                                                 ? { uri: program.imageUrl }
-                                                : require('../../../assets/program1.jpg')
+                                                : require('../../../assets/botella.jpg')
                                         }
 
                                         // 2. Para el MODAL (Al hacer click):
                                         onPress={() => {
-                                            // 🚨 CAMBIO IMPORTANTE:
-                                            // No modifiques la estructura de la imagen para el modal.
-                                            // Pasa el programa crudo + el arreglo del contacto.
                                             const programForModal = {
                                                 ...program,
                                                 // Solo arreglamos el contacto (que sabemos que era el problema anterior)
-                                                image: program.imageUrl
-                                                    ? { uri: program.imageUrl }
-                                                    : require('../../../assets/program1.jpg'),
+                                                image: { uri: program.imageUrl },
                                                 contactInfo: program.contactInfo
                                                     ? `${program.contactInfo.email || ''}\n${program.contactInfo.phone || ''}`
                                                     : 'Sin contacto'
@@ -248,11 +264,14 @@ export const HomeScreen = () => {
             {/* Bottom Nav */}
             <View style={componentStyles.bottomNav}>
                 <NavItem icon="home" label="Inicio" active />
-                <NavItem icon="recycle" label="Reciclar" onPress={() => navigation.navigate('RequestList')} />
+                {isCitizen && (
+                    <NavItem icon="recycle" label="Reciclar" onPress={() => navigation.navigate('RequestList')} />
+                )}
+                {!isCitizen && (
+                    <NavItem icon="map" label="Solicitudes" onPress={() => navigation.navigate('Map')} />
+                )}
                 <NavItem icon="trophy" label="Premios" onPress={() => navigation.navigate('Rewards')} />
             </View>
-
-            {/* Modales y Drawer */}
 
 
             {/* 6. DRAWER CONECTADO A REDUX (Ya lo tenías bien) */}
@@ -283,7 +302,7 @@ export const HomeScreen = () => {
 const styles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: theme.colors.background,
+        backgroundColor: theme.colors.inputBackground,
     },
     scrollContent: {
         flex: 1,
@@ -294,14 +313,16 @@ const styles = (theme) => StyleSheet.create({
         paddingBottom: 100, // Espacio para el nav de abajo
     },
     impactSection: {
-        backgroundColor: theme.colors.background,
+        backgroundColor: theme.colors.inputBackground,
         padding: 20,
     },
     sectionTitle: {
-        fontSize: 18,
-        color: '#F0F4F5',
+        fontSize: 20,
+        fontWeight: 'bold', // O '700'
+        color: '#1F2937',   // Gris muy oscuro o tu verde corporativo
         marginBottom: 15,
-        textAlign: 'center',
+        textAlign: 'left',  // Alineación izquierda se ve más moderna
+        paddingHorizontal: 20, // Para que no pegue con el borde de la pantalla
     },
     filterContainer: {
         flexDirection: 'row',
@@ -320,7 +341,8 @@ const styles = (theme) => StyleSheet.create({
         borderRadius: 20,
     },
     filterButtonActive: {
-        backgroundColor: '#00C7A1',
+        backgroundColor: '#018f64',
+        elevation: 4,
     },
     filterText: {
         color: '#000',
@@ -329,7 +351,8 @@ const styles = (theme) => StyleSheet.create({
         marginLeft: 5,
     },
     filterTextActive: {
-        color: '#000',
+        color: '#FFFFFF', // Texto blanco para que resalte
+        fontWeight: 'bold',
     },
     statsContainer: {
         flexDirection: 'row',
@@ -337,9 +360,9 @@ const styles = (theme) => StyleSheet.create({
         justifyContent: 'space-between',
     },
     programsSection: {
-        backgroundColor: '#B7ECDC',
-        paddingTop: 20,
-        paddingBottom: 20,
+        backgroundColor: '#b1eedc', // Asegúrate que este sea el mismo color
+        paddingTop: 0, // Ya que la nube hace de "padding"
+        paddingBottom: 30,
     },
     programsHeader: {
         flexDirection: 'row',
@@ -352,12 +375,7 @@ const styles = (theme) => StyleSheet.create({
         color: '#FFFFFF',
         fontWeight: '600',
     },
-    nubeImage: {
-        width: '120%',
-        height: 85,
-        alignSelf: 'center',
-        marginBottom: -20,
-    },
+
     bottomNav: {
         position: 'absolute',
         bottom: 0,
@@ -365,11 +383,11 @@ const styles = (theme) => StyleSheet.create({
         right: 0,
         flexDirection: 'row',
         justifyContent: 'space-around',
-        backgroundColor: theme.colors.inputBackground,
+        backgroundColor: theme.colors.background,
+        borderTopLeftRadius: 24, // Bordes más redondeados arriba para un look moderno
+        borderTopRightRadius: 24,
         paddingVertical: 10,
-        borderRadius: 12,
-        marginHorizontal: 0,
-        elevation: 10,
+        elevation: 20,
         color: '#000',
     },
     fabContainer: {

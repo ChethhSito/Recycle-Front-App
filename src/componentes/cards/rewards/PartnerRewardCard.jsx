@@ -1,118 +1,68 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export const PartnerRewardCard = ({ reward, onPress, userPoints }) => {
     const canRedeem = userPoints >= reward.points;
     const pointsNeeded = reward.points - userPoints;
 
-    // Colores según el tipo de partner
     const partnerThemes = {
-        yape: { colors: ['#6C3FB5', '#8B5FD8'], badge: '#6C3FB5', icon: 'cellphone' },
-        bcp: { colors: ['#002C77', '#004BA8'], badge: '#002C77', icon: 'bank' },
-        government: { colors: ['#D32F2F', '#F44336'], badge: '#D32F2F', icon: 'shield-account' },
-        ong: { colors: ['#0288D1', '#4FC3F7'], badge: '#0288D1', icon: 'hand-heart' },
-        corporate: { colors: ['#00796B', '#00897B'], badge: '#00796B', icon: 'office-building' },
+        yape: { color: '#6C3FB5', icon: 'cellphone' },
+        bcp: { color: '#002C77', icon: 'bank' },
+        corporate: { color: '#00796B', icon: 'office-building' },
     };
 
     const theme = partnerThemes[reward.partnerType] || partnerThemes.corporate;
 
     return (
         <TouchableOpacity
-            style={[
-                styles.card,
-                !canRedeem && styles.cardDisabled
-            ]}
+            style={[styles.card, !canRedeem && styles.cardDisabled]}
             onPress={onPress}
-            activeOpacity={0.7}
+            activeOpacity={0.9}
         >
-            {/* Gradiente superior con colores del partner */}
-            <LinearGradient
-                colors={theme.colors}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.gradientHeader}
-            >
-                {/* Badge de Convenio */}
-                <View style={styles.partnerBadge}>
-                    <Icon name="handshake" size={14} color="#FFF" />
-                    <Text style={styles.partnerBadgeText}>Convenio</Text>
-                </View>
+            {/* Banner de Imagen */}
+            <View style={styles.imageContainer}>
+                <Image source={reward.image} style={styles.image} resizeMode="cover" />
 
-                {/* Logo del Partner */}
-                <View style={styles.partnerLogoContainer}>
-                    <Icon name={theme.icon} size={40} color="rgba(255,255,255,0.9)" />
+                {/* Badge de Partner Flotante */}
+                <View style={[styles.partnerBadge, { backgroundColor: theme.color }]}>
+                    <Icon name={theme.icon} size={14} color="#FFF" />
+                    <Text style={styles.partnerText}>{reward.partnerName}</Text>
                 </View>
 
                 {!canRedeem && (
-                    <View style={styles.lockedOverlay}>
-                        <Icon name="lock" size={28} color="#FFF" />
-                    </View>
-                )}
-            </LinearGradient>
-
-            {/* Imagen del premio */}
-            <View style={styles.imageContainer}>
-                <Image
-                    source={reward.image}
-                    style={styles.image}
-                    resizeMode="cover"
-                />
-                {reward.stock > 0 && reward.stock <= 5 && (
-                    <View style={[styles.stockBadge, { backgroundColor: theme.badge }]}>
-                        <Text style={styles.stockText}>¡Solo {reward.stock}!</Text>
+                    <View style={styles.lockOverlay}>
+                        <View style={styles.lockCircle}>
+                            <Icon name="lock" size={20} color="#666" />
+                        </View>
                     </View>
                 )}
             </View>
 
-            {/* Información del premio */}
             <View style={styles.content}>
-                {/* Partner Name */}
-                <View style={[styles.partnerNameBadge, { backgroundColor: `${theme.badge}15` }]}>
-                    <Text style={[styles.partnerNameText, { color: theme.badge }]}>
-                        {reward.partnerName}
-                    </Text>
-                </View>
+                <Text style={styles.title} numberOfLines={1}>{reward.title}</Text>
+                <Text style={styles.description} numberOfLines={2}>{reward.description}</Text>
 
-                <Text style={styles.title} numberOfLines={2}>
-                    {reward.title}
-                </Text>
-                
-                <Text style={styles.description} numberOfLines={2}>
-                    {reward.description}
-                </Text>
-
-                {/* Puntos */}
-                <View style={styles.footer}>
-                    <View style={styles.pointsContainer}>
-                        <Icon name="leaf" size={18} color="#018f64" />
-                        <Text style={styles.pointsText}>{reward.points} puntos</Text>
+                {/* Info de Puntos */}
+                <View style={styles.pointsRow}>
+                    <View style={styles.pointsBadge}>
+                        <Icon name="leaf" size={16} color="#018f64" />
+                        <Text style={styles.pointsText}>{reward.points} pts</Text>
                     </View>
-
                     {!canRedeem && (
-                        <Text style={styles.needText}>
-                            Te faltan {pointsNeeded} pts
-                        </Text>
+                        <Text style={styles.neededText}>Faltan {pointsNeeded} pts</Text>
                     )}
                 </View>
 
-                {/* Botón de canje con colores del partner */}
-                <TouchableOpacity
-                    style={[
-                        styles.redeemButton,
-                        { backgroundColor: canRedeem ? theme.badge : '#E0E0E0' }
-                    ]}
-                    onPress={onPress}
-                    disabled={!canRedeem}
-                >
-                    <Text style={[
-                        styles.redeemButtonText,
-                        !canRedeem && styles.redeemButtonTextDisabled
-                    ]}>
-                        {canRedeem ? 'Canjear' : 'Bloqueado'}
+                {/* Botón */}
+                <View style={[
+                    styles.button,
+                    { backgroundColor: canRedeem ? theme.color : '#F3F4F6' }
+                ]}>
+                    <Text style={[styles.buttonText, { color: canRedeem ? '#FFF' : '#9CA3AF' }]}>
+                        {canRedeem ? 'Canjear ahora' : 'Puntos insuficientes'}
                     </Text>
-                </TouchableOpacity>
+                </View>
             </View>
         </TouchableOpacity>
     );
@@ -121,143 +71,99 @@ export const PartnerRewardCard = ({ reward, onPress, userPoints }) => {
 const styles = StyleSheet.create({
     card: {
         backgroundColor: '#FFF',
-        borderRadius: 16,
+        borderRadius: 24,
         overflow: 'hidden',
-        marginHorizontal: 16,
-        marginBottom: 16,
         elevation: 4,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-    },
-    cardDisabled: {
-        opacity: 0.7,
-    },
-    gradientHeader: {
-        height: 80,
-        position: 'relative',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    partnerBadge: {
-        position: 'absolute',
-        top: 12,
-        left: 12,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.25)',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.4)',
-    },
-    partnerBadgeText: {
-        color: '#FFF',
-        fontSize: 11,
-        fontWeight: 'bold',
-        marginLeft: 4,
-    },
-    partnerLogoContainer: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    lockedOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        marginBottom: 16,
     },
     imageContainer: {
+        height: 150,
         width: '100%',
-        height: 140,
-        backgroundColor: '#F5F5F5',
-        position: 'relative',
+        backgroundColor: '#F0F0F0',
     },
     image: {
         width: '100%',
         height: '100%',
     },
-    stockBadge: {
+    partnerBadge: {
         position: 'absolute',
-        top: 12,
-        right: 12,
+        bottom: 12,
+        left: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingHorizontal: 12,
         paddingVertical: 6,
-        borderRadius: 20,
+        borderRadius: 12,
+        gap: 6,
     },
-    stockText: {
+    partnerText: {
         color: '#FFF',
         fontSize: 12,
         fontWeight: 'bold',
+    },
+    lockOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(255,255,255,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    lockCircle: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#FFF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 3,
     },
     content: {
         padding: 16,
     },
-    partnerNameBadge: {
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 8,
-        alignSelf: 'flex-start',
-        marginBottom: 8,
-    },
-    partnerNameText: {
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
     title: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#32243B',
-        marginBottom: 8,
+        color: '#1F2937',
+        marginBottom: 4,
     },
     description: {
-        fontSize: 14,
-        color: '#666',
+        fontSize: 13,
+        color: '#6B7280',
         marginBottom: 12,
-        lineHeight: 20,
     },
-    footer: {
+    pointsRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 12,
+        marginBottom: 15,
     },
-    pointsContainer: {
+    pointsBadge: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#E8F5F1',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
+        gap: 4,
     },
     pointsText: {
-        fontSize: 14,
-        fontWeight: 'bold',
         color: '#018f64',
-        marginLeft: 6,
+        fontWeight: 'bold',
     },
-    needText: {
+    neededText: {
+        color: '#EF4444',
         fontSize: 12,
-        color: '#FF5252',
         fontWeight: '600',
     },
-    redeemButton: {
+    button: {
         paddingVertical: 12,
-        borderRadius: 12,
+        borderRadius: 14,
         alignItems: 'center',
     },
-    redeemButtonText: {
-        color: '#FFF',
-        fontSize: 15,
+    buttonText: {
         fontWeight: 'bold',
-    },
-    redeemButtonTextDisabled: {
-        color: '#999',
+        fontSize: 14,
     },
 });
