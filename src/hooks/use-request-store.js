@@ -1,7 +1,8 @@
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import { urlRequests } from '../api/helper/url-auth'; // Tu URL base
+import { urlRequests } from '../api/helper/url-auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native'; // Importante para feedback
 import {
     onLoading, onSetRequests, onSetNearbyRequests, onAddNewRequest, onError
 } from '../store/request/requestSlice';
@@ -21,11 +22,6 @@ export const useRequestStore = () => {
         try {
             const config = await getAuthHeader();
             const { data } = await axios.get(`${urlRequests}/mine`, config);
-
-            // 🚨 AGREGA ESTE LOG 🚨
-            console.log("1. DATOS RECIBIDOS DEL BACKEND:", JSON.stringify(data, null, 2));
-            console.log("   ¿Es Array?:", Array.isArray(data));
-
             dispatch(onSetRequests(data));
         } catch (error) {
             console.log('Error cargando solicitudes', error);
@@ -37,28 +33,20 @@ export const useRequestStore = () => {
         dispatch(onLoading());
         try {
             const config = await getAuthHeader();
-            // GET /requests/nearby?lat=...&lng=...
             const { data } = await axios.get(`${urlRequests}/nearby`, {
                 ...config,
-                params: { lat, lng, km: 10 } // Radio de 10km (puedes parametrizarlo)
+                params: { lat, lng, km: 10 }
             });
-
-            // Guardamos los datos RAW en el store
             dispatch(onSetNearbyRequests(data));
-
         } catch (error) {
-            console.log('Error cargando cercanos:', error);
             dispatch(onError('No se pudieron cargar las solicitudes cercanas'));
         }
     };
 
     const startCreatingRequest = async (formDataInput) => {
-        // formDataInput trae: category, materialType, quantity, measureType, locationCoords, imageUri
         dispatch(onLoading());
         try {
             const token = await AsyncStorage.getItem('user_token');
-
-            // 1. Crear el objeto FormData
             const formData = new FormData();
             formData.append('category', formDataInput.category);
             formData.append('materialType', formDataInput.materialType);
@@ -66,38 +54,32 @@ export const useRequestStore = () => {
             formData.append('measureType', formDataInput.measureType);
             formData.append('description', formDataInput.description || '');
 
-            // OJO: Los objetos complejos (location) se envían mejor como string JSON en FormData
             const locationObject = {
-                ...formDataInput.locationCoords, // { latitude: ..., longitude: ... }
-                address: formDataInput.address   // "Av. Siempre Viva 123"
+                ...formDataInput.locationCoords,
+                address: formDataInput.address
             };
 
-            // Enviamos todo junto como un string JSON
             formData.append('location', JSON.stringify(locationObject));
 
-            // 2. Adjuntar la imagen
             const fileName = formDataInput.imageUri.split('/').pop();
             const fileType = fileName.split('.').pop();
 
             formData.append('file', {
                 uri: formDataInput.imageUri,
                 name: fileName,
-                type: `image/${fileType}`, // ej: image/jpeg
+                type: `image/${fileType}`,
             });
 
-            // 3. Enviar a NestJS
             const { data } = await axios.post(urlRequests, formData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data', // Axios suele poner esto auto, pero es bueno forzarlo si falla
+                    'Content-Type': 'multipart/form-data',
                 }
             });
 
             dispatch(onAddNewRequest(data));
-            return true; // Éxito
-
+            return true;
         } catch (error) {
-            console.log('Error creando solicitud', error?.response?.data || error.message);
             dispatch(onError());
             return false;
         }
@@ -106,20 +88,81 @@ export const useRequestStore = () => {
     const startAcceptingRequest = async (requestId) => {
         dispatch(onLoading());
         try {
-            const config = await getAuthHeader(); // Headers con Token
+            const config = await getAuthHeader();
+            await axios.patch(`${urlRequests}/${requestId}/accept`, {}, config);
 
-            // Llamada al Backend: PATCH /requests/{id}/accept
-            const { data } = await axios.patch(`${urlRequests}/${requestId}/accept`, {}, config);
+            // Recargamos las solicitudes cercanas para que ya no aparezca la que acep
+            await startLoadingRequests();
+            return true;
+        } catch (error) {
+            const msg = error.response?.data?.message || 'Error al aceptar';
+            Alert.alert('Error', msg);
+            dispatch(onError(msg));
+            return false;
+        }
+    };
 
-            // Opcional: Actualizar la lista local quitando la solicitud aceptada de "cercanos"
-            // dispatch(onRemoveFromNearby(requestId)); // Si quisieras crear esa acción en Redux
+    // --- 1. NUEVA FUNCIÓN: CANCELAR SOLICITUD (Ciudadano) ---
+    const startCancellingRequest = async (requestId) => {
+        dispatch(onLoading());
+        try {
+            const config = await getAuthHeader();
+            await axios.patch(`${urlRequests}/${requestId}/cancel`, {}, config);
 
-            dispatch(onSetRequests(data)); // O simplemente recargamos
+            // Recargamos el historial para ver el estado actualizado
+            await startLoadingRequests();
+            return true;
+        } catch (error) {
+            const msg = error.response?.data?.message || 'No se pudo cancelar la solicitud';
+            Alert.alert('Error', msg);
+            dispatch(onError(msg));
+            return false;
+        }
+    };
+
+    // --- 2. NUEVA FUNCIÓN: COMPLETAR RECOJO (Reciclador) ---
+    const startCompletingRequest = async (requestId, imageUri) => {
+        dispatch(onLoading());
+        try {
+            const token = await AsyncStorage.getItem('user_token');
+
+            // 1. Creamos el FormData para enviar la imagen
+            const formData = new FormData();
+
+            // Extraemos nombre y tipo de la imagen tomada por el reciclador
+            const fileName = imageUri.split('/').pop();
+            const fileType = fileName.split('.').pop();
+
+            formData.append('file', {
+                uri: imageUri,
+                name: fileName,
+                type: `image/${fileType}`,
+            });
+
+            // 2. Enviamos el PATCH con el FormData
+            const { data } = await axios.patch(
+                `${urlRequests}/${requestId}/complete`,
+                formData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data',
+                    }
+                }
+            );
+
+            Alert.alert(
+                "¡Excelente trabajo!",
+                `Has recolectado el material. Se han otorgado ${data.pointsAwarded} puntos al ciudadano.`
+            );
+
+            // Actualizamos la lista local para que la tarea desaparezca de "activos"
+            await startLoadingRequests();
             return true;
 
         } catch (error) {
-            // Manejo de error si alguien más la ganó
-            const msg = error.response?.data?.message || 'Error al aceptar la solicitud';
+            const msg = error.response?.data?.message || 'Error al finalizar el recojo';
+            console.log('Error en completeRequest:', error);
             Alert.alert('Error', msg);
             dispatch(onError(msg));
             return false;
@@ -134,6 +177,8 @@ export const useRequestStore = () => {
         startLoadingRequests,
         startCreatingRequest,
         startLoadingNearbyRequests,
-        startAcceptingRequest
+        startAcceptingRequest,
+        startCancellingRequest,
+        startCompletingRequest
     };
 };

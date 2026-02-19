@@ -20,6 +20,7 @@ import { useLevels } from '../../hooks/use-levels-store';
 import { useProgramStore } from '../../hooks/use-program-store';
 import { EnvironmentalProgramModal } from '../../componentes/modal/programs/EnvironmentalProgramModal';
 import { EnvironmentalProgramCard } from '../../componentes/cards/programs/EnvironmentalProgramCard';
+import { useRequestStore } from '../../hooks/use-request-store';
 
 
 export const HomeScreen = () => {
@@ -27,7 +28,11 @@ export const HomeScreen = () => {
     const { user } = useAuthStore();
     const { levels } = useLevels();
     const { programs, startLoadingPrograms, isLoading } = useProgramStore();
+    const { requests, startLoadingRequests } = useRequestStore();
     const [isCitizen, setIsCitizen] = useState(user.role === 'CITIZEN');
+
+    const [hasActiveTask, setHasActiveTask] = useState(false);
+    const [activeTask, setActiveTask] = useState(null);
 
     const navigation = useNavigation();
     const theme = useTheme();
@@ -56,6 +61,7 @@ export const HomeScreen = () => {
 
     useEffect(() => {
         startLoadingPrograms();
+        startLoadingRequests();
     }, []);
 
     // Animación de pulso continua para el FAB
@@ -92,6 +98,24 @@ export const HomeScreen = () => {
             clearInterval(intervalId);
         };
     }, []);
+
+    useEffect(() => {
+        if (user.role !== 'RECYCLER' || !requests) return;
+
+        // 🚨 DEBUG: ¿Qué está llegando realmente?
+        console.log("LISTA DE SOLICITUDES EN HOME:", JSON.stringify(requests, null, 2));
+
+        const task = requests.find(req => req.status === 'ACCEPTED');
+        console.log('TAREA ENCONTRADA:', task);
+
+        if (task) {
+            setHasActiveTask(true);
+            setActiveTask(task);
+        } else {
+            setHasActiveTask(false);
+            setActiveTask(null);
+        }
+    }, [requests, user.role]);
 
     const handleFabPress = () => {
         // Animación de escala al presionar
@@ -175,6 +199,28 @@ export const HomeScreen = () => {
                 />
 
                 <QuoteCard quote="El mejor momento para plantar un árbol fue hace 20 años. El segundo mejor momento es ahora." />
+
+                {/* BANNER DE TAREA ACTIVA (Solo para Recicladores con tarea pendiente) */}
+                {hasActiveTask && activeTask && (
+                    <TouchableOpacity
+                        style={styles(theme).activeTaskBanner}
+                        onPress={() => navigation.navigate('RecyclerTaskDetail', { request: activeTask })}
+                        activeOpacity={0.9}
+                    >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                            <View style={styles(theme).bannerIconCircle}>
+                                <Icon name="truck-delivery" size={22} color="#FFFFFF" />
+                            </View>
+                            <View style={{ marginLeft: 12, flex: 1 }}>
+                                <Text style={styles(theme).bannerTitle}>Recojo en curso</Text>
+                                <Text style={styles(theme).bannerSubtitle} numberOfLines={1}>
+                                    {activeTask.location?.address || 'Ver detalles de la ruta'}
+                                </Text>
+                            </View>
+                        </View>
+                        <Icon name="chevron-right" size={24} color="#FFFFFF" />
+                    </TouchableOpacity>
+                )}
 
                 {/* 5. TARJETA DE PROGRESO 100% DINÁMICA */}
                 <ProgressCard
@@ -427,5 +473,36 @@ const styles = (theme) => StyleSheet.create({
         alignItems: 'center',
         borderWidth: 2,
         borderColor: '#FFFFFF',
+    },
+
+    activeTaskBanner: {
+        backgroundColor: '#31253B', // El color oscuro de tu paleta para que resalte
+        marginHorizontal: 20,
+        marginTop: 10,
+        borderRadius: 20,
+        padding: 15,
+        flexDirection: 'row',
+        alignItems: 'center',
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+    },
+    bannerIconCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    bannerTitle: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    bannerSubtitle: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: 12,
     },
 });

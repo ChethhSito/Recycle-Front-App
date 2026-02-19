@@ -21,6 +21,7 @@ import { HomeScreen } from '../modules/home';
 import { VirtualAssistantScreen } from '../modules/assistant/VirtualAssistantScreen';
 import { EditProfileModal } from '../modules/settings/editprofilemodal-screen';
 import { DonationScreen } from '../modules/donations';
+import { MyRequestDetailScreen, RecyclerTaskDetailScreen } from '../modules/citizen';
 
 import { TwoFactorInfoScreen } from '../modules/settings/two-factor-auth/two-factor-info-screen';
 import { TwoFactorMethodScreen } from '../modules/settings/two-factor-auth/two-factor-method-screen';
@@ -267,6 +268,27 @@ export const AppRoutes = () => {
                                 />
                             )}
                         </Stack.Screen>
+                        <Stack.Screen name="MyRequestDetail">
+                            {props => (
+                                <MyRequestDetailScreen
+                                    {...props}
+                                    onOpenDrawer={() => setDrawerVisible(true)}
+                                    userAvatar={userInfo.avatar}
+                                    userName={userInfo.name}
+                                />
+                            )}
+                        </Stack.Screen>
+                        <Stack.Screen name="RecyclerTaskDetail">
+                            {props => (
+                                <RecyclerTaskDetailScreen
+                                    {...props}
+                                    onOpenDrawer={() => setDrawerVisible(true)}
+                                    userAvatar={userInfo.avatar}
+                                    userName={userInfo.name}
+                                />
+                            )}
+                        </Stack.Screen>
+
                     </>
                 )}
             </Stack.Navigator>

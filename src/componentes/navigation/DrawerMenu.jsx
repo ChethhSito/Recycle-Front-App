@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated, Dimensions, 
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LogOut } from 'lucide-react-native';
+import { useRequestStore } from '../../hooks/use-request-store';
 // 1. IMPORTAR EL HOOK
 import { useAuthStore } from '../../hooks/use-auth-store';
 
@@ -57,9 +58,12 @@ export const DrawerMenu = ({ visible, onClose }) => {
 
     // 2. EXTRAER startLogout DEL HOOK
     const { startLogout, user } = useAuthStore();
-
+    const { requests } = useRequestStore();
     const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
     const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+    const activeTask = user.role === 'RECYCLER'
+        ? requests.find(req => req.status === 'ACCEPTED')
+        : null;
 
     useEffect(() => {
         if (visible) {
@@ -168,6 +172,27 @@ export const DrawerMenu = ({ visible, onClose }) => {
                             </View>
                         </View>
 
+                        {activeTask && (
+                            <View style={styles.activeTaskSection}>
+                                <Text style={styles.activeTaskSectionTitle}>Tarea en curso</Text>
+                                <TouchableOpacity
+                                    style={styles.activeTaskItem}
+                                    onPress={() => {
+                                        navigation.navigate('RecyclerTaskDetail', { request: activeTask });
+                                        onClose();
+                                    }}
+                                >
+                                    <View style={styles.activeTaskIcon}>
+                                        <Icon name="truck-delivery" size={22} color="#018f64" />
+                                    </View>
+                                    <Text style={styles.activeTaskLabel} numberOfLines={1}>
+                                        {activeTask.location?.address || 'Ver detalles del recojo'}
+                                    </Text>
+                                    <View style={styles.activeDot} />
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
                         {/* Secciones del Menú */}
                         {menuSections.map((section, sectionIndex) => (
                             <View key={sectionIndex} style={styles.menuSection}>
@@ -234,6 +259,52 @@ export const DrawerMenu = ({ visible, onClose }) => {
 };
 
 const styles = StyleSheet.create({
+
+    activeTaskSection: {
+        marginTop: 10,
+        paddingHorizontal: 20,
+    },
+    activeTaskSectionTitle: {
+        fontSize: 11,
+        color: 'rgba(0,0,0,0.5)',
+        textTransform: 'uppercase',
+        fontWeight: 'bold',
+        marginBottom: 8,
+        letterSpacing: 1
+    },
+    activeTaskItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF', // Fondo blanco para que resalte sobre el verde del drawer
+        padding: 12,
+        borderRadius: 15,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+    },
+    activeTaskIcon: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        backgroundColor: '#E8F5F1',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    activeTaskLabel: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#018f64',
+        flex: 1,
+    },
+    activeDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#F59E0B', // Ambar para indicar "en proceso"
+        marginLeft: 5,
+    },
     modalContainer: {
         flex: 1,
         flexDirection: 'row',
