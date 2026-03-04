@@ -7,6 +7,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Button, ActivityIndicator } from 'react-native-paper';
 // 👇 IMPORTAMOS EL HOOK
 import { useRequestStore } from '../../hooks/use-request-store';
+import { AwesomeAlert } from '../../componentes/modal/modal';
+import { useState } from 'react';
 
 const { width, height } = Dimensions.get('window');
 
@@ -50,6 +52,19 @@ export const MyRequestDetailScreen = () => {
         'glass': 'Vidrio', 'metal': 'Metal', 'electronics': 'RAEE',
         'steel': 'Acero', 'copper': 'Cobre', 'pet': 'Botellas PET', 'hdpe': 'Plástico Duro'
     };
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'success',
+        onConfirm: () => { }
+    });
+
+    const hideAlert = () => setAlertConfig(prev => ({ ...prev, visible: false }));
+
+    const showAlert = (title, message, type, onConfirm, onCancel = hideAlert) => {
+        setAlertConfig({ visible: true, title, message, type, onConfirm, onCancel });
+    };
 
     const title = LABELS[request.materialType] || LABELS[request.category] || 'Material Reciclable';
     const unit = request.measureType === 'peso' ? 'Kg' : 'Bolsas';
@@ -59,23 +74,30 @@ export const MyRequestDetailScreen = () => {
 
     // 👇 ACTUALIZAMOS LA FUNCIÓN DE CANCELACIÓN
     const handleCancel = () => {
-        Alert.alert(
-            "Cancelar Solicitud",
-            "¿Estás seguro de que deseas cancelar esta solicitud? Esta acción no se puede deshacer.",
-            [
-                { text: "No, mantener", style: "cancel" },
-                {
-                    text: "Sí, cancelar",
-                    style: "destructive",
-                    onPress: async () => {
-                        // Llamamos a la función del store que conecta al backend
-                        const success = await startCancellingRequest(request._id);
-                        if (success) {
-                            navigation.goBack(); // Regresamos a la lista si fue exitoso
-                        }
-                    }
+        showAlert(
+            "¿Cancelar Solicitud?",
+            "Esta acción quitará tu pedido de la lista de los recicladores y no se puede deshacer.",
+            "question",
+            async () => {
+                hideAlert(); // Cerramos la pregunta
+                const success = await startCancellingRequest(request._id);
+
+                if (success) {
+                    // Pequeño delay para que la transición sea suave
+                    setTimeout(() => {
+                        showAlert(
+                            "Cancelado",
+                            "Tu solicitud ha sido eliminada correctamente.",
+                            "success",
+                            () => {
+                                hideAlert();
+                                navigation.goBack();
+                            }
+                        );
+                    }, 500);
                 }
-            ]
+            },
+            hideAlert // Si cancela, solo cerramos
         );
     };
 
@@ -178,6 +200,14 @@ export const MyRequestDetailScreen = () => {
 
                 </View>
             </ScrollView>
+            <AwesomeAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onConfirm={alertConfig.onConfirm}
+                onCancel={alertConfig.onCancel}
+            />
         </View>
     );
 };

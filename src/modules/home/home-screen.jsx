@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, useWindowDimensions, Animated } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, useWindowDimensions, Animated, ActivityIndicator } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import {
@@ -26,10 +26,11 @@ import { useRequestStore } from '../../hooks/use-request-store';
 export const HomeScreen = () => {
 
     const { user } = useAuthStore();
-    const { levels } = useLevels();
+    const { levels, userLevelStatus, startLoadingUserStatus } = useLevels();
     const { programs, startLoadingPrograms, isLoading } = useProgramStore();
     const { requests, startLoadingRequests } = useRequestStore();
     const [isCitizen, setIsCitizen] = useState(user.role === 'CITIZEN');
+    const stats = user?.recyclingStats?.by_category;
 
     const [hasActiveTask, setHasActiveTask] = useState(false);
     const [activeTask, setActiveTask] = useState(null);
@@ -49,19 +50,10 @@ export const HomeScreen = () => {
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const pulseAnim = useRef(new Animated.Value(1)).current;
 
-    const userLevelNumber = user?.level || 1;
-    const currentLevelData = levels?.find(l => l.levelNumber === userLevelNumber) || {};
-
-    const nextLevelData = user?.gamification?.nextLevel?.name || 'Siguiente Nivel';
-
-    const targetPoints = currentLevelData.maxPoints || 100; // Valor por defecto para evitar división por cero
-    const currentPoints = user?.points || 0;
-    // Calculamos el progreso (evitando división por cero)
-    const progressValue = targetPoints > 0 ? (currentPoints / targetPoints) : 0;
-
     useEffect(() => {
         startLoadingPrograms();
         startLoadingRequests();
+        startLoadingUserStatus(); // 🚨 NUEVO: Carga el "objeto bonito" del nivel
     }, []);
 
     // Animación de pulso continua para el FAB
@@ -98,12 +90,16 @@ export const HomeScreen = () => {
             clearInterval(intervalId);
         };
     }, []);
+    useEffect(() => {
+        console.log("usuarioi actual", user)
+    }, [user]);
 
     useEffect(() => {
         if (user.role !== 'RECYCLER' || !requests) return;
 
-        // 🚨 DEBUG: ¿Qué está llegando realmente?
-        console.log("LISTA DE SOLICITUDES EN HOME:", JSON.stringify(requests, null, 2));
+
+        console.log("LISTA DE SOLICITUDES EN HOME:",);
+
 
         const task = requests.find(req => req.status === 'ACCEPTED');
         console.log('TAREA ENCONTRADA:', task);
@@ -138,43 +134,58 @@ export const HomeScreen = () => {
     const popularPrograms = Array.isArray(programs) ? programs.slice(0, 5) : [];
 
     // Datos según el tipo de filtro
-    const impactData = {
+    const currentImpact = {
         peso: [
             {
                 image: require('../../../assets/botella.jpg'),
                 label: 'Plástico',
-                value: '5.2 kg',
-                // Azul pastel sólido o casi sólido
+                value: `${stats?.plastic?.kg || 0} kg`, //
                 overlayColor: '#D4E7FF'
             },
             {
                 image: require('../../../assets/papelcarton.jpg'),
                 label: 'Cartón',
-                value: '3.8 kg',
-                // Naranja pastel
+                value: `${stats?.paper?.kg || 0} kg`, //
                 overlayColor: '#FFE4CC'
             },
             {
                 image: require('../../../assets/metales.jpg'),
                 label: 'Metal',
-                value: '2.1 kg',
-                // Gris claro
+                value: `${stats?.metal?.kg || 0} kg`,
                 overlayColor: '#F3F4F6'
             },
             {
                 image: require('../../../assets/electrodomesticos.jpg'),
                 label: 'RAEE',
-                value: '1.5 kg',
-                // Rojo pastel
+                value: `${stats?.electronics?.kg || 0} kg`,
                 overlayColor: '#FFDDDD'
             },
         ],
-
         cantidad: [
-            { image: require('../../../assets/botella.jpg'), label: 'Plástico', value: '100 und', overlayColor: '#D4E7FF' },
-            { image: require('../../../assets/papelcarton.jpg'), label: 'Cartón', value: '10 und', overlayColor: '#FFE4CC' },
-            { image: require('../../../assets/metales.jpg'), label: 'Metal', value: '5 und', overlayColor: '#F3F4F6' },
-            { image: require('../../../assets/electrodomesticos.jpg'), label: 'RAEE', value: '1 und', overlayColor: '#FFDDDD' },
+            {
+                image: require('../../../assets/botella.jpg'),
+                label: 'Plástico',
+                value: `${stats?.plastic?.units || 0} und`,
+                overlayColor: '#D4E7FF'
+            },
+            {
+                image: require('../../../assets/papelcarton.jpg'),
+                label: 'Cartón',
+                value: `${stats?.paper?.units || 0} und`,
+                overlayColor: '#FFE4CC'
+            },
+            {
+                image: require('../../../assets/metales.jpg'),
+                label: 'Metal',
+                value: `${stats?.metal?.units || 0} und`,
+                overlayColor: '#F3F4F6'
+            },
+            {
+                image: require('../../../assets/electrodomesticos.jpg'),
+                label: 'RAEE',
+                value: `${stats?.electronics?.units || 0} und`,
+                overlayColor: '#FFDDDD'
+            },
         ]
     };
 
@@ -223,17 +234,22 @@ export const HomeScreen = () => {
                 )}
 
                 {/* 5. TARJETA DE PROGRESO 100% DINÁMICA */}
-                <ProgressCard
-                    badgeIcon={currentLevelData.iconName}
-                    badgeTitle={currentLevelData.name}
-                    rank={`Nivel ${userLevelNumber}`}
-                    progress={progressValue}
-                    currentPoints={currentPoints}
-                    maxPoints={targetPoints}
-                    bgColor={currentLevelData.primaryColor}
-                    iconColor={currentLevelData.bgColor}
-                    nextLevelTitle={nextLevelData}
-                />
+                {userLevelStatus ? (
+                    console.log("userLevelStatus", userLevelStatus),
+                    <ProgressCard
+                        badgeIcon={userLevelStatus.currentLevel.icon}       // 'spa', 'tree', etc.
+                        badgeTitle={userLevelStatus.currentLevel.name}     // 'Rama Fuerte'
+                        rank={userLevelStatus.currentLevel.rank}           // 'Nivel 5'
+                        progress={userLevelStatus.progress}                // 0.81 (calculado en el back)
+                        currentPoints={userLevelStatus.points.current}     // 2270
+                        maxPoints={userLevelStatus.points.max}             // 2800 (¡Ya no saldrá 400!)
+                        bgColor={userLevelStatus.currentLevel.color}
+                        iconColor={userLevelStatus.currentLevel.bgColor}
+                        nextLevelTitle={userLevelStatus.nextLevel.name}    // 'Árbol Guardián'
+                    />
+                ) : (
+                    <ActivityIndicator color={theme.colors.primary} /> // O un esqueleto de carga
+                )}
 
                 {/* Sección de Impacto */}
                 <View style={componentStyles.impactSection}>
@@ -248,7 +264,7 @@ export const HomeScreen = () => {
                     </View>
 
                     <View style={componentStyles.statsContainer}>
-                        {impactData[filterType].map((item, index) => (
+                        {currentImpact[filterType].map((item, index) => (
                             <StatItem key={index} {...item} />
                         ))}
                     </View>

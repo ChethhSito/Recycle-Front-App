@@ -3,6 +3,8 @@ import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Stat
 import { Text, Button, Avatar, Divider } from 'react-native-paper';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRequestStore } from '../../hooks/use-request-store';
+import { AwesomeAlert } from '../../componentes/modal/modal';
+import { useState } from 'react';
 
 const { width, height } = Dimensions.get('window');
 
@@ -21,27 +23,44 @@ export const RequestDetailScreen = ({ route, navigation }) => {
         address: request?.address || 'Ubicación en mapa',
     };
 
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'success',
+        onConfirm: () => { }
+    });
+
+    const hideAlert = () => setAlertConfig(prev => ({ ...prev, visible: false }));
+
+    const showAlert = (title, message, type, onConfirm, onCancel = hideAlert) => {
+        setAlertConfig({ visible: true, title, message, type, onConfirm, onCancel });
+    };
+
     const handleAccept = () => {
         if (!item.id) {
-            Alert.alert("Error", "No se encontró el ID de la solicitud");
+            showAlert("Error", "No se encontró el ID de la solicitud", "error", hideAlert);
             return;
         }
-        Alert.alert(
+
+        showAlert(
             "Confirmar Recojo",
             `¿Deseas aceptar el recojo de ${item.quantity} de ${item.title}?`,
-            [
-                { text: "Cancelar", style: "cancel" },
-                {
-                    text: "Aceptar",
-                    onPress: async () => {
-                        const success = await startAcceptingRequest(item.id);
-                        if (success) {
-                            Alert.alert("¡Éxito!", "Solicitud aceptada correctamente.");
+            "question",
+            async () => {
+                hideAlert();
+                const success = await startAcceptingRequest(item.id);
+                if (success) {
+                    // Pequeño timeout para que la primera alerta cierre antes de la de éxito
+                    setTimeout(() => {
+                        showAlert("¡Excelente!", "Has aceptado el recojo. Revisa tu ruta en el mapa.", "success", () => {
+                            hideAlert();
                             navigation.goBack();
-                        }
-                    }
+                        });
+                    }, 500);
                 }
-            ]
+            },
+            hideAlert // Acción al cancelar
         );
     };
 
@@ -152,6 +171,14 @@ export const RequestDetailScreen = ({ route, navigation }) => {
                     Aceptar Solicitud
                 </Button>
             </View>
+            <AwesomeAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onConfirm={alertConfig.onConfirm}
+                onCancel={alertConfig.onCancel}
+            />
         </View>
     );
 };

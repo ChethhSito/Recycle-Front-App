@@ -18,6 +18,7 @@ import { GoogleIcon } from '../../../shared/svgs/google';
 import { handleGoogleLogin } from '../../../api/auth/google';
 import { useAuthStore } from '../../../hooks/use-auth-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AwesomeAlert } from '../../../componentes/modal/modal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,9 +33,29 @@ export const LoginScreen = ({ navigation }) => {
         defaultValues: { email: '', password: '' }
     });
 
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'error', // Por defecto error en Login
+        onConfirm: () => { }
+    });
+
+    const showAlert = (title, message, type = 'error') => {
+        setAlertConfig({
+            visible: true,
+            title,
+            message,
+            type,
+            onConfirm: () => {
+                setAlertConfig({ visible: false });
+            }
+        });
+    };
+
     useEffect(() => {
         if (errorMessage) {
-            Alert.alert('Error de autenticación', errorMessage);
+            showAlert('Error de acceso', errorMessage, 'error');
         }
     }, [errorMessage]);
 
@@ -53,11 +74,16 @@ export const LoginScreen = ({ navigation }) => {
             const deletionDate = new Date(new Date(suspension.suspensionDate).getTime() + 30 * 24 * 60 * 60 * 1000);
 
             if (new Date() < deletionDate) {
-                navigation.replace('RestaurarCuenta');
+                showAlert(
+                    'Cuenta Suspendida',
+                    'Tu cuenta está en proceso de eliminación. ¿Deseas restaurarla?',
+                    'error',
+                    () => navigation.replace('RestaurarCuenta')
+                );
                 return;
             } else {
                 await AsyncStorage.removeItem('account_suspended');
-                Alert.alert('Cuenta Eliminada', 'Tu cuenta fue eliminada tras 30 días.');
+                showAlert('Aviso', 'Tu cuenta fue eliminada tras 30 días de inactividad.', 'error');
                 return;
             }
         }
@@ -78,10 +104,10 @@ export const LoginScreen = ({ navigation }) => {
                 await AsyncStorage.setItem('user_token', token);
                 dispatch(login(token));
             } else {
-                Alert.alert("Error", "Inténtalo de nuevo.");
+                showAlert("Error de Google", "No pudimos sincronizar con tu cuenta. Inténtalo de nuevo.", "error");
             }
         } catch (error) {
-            Alert.alert("Error", "Inténtalo de nuevo.");
+            showAlert("Error", "Inténtalo de nuevo.");
         } finally {
             setGoogleLoading(false);
         }
@@ -189,6 +215,13 @@ export const LoginScreen = ({ navigation }) => {
                             <Text style={{ color: '#fff', fontSize: 16 }}>Regístrate</Text>
                         </TouchableOpacity>
                     </View>
+                    <AwesomeAlert
+                        visible={alertConfig.visible}
+                        title={alertConfig.title}
+                        message={alertConfig.message}
+                        type={alertConfig.type}
+                        onConfirm={alertConfig.onConfirm}
+                    />
                 </View>
             </KeyboardAvoidingView>
         </TouchableWithoutFeedback>

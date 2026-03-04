@@ -9,6 +9,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { GoogleIcon } from '../../../shared/svgs/google';
 import { handleGoogleLogin } from '../../../api/auth/google'; // Google lo dejamos igual por ahora
 import { useAuthStore } from '../../../hooks/use-auth-store'; // ✅ IMPORTANTE
+import { AwesomeAlert } from '../../../componentes/modal/modal';
 
 
 const { width, height } = Dimensions.get('window');
@@ -42,16 +43,32 @@ export const RegisterScreen = ({ navigation }) => {
     // Si el registro falla, mostramos la alerta automáticamente
     useEffect(() => {
         if (errorMessage) {
-            // Si errorMessage es un Array (Lista), lo unimos con saltos de línea. Si es texto, lo dejamos igual.
-            const msg = Array.isArray(errorMessage)
-                ? errorMessage.join('\n')
-                : typeof errorMessage === 'object' // Por si acaso devuelve un objeto raro
-                    ? JSON.stringify(errorMessage)
-                    : errorMessage;
-
-            Alert.alert('Error de Registro', msg);
+            const msg = Array.isArray(errorMessage) ? errorMessage.join('\n') : errorMessage;
+            // Usamos nuestra alerta personalizada
+            showAlert('Registro fallido', msg, 'error');
         }
     }, [errorMessage]);
+
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'error',
+        onConfirm: () => { }
+    });
+
+    const showAlert = (title, message, type = 'error', action = null) => {
+        setAlertConfig({
+            visible: true,
+            title,
+            message,
+            type,
+            onConfirm: () => {
+                setAlertConfig(prev => ({ ...prev, visible: false }));
+                if (action) action();
+            }
+        });
+    };
 
     const validateEmail = (email) => {
         // 1. Regex estándar más robusto
@@ -63,7 +80,7 @@ export const RegisterScreen = ({ navigation }) => {
     const onSubmit = (data) => {
         // Validación de contraseñas
         if (data.password !== data.confirmPassword) {
-            Alert.alert("Error", "Las contraseñas no coinciden");
+            showAlert("Error de validación", "Las contraseñas no coinciden. Por favor, verifícalas.", "error");
             return;
         }
 
@@ -87,13 +104,9 @@ export const RegisterScreen = ({ navigation }) => {
         setGoogleLoading(true);
         try {
             const token = await handleGoogleLogin();
-            if (token) {
-                // Si quieres manejar Google con Redux, podrías crear un startLoginWithToken(token) en tu hook
-                // Por ahora, si navega solo, está bien, pero lo ideal es conectarlo al store.
-                console.log("Token Google:", token);
-            }
+            if (!token) showAlert("Error", "No se pudo completar el acceso con Google.", "error");
         } catch (error) {
-            Alert.alert("Error", "Inténtalo de nuevo.");
+            showAlert("Error de conexión", "Inténtalo de nuevo más tarde.", "error");
         } finally {
             setGoogleLoading(false);
         }
@@ -266,6 +279,14 @@ export const RegisterScreen = ({ navigation }) => {
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>
+
+                <AwesomeAlert
+                    visible={alertConfig.visible}
+                    title={alertConfig.title}
+                    message={alertConfig.message}
+                    type={alertConfig.type}
+                    onConfirm={alertConfig.onConfirm}
+                />
             </View>
         </TouchableWithoutFeedback>
     );

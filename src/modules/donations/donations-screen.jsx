@@ -8,7 +8,9 @@ import {
     StatusBar,
     Clipboard,
     Alert,
-    Dimensions
+    Dimensions,
+    Linking,
+
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
@@ -119,6 +121,18 @@ export const DonationScreen = () => {
                             />
                         </View>
                     </TouchableOpacity>
+
+
+                </View>
+
+                <View>
+                    <TouchableOpacity
+                        style={styles.link}
+                        onPress={() => Linking.openURL('https://nosplanet.org/')}
+                    >
+
+                        <Text style={styles.linkText}>Nos Planét SAC</Text>
+                    </TouchableOpacity>
                 </View>
 
                 {/* Nota de Seguridad */}
@@ -133,6 +147,16 @@ export const DonationScreen = () => {
 };
 
 const styles = StyleSheet.create({
+
+    link: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 15,
+        paddingTop: 30,
+
+    },
+
     container: {
         flex: 1,
         backgroundColor: '#b1eedc', // Fondo gris muy suave (casi blanco) para resaltar la tarjeta
@@ -280,7 +304,7 @@ const styles = StyleSheet.create({
     trustNote: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 30,
+        marginTop: 0,
         gap: 6,
         opacity: 0.6,
     },

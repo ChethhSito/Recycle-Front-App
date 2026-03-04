@@ -151,11 +151,6 @@ export const useRequestStore = () => {
                 }
             );
 
-            Alert.alert(
-                "¡Excelente trabajo!",
-                `Has recolectado el material. Se han otorgado ${data.pointsAwarded} puntos al ciudadano.`
-            );
-
             // Actualizamos la lista local para que la tarea desaparezca de "activos"
             await startLoadingRequests();
             return true;

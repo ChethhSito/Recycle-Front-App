@@ -7,6 +7,7 @@ import { Text, TextInput, Button, IconButton } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; // Importamos iconos
 import { handleResetPassword } from '../../../api/auth/gmail';
+import { AwesomeAlert } from '../../../componentes/modal/modal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,23 +26,44 @@ export const ResetPasswordScreen = ({ navigation, route }) => {
             confirmPassword: ''
         }
     });
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'success',
+        onConfirm: () => { }
+    });
+
+    const hideAlert = () => setAlertConfig(prev => ({ ...prev, visible: false }));
+
+    const showAlert = (title, message, type, onConfirm) => {
+        setAlertConfig({ visible: true, title, message, type, onConfirm });
+    };
 
     const onSubmit = async (data) => {
         setLoading(true);
         try {
             await handleResetPassword(email, data.code, data.newPassword);
 
-            Alert.alert(
-                "¡Éxito!",
-                "Tu contraseña ha sido actualizada.",
-                [{
-                    text: "Iniciar Sesión",
-                    onPress: () => navigation.reset({ index: 0, routes: [{ name: 'Login' }] })
-                }]
+            // 🚨 ALERTA DE ÉXITO PERSONALIZADA
+            showAlert(
+                "¡Contraseña Actualizada!",
+                "Tu acceso ha sido restaurado con éxito. Ahora puedes iniciar sesión con tu nueva clave.",
+                "success",
+                () => {
+                    hideAlert();
+                    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+                }
             );
 
         } catch (error) {
-            Alert.alert("Error", error.message || "Código incorrecto o expirado.");
+            // 🚨 ALERTA DE ERROR PERSONALIZADA
+            showAlert(
+                "Código Inválido",
+                error.message || "El código ingresado es incorrecto o ya expiró. Por favor, solicítalo de nuevo.",
+                "error",
+                hideAlert
+            );
         } finally {
             setLoading(false);
         }
@@ -160,6 +182,13 @@ export const ResetPasswordScreen = ({ navigation, route }) => {
                         </Button>
 
                     </ScrollView>
+                    <AwesomeAlert
+                        visible={alertConfig.visible}
+                        title={alertConfig.title}
+                        message={alertConfig.message}
+                        type={alertConfig.type}
+                        onConfirm={alertConfig.onConfirm}
+                    />
                 </View>
             </KeyboardAvoidingView>
         </TouchableWithoutFeedback>

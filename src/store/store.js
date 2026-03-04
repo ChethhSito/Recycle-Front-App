@@ -8,6 +8,8 @@ import { programSlice } from './programs';
 import { rewardsSlice } from './reward';
 import { forumSlice } from './forum';
 import { requestSlice } from './request';
+
+
 export const store = configureStore({
     reducer: {
         auth: authSlice.reducer,
@@ -18,6 +20,7 @@ export const store = configureStore({
         rewards: rewardsSlice.reducer,
         forum: forumSlice.reducer,
         request: requestSlice.reducer,
+
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 });

@@ -5,6 +5,7 @@ export const levelsSlice = createSlice({
     initialState: {
         levels: [],
         isLoading: false,
+        userLevelStatus: null,
         error: null
     },
     reducers: {
@@ -14,12 +15,19 @@ export const levelsSlice = createSlice({
         setLoading: (state, action) => {
             state.isLoading = action.payload;
         },
+        setUserLevelStatus: (state, action) => {
+            state.userLevelStatus = action.payload;
+        },
         setError: (state, action) => {
             state.error = action.payload;
+        },
+        resetLevels: (state) => {
+            state.userLevelStatus = null;
+            state.error = null;
         }
     }
 });
 
-export const { setLevels, setLoading, setError } = levelsSlice.actions;
+export const { setLevels, setLoading, setUserLevelStatus, setError, resetLevels } = levelsSlice.actions;
 
 export default levelsSlice.reducer;

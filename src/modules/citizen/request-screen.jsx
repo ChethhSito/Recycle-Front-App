@@ -9,6 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { useRequestStore } from '../../hooks/use-request-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { AwesomeAlert } from '../../componentes/modal/modal';
 
 const { width } = Dimensions.get('window');
 
@@ -28,7 +29,7 @@ const CATEGORIES = [
         ]
     },
     {
-        id: 'cardboard',
+        id: 'paper',
         label: 'Papel/Cartón',
         icon: 'package-variant',
         color: '#F97316',
@@ -81,6 +82,22 @@ export const CreateRequestScreen = ({ navigation }) => {
     const { control, handleSubmit, setValue } = useForm({
         defaultValues: { quantity: '', description: '', locationCoords: null }
     });
+
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'success'
+    });
+
+    const hideAlert = () => {
+        setAlertConfig({ ...alertConfig, visible: false });
+        if (alertConfig.type === 'success') navigation.goBack();
+    };
+
+    const showAlert = (title, message, type = 'success') => {
+        setAlertConfig({ visible: true, title, message, type });
+    };
 
     // ... (Mantengo tus funciones getLocation, takePhoto y onSubmit intactas) ...
     const getLocation = async () => {
@@ -139,9 +156,9 @@ export const CreateRequestScreen = ({ navigation }) => {
         });
 
         if (success) {
-            Alert.alert("¡Éxito!", "Solicitud creada correctamente", [{ text: "OK", onPress: () => navigation.goBack() }]);
+            showAlert("¡Éxito!", "Tu solicitud ha sido publicada. Pronto un reciclador se pondrá en contacto.");
         } else {
-            Alert.alert("Error", "No se pudo enviar la solicitud.");
+            showAlert("Error", "No pudimos conectar con el servidor. Revisa tu internet.", "error");
         }
     };
 
@@ -329,6 +346,13 @@ export const CreateRequestScreen = ({ navigation }) => {
 
                 </View>
             </ScrollView>
+            <AwesomeAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onConfirm={hideAlert}
+            />
         </View>
     );
 };

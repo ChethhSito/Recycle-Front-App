@@ -7,6 +7,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Button } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker'; // 🚨 Importar para la cámara
 import { useRequestStore } from '../../hooks/use-request-store';
+import { AwesomeAlert } from '../../componentes/modal/modal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -44,7 +45,7 @@ export const RecyclerTaskDetailScreen = () => {
     const takePhoto = async () => {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert("Permiso denegado", "Necesitamos acceso a la cámara para la evidencia.");
+            showAlert("Permiso denegado", "Necesitamos acceso a la cámara para que registres la evidencia del recojo.", "error", hideAlert);
             return;
         }
 
@@ -59,27 +60,45 @@ export const RecyclerTaskDetailScreen = () => {
         }
     };
 
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'success',
+        onConfirm: () => { }
+    });
+
+    const hideAlert = () => setAlertConfig(prev => ({ ...prev, visible: false }));
+
+    const showAlert = (title, message, type, onConfirm, onCancel = hideAlert) => {
+        setAlertConfig({ visible: true, title, message, type, onConfirm, onCancel });
+    };
+
     // 🚨 2. FUNCIÓN PARA FINALIZAR (Modificada para incluir la foto)
     const handleComplete = () => {
         if (!evidenceImage) {
-            Alert.alert("Evidencia faltante", "Por favor, toma una foto del material antes de finalizar.");
+            showAlert("Evidencia faltante", "Por favor, toma una foto del material antes de finalizar para validar el impacto ambiental.", "error", hideAlert);
             return;
         }
 
-        Alert.alert(
+        showAlert(
             "Confirmar Entrega",
-            "¿Confirmas que recibiste el material? Se enviará la foto y se darán los puntos.",
-            [
-                { text: "Aún no", style: "cancel" },
-                {
-                    text: "Sí, completar",
-                    onPress: async () => {
-                        // Enviamos la URI de la foto al store actualizado
-                        const success = await startCompletingRequest(request._id, evidenceImage);
-                        if (success) navigation.goBack();
-                    }
+            "¿Confirmas que recibiste el material? Se registrará la evidencia y se asignarán los puntos al ciudadano.",
+            "question",
+            async () => {
+                hideAlert();
+                const success = await startCompletingRequest(request._id, evidenceImage);
+                if (success) {
+                    // Pequeño retraso para que la animación se vea fluida
+                    setTimeout(() => {
+                        showAlert("¡Misión Cumplida!", "El recojo se completó con éxito. ¡Buen trabajo!", "success", () => {
+                            hideAlert();
+                            navigation.goBack();
+                        });
+                    }, 500);
                 }
-            ]
+            },
+            hideAlert // Acción al cancelar
         );
     };
 
@@ -168,6 +187,14 @@ export const RecyclerTaskDetailScreen = () => {
                     </Button>
                 </View>
             </ScrollView>
+            <AwesomeAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onConfirm={alertConfig.onConfirm}
+                onCancel={alertConfig.onCancel}
+            />
         </View>
     );
 };

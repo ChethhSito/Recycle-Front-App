@@ -27,14 +27,17 @@ import { TwoFactorInfoScreen } from '../modules/settings/two-factor-auth/two-fac
 import { TwoFactorMethodScreen } from '../modules/settings/two-factor-auth/two-factor-method-screen';
 import { TwoFactorVerifyScreen } from '../modules/settings/two-factor-auth/two-factor-verify-screen';
 import { TwoFactorSuccessScreen } from '../modules/settings/two-factor-auth/two-factor-success-screen';
+import { notificationSlice } from '../store/notification';
 
 import { useAuthStore } from '../hooks/use-auth-store';
 
 const Stack = createStackNavigator();
 
+
 export const AppRoutes = () => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const { status, checkAuthToken, user } = useAuthStore();
+
 
     useEffect(() => {
         checkAuthToken();
@@ -49,6 +52,7 @@ export const AppRoutes = () => {
             </View>
         );
     }
+
 
     const modalOptions = {
         ...TransitionPresets.ModalSlideFromBottomIOS,

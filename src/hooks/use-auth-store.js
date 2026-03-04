@@ -26,8 +26,10 @@ export const useAuthStore = () => {
             // Si quieres guardar datos básicos del user para uso offline:
             await AsyncStorage.setItem('user_data', JSON.stringify(data.user));
 
+
             // 4. Actualizar Redux
             dispatch(onLogin(data.user));
+            //registerForPushNotifications(data.access_token);
 
         } catch (error) {
             // Manejo de error seguro
@@ -64,6 +66,7 @@ export const useAuthStore = () => {
             await AsyncStorage.setItem('user_data', JSON.stringify(data.user));
 
             dispatch(onLogin(data.user));
+            //registerForPushNotifications(data.access_token);
 
         } catch (error) {
             const msg = error.response?.data?.message || 'Error en el registro';
