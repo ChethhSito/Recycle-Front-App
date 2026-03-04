@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, StatusBar } from 'react-native';
+import { Text, useTheme, ActivityIndicator } from 'react-native-paper'; // 🚀 Paper para componentes y temas
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { Svg, Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { EnvironmentalProgramCard } from '../../componentes/cards/programs/EnvironmentalProgramCard';
 import { EnvironmentalProgramModal } from '../../componentes/modal/programs/EnvironmentalProgramModal';
 import { useProgramStore } from '../../hooks/use-program-store';
-import { ActivityIndicator } from 'react-native-paper';
+import { useAuthStore } from '../../hooks/use-auth-store';
 
-export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvatar }) => {
+export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer }) => {
+    const theme = useTheme(); // 🎨 Obtenemos el tema dinámico
+    const { colors, dark } = theme;
+    const componentStyles = getStyles(theme);
+
+    const { user } = useAuthStore(); // 👤 Obtenemos datos del usuario centralizados
     const [selectedProgram, setSelectedProgram] = useState(null);
-    const [filterType, setFilterType] = useState('ALL'); // 'ALL', 'ONG', 'NOS_PLANET', 'ESTADO'
+    const [filterType, setFilterType] = useState('ALL');
     const { programs, isLoading, startLoadingPrograms } = useProgramStore();
 
     useEffect(() => {
@@ -19,184 +25,165 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer, userAvat
 
     const safePrograms = Array.isArray(programs) ? programs : [];
     const { width } = Dimensions.get('window');
-    const CLOUD_HEIGHT = 100;
 
     const filteredPrograms = filterType === 'ALL'
         ? safePrograms
         : safePrograms.filter(p => p.organizationType === filterType);
 
-    const [modalVisible, setModalVisible] = useState(false);
-
     return (
-        <View style={styles.container}>
-            {/* Header */}
+        <View style={componentStyles.container}>
+            {/* Sincronización de la barra de estado */}
+            <StatusBar
+                barStyle="light-content"
+                backgroundColor={colors.background}
+            />
+
+            {/* Header con Identidad Verde */}
             <LinearGradient
-                colors={['#018f64', '#018f64']}
-                style={styles.header}
+                colors={[colors.greenMain, colors.greenMain]}
+                style={componentStyles.header}
             >
-                <View style={styles.headerContent}>
-                    <TouchableOpacity onPress={onOpenDrawer} style={styles.menuButton}>
-                        <Icon name="menu" size={28} color="#000" />
+                <View style={componentStyles.headerContent}>
+                    <TouchableOpacity onPress={onOpenDrawer} style={componentStyles.menuButton}>
+                        <Icon name="menu" size={28} color="#FFF" />
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextContainer}>
-                        <Text style={styles.headerTitle}>Programas Ambientales</Text>
-                        <Text style={styles.headerSubtitle}>
-                            {/* Mostramos la cantidad real */}
+                    <View style={componentStyles.headerTextContainer}>
+                        <Text style={componentStyles.headerTitle}>Programas Ambientales</Text>
+                        <Text style={componentStyles.headerSubtitle}>
                             {isLoading ? 'Cargando...' : `${filteredPrograms.length} programas activos`}
                         </Text>
                     </View>
 
                     <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
                         <Image
-                            source={{ uri: userAvatar }}
-                            style={styles.avatar}
+                            source={{ uri: user.avatar }}
+                            style={componentStyles.avatar}
                         />
                     </TouchableOpacity>
                 </View>
             </LinearGradient>
-            <View style={styles.svgContainer}>
+
+            {/* Curva SVG Dinámica */}
+            <View style={componentStyles.svgContainer}>
                 <Svg
                     width={width}
-                    height={40} // Altura mucho menor (antes era gigante)
+                    height={40}
                     viewBox="0 0 1440 320"
                     preserveAspectRatio="none"
                 >
                     <Path
-                        fill="#018f64" // El mismo color de tu Header
-                        // Esta ruta dibuja una curva suave en la parte inferior
+                        fill={colors.greenMain} // ♻️ Color primario del tema
                         d="M0,0 L1440,0 L1440,160 Q720,320 0,160 Z"
                     />
                 </Svg>
             </View>
 
-            {/* Filtros */}
-            <View style={styles.filtersContainer}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
-                    {/* ... Tus botones de filtro siguen IGUAL ... */}
+            {/* Filtros Horizontales */}
+            <View style={componentStyles.filtersContainer}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={componentStyles.filtersScroll}>
                     <TouchableOpacity
-                        style={[styles.filterChip, filterType === 'ALL' && styles.filterChipActive]}
+                        style={[componentStyles.filterChip, filterType === 'ALL' && componentStyles.filterChipActive]}
                         onPress={() => setFilterType('ALL')}
                     >
-                        <Text style={[styles.filterText, filterType === 'ALL' && styles.filterTextActive]}>
+                        <Text style={[componentStyles.filterText, { color: filterType === 'ALL' ? '#FFF' : colors.onSurfaceVariant }]}>
                             Todos
                         </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.filterChip, filterType === 'NOS_PLANET' && styles.filterChipActive]}
+                        style={[componentStyles.filterChip, filterType === 'NOS_PLANET' && componentStyles.filterChipActive]}
                         onPress={() => setFilterType('NOS_PLANET')}
                     >
-                        <View style={[styles.filterDot, { backgroundColor: '#018f64' }]} />
-                        <Text style={[styles.filterText, filterType === 'NOS_PLANET' && styles.filterTextActive]}>
+                        <View style={[componentStyles.filterDot, { backgroundColor: colors.primary }]} />
+                        <Text style={[componentStyles.filterText, { color: filterType === 'NOS_PLANET' ? '#FFF' : colors.onSurfaceVariant }]}>
                             Nos Planet
                         </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.filterChip, filterType === 'ONG' && styles.filterChipActive]}
+                        style={[componentStyles.filterChip, filterType === 'ONG' && componentStyles.filterChipActive]}
                         onPress={() => setFilterType('ONG')}
                     >
-                        <View style={[styles.filterDot, { backgroundColor: '#FF6B6B' }]} />
-                        <Text style={[styles.filterText, filterType === 'ONG' && styles.filterTextActive]}>
+                        <View style={[componentStyles.filterDot, { backgroundColor: '#FF6B6B' }]} />
+                        <Text style={[componentStyles.filterText, { color: filterType === 'ONG' ? '#FFF' : colors.onSurfaceVariant }]}>
                             ONGs
                         </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.filterChip, filterType === 'ESTADO' && styles.filterChipActive]}
+                        style={[componentStyles.filterChip, filterType === 'ESTADO' && componentStyles.filterChipActive]}
                         onPress={() => setFilterType('ESTADO')}
                     >
-                        <View style={[styles.filterDot, { backgroundColor: '#4A90E2' }]} />
-                        <Text style={[styles.filterText, filterType === 'ESTADO' && styles.filterTextActive]}>
+                        <View style={[componentStyles.filterDot, { backgroundColor: '#4A90E2' }]} />
+                        <Text style={[componentStyles.filterText, { color: filterType === 'ESTADO' ? '#FFF' : colors.onSurfaceVariant }]}>
                             Estado
                         </Text>
                     </TouchableOpacity>
                 </ScrollView>
             </View>
 
-            {/* Lista de programas */}
+            {/* Lista de Programas */}
             {isLoading ? (
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#018f64" />
+                <View style={componentStyles.loadingContainer}>
+                    <ActivityIndicator size="large" color={colors.primary} />
                 </View>
             ) : (
                 <ScrollView
-                    style={styles.scrollView}
-                    contentContainerStyle={styles.scrollContent}
+                    style={componentStyles.scrollView}
+                    contentContainerStyle={componentStyles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 >
                     {filteredPrograms.length === 0 ? (
                         <View style={{ padding: 20, alignItems: 'center' }}>
-                            <Text style={{ color: '#666' }}>No se encontraron programas en esta categoría.</Text>
+                            <Text style={{ color: colors.onSurfaceVariant }}>No se encontraron programas en esta categoría.</Text>
                         </View>
                     ) : (
-                        <ScrollView
-                            style={styles.scrollView}
-                            contentContainerStyle={styles.scrollContent}
-                            showsVerticalScrollIndicator={false}
-                        >
-                            {filteredPrograms.map((program) => (
-                                <EnvironmentalProgramCard
-                                    key={program._id} // 👈 OJO: MongoDB usa _id, no id
-                                    {...program}
-                                    // 5. Adaptar la imagen: Si viene URL, úsala. Si no, usa placeholder.
-                                    image={
-                                        { uri: program.imageUrl }
-                                    }
-
-                                    containerStyle={{
-                                        width: '100%',
-                                        marginRight: 0,
-                                        marginBottom: 20
-                                    }}
-                                    onPress={() => {
-                                        const programForModal = {
-                                            ...program,
-                                            contactInfo: program.contactInfo
-                                                ? `${program.contactInfo.email || ''}\n${program.contactInfo.phone || ''}`
-                                                : 'Sin contacto',
-
-                                            // 🚨 Pasamos la imagen YA RESUELTA (objeto o número de recurso)
-                                            // Esto evita que el Modal tenga que hacer require() y fallar
-                                            image: (program.imageUrl && program.imageUrl.startsWith('http'))
-                                                ? { uri: program.imageUrl }
-                                                : defaultImage
-                                        };
-
-                                        setSelectedProgram(programForModal);
-                                        setModalVisible(true);
-                                    }}
-                                />
-                            ))
-                            }
-                            <View style={{ height: 20 }} />
-                        </ScrollView>
+                        filteredPrograms.map((program) => (
+                            <EnvironmentalProgramCard
+                                key={program._id}
+                                {...program}
+                                image={{ uri: program.imageUrl }}
+                                theme={theme} // 🚨 Pasamos el tema a la tarjeta
+                                containerStyle={{
+                                    width: '100%',
+                                    marginBottom: 20
+                                }}
+                                onPress={() => {
+                                    const programForModal = {
+                                        ...program,
+                                        contactInfo: program.contactInfo
+                                            ? `${program.contactInfo.email || ''}\n${program.contactInfo.phone || ''}`
+                                            : 'Sin contacto',
+                                        image: { uri: program.imageUrl }
+                                    };
+                                    setSelectedProgram(programForModal);
+                                }}
+                            />
+                        ))
                     )}
                 </ScrollView>
             )}
 
-            {/* Modal de detalles */}
+            {/* Modal de detalles dinámico */}
             <EnvironmentalProgramModal
                 visible={selectedProgram !== null}
                 onClose={() => setSelectedProgram(null)}
                 program={selectedProgram}
+                theme={theme}
             />
         </View>
     );
 };
 
-const styles = StyleSheet.create({
-
-    svgContainer: {
-        marginTop: -1,
-    },
+// 🎨 ESTILOS DINÁMICOS BASADOS EN EL TEMA
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#b1eedc',
+        backgroundColor: theme.colors.background,
     },
     header: {
-        paddingTop: 80,
+        paddingTop: 60,
         paddingBottom: 20,
         paddingHorizontal: 20,
     },
@@ -204,9 +191,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-    },
-    menuButton: {
-        padding: 4,
     },
     avatar: {
         width: 40,
@@ -221,21 +205,20 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 18,
-
-        color: '#000',
+        fontWeight: 'bold',
+        color: '#FFF', // Texto blanco sobre el header verde siempre
     },
     headerSubtitle: {
         fontSize: 13,
-        color: '#000',
-        opacity: 0.9,
+        color: 'rgba(255,255,255,0.8)',
         marginTop: 2,
     },
+    svgContainer: {
+        marginTop: -1,
+    },
     filtersContainer: {
-        marginTop: 10, // Sube los filtros para que toquen el header
-        paddingBottom: 0,
-        // Quita el background color o ponlo transparente si quieres que floten
+        marginTop: 10,
         backgroundColor: 'transparent',
-        // borderBottomWidth: 0, // Quita la línea si prefieres limpieza
     },
     filtersScroll: {
         paddingHorizontal: 20,
@@ -246,11 +229,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
-        backgroundColor: '#f0f0f0',
+        backgroundColor: theme.colors.mainG, // Cambia según el modo
         marginRight: 10,
+        borderWidth: 1,
+        borderColor: theme.colors.outlineVariant,
     },
     filterChipActive: {
-        backgroundColor: '#018f64',
+        backgroundColor: theme.colors.primary,
+        borderColor: theme.colors.primary,
     },
     filterDot: {
         width: 8,
@@ -260,17 +246,13 @@ const styles = StyleSheet.create({
     },
     filterText: {
         fontSize: 14,
-        color: '#666',
-        fontWeight: '500',
-    },
-    filterTextActive: {
-        color: '#fff',
+        fontWeight: '600',
     },
     scrollView: {
         flex: 1,
     },
     scrollContent: {
-        padding: 20, // Un poco más de padding general se ve mejor
+        padding: 20,
         paddingBottom: 40,
     },
     loadingContainer: {

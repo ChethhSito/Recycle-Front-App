@@ -8,6 +8,7 @@ import { programSlice } from './programs';
 import { rewardsSlice } from './reward';
 import { forumSlice } from './forum';
 import { requestSlice } from './request';
+import { themeSlice } from './theme';
 
 
 export const store = configureStore({
@@ -20,6 +21,7 @@ export const store = configureStore({
         rewards: rewardsSlice.reducer,
         forum: forumSlice.reducer,
         request: requestSlice.reducer,
+        theme: themeSlice.reducer
 
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),

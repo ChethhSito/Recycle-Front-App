@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native'; // 👈 IMPORTANTE
+import { useFocusEffect } from '@react-navigation/native';
+import { Text, useTheme } from 'react-native-paper'; // 🚀 Importación de Paper para temas
 
 // Componentes
 import { PostCard } from '../../componentes/cards/forum/PostCard';
@@ -13,14 +14,12 @@ import { CloudHeader } from '../../componentes/cards/home';
 
 // Hooks
 import { useAuthStore } from '../../hooks/use-auth-store';
-import { useForumStore } from '../../hooks/use-forum-store'; // 👈 TU NUEVO HOOK
+import { useForumStore } from '../../hooks/use-forum-store';
 
-// Helper para fechas (puedes moverlo a utils)
 const getTimeAgo = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
-
   let interval = seconds / 31536000;
   if (interval > 1) return `hace ${Math.floor(interval)} años`;
   interval = seconds / 2592000;
@@ -35,6 +34,10 @@ const getTimeAgo = (dateString) => {
 };
 
 export const ForumScreen = ({ navigation }) => {
+  const theme = useTheme(); // 🎨 Obtenemos el tema dinámico
+  const { colors, dark } = theme;
+  const componentStyles = getStyles(theme);
+
   const { user } = useAuthStore();
   const { posts, isLoading, startLoadingPosts, startSavingPost, startTogglingLike } = useForumStore();
 
@@ -43,82 +46,75 @@ export const ForumScreen = ({ navigation }) => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
-
   useFocusEffect(
     useCallback(() => {
       startLoadingPosts();
     }, [])
   );
+
   const handleLike = (postId) => {
-    // Llamamos al store para que hable con el backend
     startTogglingLike(postId);
   };
 
-  const categories = ['Todos', 'Dudas', 'Proyectos', 'General']; // Asegúrate que coincidan con tu Enum del backend
-
+  const categories = ['Todos', 'Dudas', 'Proyectos', 'General'];
 
   const filteredPosts = activeCategory === 'Todos'
     ? posts
     : posts.filter(post => post.category === activeCategory);
 
-
   const handleCreatePost = async (newPostData) => {
-
-    // 1. Validar categorías si es necesario
     const categoryToSend = newPostData.category || 'General';
-
-    // 2. Llamar al store (Redux/Zustand/Context)
     const success = await startSavingPost({
       title: newPostData.title,
-      content: newPostData.description, // Mapeo clave
+      content: newPostData.description,
       category: categoryToSend,
-      // image: newPostData.image // <--- OJO: Solo descomenta si tu backend ya sube imágenes
     });
-
-    // 3. Cerrar el modal si todo salió bien
     if (success) {
       setShowCreateModal(false);
     }
   };
-
 
   if (selectedPost) {
     return (
       <ForumDetailView
         post={selectedPost}
         onBack={() => setSelectedPost(null)}
+        theme={theme} // 🚨 Pasamos el tema a la vista de detalle
       />
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <StatusBar barStyle="dark-content" backgroundColor="#B7ECDC" />
+    <SafeAreaView style={componentStyles.container} edges={['left', 'right', 'bottom']}>
+      {/* Sincronización de la barra de estado */}
+      <StatusBar
+        barStyle={dark ? "light-content" : "dark-content"}
+        backgroundColor={dark ? colors.surface : colors.background}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <CloudHeader
           userName={user?.fullName || 'Usuario'}
           userType="¡Bienvenido al Foro!"
-          avatarUrl={user?.avatar}
+          avatarUrl={user?.avatar} // 📸 Usamos avatarUrl consistente
           onMenuPress={() => setDrawerVisible(true)}
+          theme={theme}
         />
 
-        {/* Filtros */}
-        <View style={styles.categoriesContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categories}>
+        <View style={componentStyles.categoriesContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={componentStyles.categories}>
             {categories.map((category) => (
               <TouchableOpacity
                 key={category}
                 onPress={() => setActiveCategory(category)}
                 style={[
-                  styles.categoryButton,
-                  activeCategory === category && styles.categoryButtonActive
+                  componentStyles.categoryButton,
+                  activeCategory === category && componentStyles.categoryButtonActive
                 ]}
               >
                 <Text style={[
-                  styles.categoryText,
-                  activeCategory === category && styles.categoryTextActive
+                  componentStyles.categoryText,
+                  { color: activeCategory === category ? '#FFF' : colors.onSurfaceVariant }
                 ]}>
                   {category}
                 </Text>
@@ -127,43 +123,41 @@ export const ForumScreen = ({ navigation }) => {
           </ScrollView>
         </View>
 
-        <View style={styles.content}>
-          {/* Banner de Bienvenida Estático */}
-          <View style={styles.banner}>
-            <View style={styles.bannerContent}>
-              <View style={styles.bannerHeader}>
-                <Text style={styles.bannerTitle}>¡Hola, {user?.fullName?.split(' ')[0]}!</Text>
-                <Icon name="leaf" size={20} color="#000" />
+        <View style={componentStyles.content}>
+          {/* Banner Adaptable */}
+          <View style={[componentStyles.banner, { backgroundColor: dark ? colors.primaryContainer : colors.primary }]}>
+            <View style={componentStyles.bannerContent}>
+              <View style={componentStyles.bannerHeader}>
+                <Text style={[componentStyles.bannerTitle, { color: dark ? colors.onPrimaryContainer : '#FFF' }]}>
+                  ¡Hola, {user?.fullName?.split(' ')[0]}!
+                </Text>
+                <Icon name="leaf" size={20} color={dark ? colors.onPrimaryContainer : '#FFF'} />
               </View>
-              <Text style={styles.bannerDescription}>
+              <Text style={[componentStyles.bannerDescription, { color: dark ? colors.onPrimaryContainer : '#FFF' }]}>
                 Conéctate con tu comunidad y comparte ideas verdes.
               </Text>
             </View>
-            <View style={[styles.decorativeCircle, styles.decorativeCircle1]} />
-            <View style={[styles.decorativeCircle, styles.decorativeCircle2]} />
+            <View style={[componentStyles.decorativeCircle, componentStyles.decorativeCircle1]} />
+            <View style={[componentStyles.decorativeCircle, componentStyles.decorativeCircle2]} />
           </View>
 
-          {/* 👇 5. LISTA DE POSTS CON DATOS REALES */}
-          <View style={styles.postsContainer}>
+          <View style={componentStyles.postsContainer}>
             {isLoading && posts.length === 0 ? (
-              <ActivityIndicator size="large" color="#FFF" style={{ marginTop: 20 }} />
+              <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
             ) : (
               filteredPosts.map((post) => {
-                // ADAPTADOR: Convertimos datos de MongoDB a lo que espera tu UI
                 const postAdapted = {
-                  id: post._id, // MongoDB usa _id
-                  // Seguridad por si author no viene populado
+                  id: post._id,
                   author: post.author?.fullName,
                   authorInitials: post.author?.fullName ? post.author.fullName.substring(0, 2).toUpperCase() : 'US',
                   time: getTimeAgo(post.createdAt),
                   title: post.title,
-                  description: post.content, // UI usa description, DB usa content
+                  description: post.content,
                   fullDescription: post.content,
-                  likes: post.likes ? post.likes.length : 0, // Array length
+                  likes: post.likes ? post.likes.length : 0,
                   comments: post.commentsCount || 0,
                   category: post.category,
-                  image: null, // Si tuvieras imágenes en posts, irían aquí
-                  // Campos opcionales para evitar errores en UI
+                  image: null,
                   isPinned: false,
                   isAdmin: false
                 };
@@ -174,13 +168,14 @@ export const ForumScreen = ({ navigation }) => {
                     post={postAdapted}
                     onPress={() => setSelectedPost(postAdapted)}
                     onLikePress={() => handleLike(post._id)}
+                    theme={theme} // 🚨 Inyectamos tema en la tarjeta del post
                   />
                 );
               })
             )}
 
             {!isLoading && filteredPosts.length === 0 && (
-              <Text style={{ textAlign: 'center', color: '#FFF', marginTop: 20 }}>
+              <Text style={{ textAlign: 'center', color: colors.onSurfaceVariant, marginTop: 20 }}>
                 No hay publicaciones en esta categoría.
               </Text>
             )}
@@ -188,53 +183,55 @@ export const ForumScreen = ({ navigation }) => {
         </View>
       </ScrollView>
 
-      {/* FAB */}
+      {/* FAB Dinámico */}
       <TouchableOpacity
-        style={styles.fab}
+        style={[componentStyles.fab, { backgroundColor: colors.primary }]}
         onPress={() => setShowCreateModal(true)}
         activeOpacity={0.8}
       >
         <Icon name="plus" size={28} color="#FFFFFF" />
       </TouchableOpacity>
 
-      {/* Create Post Modal */}
       <CreatePostModal
         visible={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        onSubmit={handleCreatePost} // <--- Pasamos la función del padre al hijo
+        onSubmit={handleCreatePost}
+        theme={theme} // 🚨 Sincronización con el modal de creación
       />
 
-      {/* Drawer */}
       <DrawerMenu
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
-        userName={user?.fullName}
-        userEmail={user?.email}
-        userPoints={user?.points || 0} // Corregido para leer points directos si aplica
-        avatarUrl={user?.avatar}
       />
     </SafeAreaView>
   );
 };
 
-// ... Tus estilos se mantienen IGUALES ...
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#b1eedc' },
-  categoriesContainer: { paddingHorizontal: 20, paddingTop: 8, backgroundColor: '#b1eedc' },
+// 🎨 ESTILOS DINÁMICOS BASADOS EN EL TEMA
+const getStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  categoriesContainer: { paddingHorizontal: 20, paddingTop: 8, backgroundColor: theme.colors.background },
   categories: { flexDirection: 'row' },
-  categoryButton: { paddingHorizontal: 20, paddingVertical: 8, borderRadius: 20, backgroundColor: '#00C7A1', marginRight: 8 },
-  categoryButtonActive: { backgroundColor: '#32243B' },
-  categoryText: { color: '#000000', fontSize: 14, fontFamily: 'System' }, // Cambié font por System por si acaso
-  categoryTextActive: { color: '#FFFFFF' },
-  content: { paddingHorizontal: 20, paddingTop: 16, backgroundColor: '#b1eedc' },
-  banner: { backgroundColor: '#00C7A1', borderRadius: 24, padding: 20, marginBottom: 16, overflow: 'hidden' },
+  categoryButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: theme.colors.surface,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.outlineVariant,
+  },
+  categoryButtonActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+  categoryText: { fontSize: 14, fontWeight: '600' },
+  content: { paddingHorizontal: 20, paddingTop: 16, backgroundColor: theme.colors.background },
+  banner: { borderRadius: 24, padding: 20, marginBottom: 16, overflow: 'hidden', elevation: 4 },
   bannerContent: { zIndex: 10 },
   bannerHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  bannerTitle: { color: '#000000', fontSize: 20, fontWeight: 'bold', marginRight: 8 },
-  bannerDescription: { color: '#000000', fontSize: 14, marginBottom: 16 },
-  decorativeCircle: { position: 'absolute', backgroundColor: '#6939393f', borderRadius: 999 },
+  bannerTitle: { fontSize: 20, fontWeight: 'bold', marginRight: 8 },
+  bannerDescription: { fontSize: 14, opacity: 0.9 },
+  decorativeCircle: { position: 'absolute', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 999 },
   decorativeCircle1: { width: 128, height: 128, top: -64, right: -64 },
   decorativeCircle2: { width: 96, height: 96, bottom: -48, right: -48 },
   postsContainer: { paddingBottom: 100 },
-  fab: { position: 'absolute', bottom: 20, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#00C7A1', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8 },
+  fab: { position: 'absolute', bottom: 20, right: 20, width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
 });

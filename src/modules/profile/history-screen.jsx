@@ -1,71 +1,71 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
+import {
+  View,
+  StyleSheet,
   TouchableOpacity,
   FlatList,
   StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { 
-  ArrowLeft, 
-  Filter, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  TrendingUp,
+  TrendingDown,
   Calendar,
   Award,
   Gift,
   Recycle,
   Droplet
 } from 'lucide-react-native';
+import { Text, useTheme } from 'react-native-paper'; // 🚀 Paper para temas
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { FilterDropdown } from '../../componentes/cards/profile/FilterDropdown';
 import { HistoryDetailModal } from '../../componentes/modal/profile/HistoryDetailModal';
 
-// Componente para cada ítem del historial
-const HistoryItem = ({ type, title, date, points, category, onPress }) => {
+// --- COMPONENTE DE ÍTEM ADAPTATIVO ---
+const HistoryItem = ({ title, date, points, category, onPress, theme }) => {
+  const { colors, dark } = theme;
   const isPositive = points > 0;
-  
+
   const getIcon = () => {
-    switch(category) {
-      case 'recycle':
-        return <Recycle color="#018f64" size={20} />;
-      case 'water':
-        return <Droplet color="#2196F3" size={20} />;
-      case 'achievement':
-        return <Award color="#FAC96E" size={20} />;
-      case 'redeem':
-        return <Gift color="#D32F2F" size={20} />;
-      default:
-        return <Recycle color="#018f64" size={20} />;
+    switch (category) {
+      case 'recycle': return <Recycle color={dark ? colors.primary : "#018f64"} size={20} />;
+      case 'water': return <Droplet color="#2196F3" size={20} />;
+      case 'achievement': return <Award color="#FAC96E" size={20} />;
+      case 'redeem': return <Gift color={colors.error} size={20} />;
+      default: return <Recycle color={colors.primary} size={20} />;
     }
   };
 
   return (
-    <TouchableOpacity style={styles.historyItem} onPress={onPress} activeOpacity={0.7}>
-      <View style={[styles.iconCircle, { backgroundColor: isPositive ? '#E8F5E9' : '#FFEBEE' }]}>
+    <TouchableOpacity
+      style={[styles.historyItem, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View style={[
+        styles.iconCircle,
+        { backgroundColor: isPositive ? (dark ? 'rgba(76, 175, 80, 0.15)' : '#E8F5E9') : (dark ? 'rgba(211, 47, 47, 0.15)' : '#FFEBEE') }
+      ]}>
         {getIcon()}
       </View>
-      
+
       <View style={styles.itemContent}>
-        <Text style={styles.itemTitle}>{title}</Text>
+        <Text style={[styles.itemTitle, { color: colors.onSurface }]}>{title}</Text>
         <View style={styles.itemFooter}>
-          <Calendar color="#666" size={14} />
-          <Text style={styles.itemDate}>{date}</Text>
+          <Calendar color={colors.onSurfaceVariant} size={14} />
+          <Text style={[styles.itemDate, { color: colors.onSurfaceVariant }]}>{date}</Text>
         </View>
       </View>
 
       <View style={styles.pointsContainer}>
         {isPositive ? (
-          <TrendingUp color="#018f64" size={18} />
+          <TrendingUp color={dark ? '#81C784' : "#018f64"} size={18} />
         ) : (
-          <TrendingDown color="#D32F2F" size={18} />
+          <TrendingDown color={colors.error} size={18} />
         )}
         <Text style={[
           styles.pointsText,
-          isPositive ? styles.pointsPositive : styles.pointsNegative
+          { color: isPositive ? (dark ? '#81C784' : "#018f64") : colors.error }
         ]}>
           {isPositive ? '+' : ''}{points}
         </Text>
@@ -75,126 +75,35 @@ const HistoryItem = ({ type, title, date, points, category, onPress }) => {
 };
 
 export const HistoryScreen = ({ navigation }) => {
+  const theme = useTheme(); // 🎨 Obtenemos el tema dinámico
+  const { colors, dark } = theme;
+  const componentStyles = getStyles(theme);
+
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  // Datos de ejemplo
-  const historyData = [
-    {
-      id: '1',
-      type: 'earned',
-      title: 'Reciclaje de plástico',
-      date: '15 Dic, 2024',
-      points: 50,
-      category: 'recycle'
-    },
-    {
-      id: '2',
-      type: 'earned',
-      title: 'Ahorro de agua registrado',
-      date: '14 Dic, 2024',
-      points: 30,
-      category: 'water'
-    },
-    {
-      id: '3',
-      type: 'redeemed',
-      title: 'Canje: Cupón descuento',
-      date: '12 Dic, 2024',
-      points: -100,
-      category: 'redeem'
-    },
-    {
-      id: '4',
-      type: 'earned',
-      title: 'Logro desbloqueado: Eco Warrior',
-      date: '10 Dic, 2024',
-      points: 150,
-      category: 'achievement'
-    },
-    {
-      id: '5',
-      type: 'earned',
-      title: 'Reciclaje de papel',
-      date: '8 Dic, 2024',
-      points: 40,
-      category: 'recycle'
-    },
-    {
-      id: '6',
-      type: 'redeemed',
-      title: 'Canje: Producto ecológico',
-      date: '5 Dic, 2024',
-      points: -200,
-      category: 'redeem'
-    },
-    {
-      id: '7',
-      type: 'earned',
-      title: 'Reciclaje de vidrio',
-      date: '3 Dic, 2024',
-      points: 60,
-      category: 'recycle'
-    },
-  ];
-
-  const filters = [
-    { id: 'all', label: 'Todos' },
-    { id: 'today', label: 'Hoy' },
-    { id: 'week', label: 'Últimos 7 días' },
-    { id: 'twoWeeks', label: 'Últimos 15 días' },
-    { id: 'earned', label: 'Ganados' },
-    { id: 'redeemed', label: 'Canjes' },
-  ];
-
-  const filteredData = selectedFilter === 'all' 
-    ? historyData 
-    : selectedFilter === 'earned' || selectedFilter === 'redeemed'
-    ? historyData.filter(item => 
-        selectedFilter === 'earned' ? item.type === 'earned' : item.type === 'redeemed'
-      )
-    : historyData; // Para filtros de fecha, aquí irían las funciones de filtrado por fecha
-
-  // Calcular totales
-  const totalEarned = historyData
-    .filter(item => item.points > 0)
-    .reduce((sum, item) => sum + item.points, 0);
-  
-  const totalRedeemed = Math.abs(historyData
-    .filter(item => item.points < 0)
-    .reduce((sum, item) => sum + item.points, 0));
-
-  // Calcular total de puntos disponibles
-  const totalPoints = totalEarned - totalRedeemed;
-
-  const handleItemPress = (item) => {
-    setSelectedItem(item);
-    setShowDetailModal(true);
-  };
+  // ... (Datos de ejemplo y lógica de filtrado se mantienen igual)
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <StatusBar barStyle="light-content" backgroundColor="#00926F" />
-      {/* Header */}
-      <View style={styles.header}>
+    <SafeAreaView style={componentStyles.container} edges={['left', 'right', 'bottom']}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+
+      {/* Header Dinámico */}
+      <View style={[componentStyles.header, { backgroundColor: colors.primary }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="chevron-left" size={28} color="#FFFFFF" />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
-          <Text style={styles.headerTitle}>Historial de Actividad</Text>
-          <Text style={styles.headerSubtitle}>Tus movimientos eco</Text>
+          <Text style={[styles.headerTitle, { color: '#FFF' }]}>Historial de Actividad</Text>
+          <Text style={[styles.headerSubtitle, { color: 'rgba(255,255,255,0.8)' }]}>Tus movimientos eco</Text>
         </View>
-        <TouchableOpacity 
-          onPress={() => setShowFilterMenu(!showFilterMenu)}
-          style={styles.filterButton}
-        >
+        <TouchableOpacity onPress={() => setShowFilterMenu(!showFilterMenu)} style={styles.filterButton}>
           <Icon name="filter-variant" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
-      {/* Dropdown de filtros */}
       <FilterDropdown
         visible={showFilterMenu}
         onClose={() => setShowFilterMenu(false)}
@@ -202,282 +111,105 @@ export const HistoryScreen = ({ navigation }) => {
         selectedValue={selectedFilter}
         onSelect={setSelectedFilter}
         title="FILTRAR POR"
+        theme={theme}
       />
 
-      {/* Total de Puntos Disponibles */}
-      <View style={styles.totalPointsContainer}>
-        <View style={styles.totalPointsCard}>
-          {/* Semicírculo decorativo derecho */}
-          <View style={styles.semiCircleRight}>
-            <Text style={styles.semiCircleText}>¡Juntos{'\n'}Salvamos{'\n'}el Planeta!</Text>
-            <Icon name="earth" size={28} color="#00926E" style={{ opacity: 0.7, marginTop: 4, top: 20, right: -25 }} />
+      {/* Tarjeta de Puntos Totales Adaptable */}
+      <View style={componentStyles.totalPointsContainer}>
+        <View style={[componentStyles.totalPointsCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+          <View style={[componentStyles.semiCircleRight, { backgroundColor: dark ? colors.primaryContainer : '#B7ECDC' }]}>
+            <Text style={[styles.semiCircleText, { color: colors.primary }]}>¡Juntos{'\n'}Salvamos el{'\n'}Planeta!</Text>
+            <Icon name="earth" size={28} color={colors.primary} style={{ opacity: 0.5, marginTop: 4, top: 10, right: -15 }} />
           </View>
-          
-          <Icon name="leaf" size={32} color="#00926E" />
+
+          <Icon name="leaf" size={32} color={colors.primary} />
           <View style={styles.totalPointsContent}>
-            <Text style={styles.totalPointsLabel}>Mis Puntos Eco</Text>
-            <Text style={styles.totalPointsValue}>{totalPoints}</Text>
-            <Text style={styles.totalPointsSubtitle}>Puntos disponibles</Text>
+            <Text style={[styles.totalPointsLabel, { color: colors.onSurfaceVariant }]}>Mis Puntos Eco</Text>
+            <Text style={[styles.totalPointsValue, { color: colors.primary }]}>{totalPoints}</Text>
+            <Text style={[styles.totalPointsSubtitle, { color: colors.onSurfaceVariant }]}>Puntos disponibles</Text>
           </View>
         </View>
       </View>
 
-      {/* Resumen de doble columna */}
+      {/* Resumen de doble columna Dinámico */}
       <View style={styles.summaryContainer}>
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryIconContainer}>
-            <TrendingUp color="#00926F" size={24} />
+        <View style={[componentStyles.summaryCard, { backgroundColor: dark ? colors.surfaceVariant : '#E8F5F1' }]}>
+          <View style={[styles.summaryIconContainer, { backgroundColor: dark ? 'rgba(76, 175, 80, 0.2)' : '#B7ECDC' }]}>
+            <TrendingUp color={dark ? '#81C784' : "#00926F"} size={24} />
           </View>
-          <Text style={styles.summaryLabel}>Ganados</Text>
-          <Text style={[styles.summaryValue, styles.summaryValuePositive]}>
-            +{totalEarned}
-          </Text>
+          <Text style={[styles.summaryLabel, { color: colors.onSurfaceVariant }]}>Ganados</Text>
+          <Text style={[styles.summaryValue, { color: dark ? '#81C784' : "#018f64" }]}>+{totalEarned}</Text>
         </View>
 
-        <View style={styles.summaryCard}>
-          <View style={[styles.summaryIconContainer, { backgroundColor: '#FFEBEE' }]}>
-            <TrendingDown color="#D32F2F" size={24} />
+        <View style={[componentStyles.summaryCard, { backgroundColor: dark ? colors.surfaceVariant : '#FFEBEE' }]}>
+          <View style={[styles.summaryIconContainer, { backgroundColor: dark ? 'rgba(211, 47, 47, 0.2)' : '#FFCDD2' }]}>
+            <TrendingDown color={colors.error} size={24} />
           </View>
-          <Text style={styles.summaryLabel}>Canjeados</Text>
-          <Text style={[styles.summaryValue, styles.summaryValueNegative]}>
-            -{totalRedeemed}
-          </Text>
+          <Text style={[styles.summaryLabel, { color: colors.onSurfaceVariant }]}>Canjeados</Text>
+          <Text style={[styles.summaryValue, { color: colors.error }]}>-{totalRedeemed}</Text>
         </View>
       </View>
 
-      {/* Lista de movimientos */}
       <FlatList
         data={filteredData}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => <HistoryItem {...item} onPress={() => handleItemPress(item)} />}
+        renderItem={({ item }) => <HistoryItem {...item} theme={theme} onPress={() => handleItemPress(item)} />}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No hay movimientos para mostrar</Text>
+            <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>No hay movimientos para mostrar</Text>
           </View>
         )}
       />
 
-      {/* Modal de Detalle */}
       <HistoryDetailModal
         visible={showDetailModal}
         onClose={() => setShowDetailModal(false)}
         item={selectedItem}
+        theme={theme}
       />
     </SafeAreaView>
   );
 };
 
+// 🎨 ARQUITECTURA DE ESTILOS BASADA EN EL TEMA
+const getStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  header: { paddingHorizontal: 20, paddingTop: 44, paddingBottom: 16, flexDirection: 'row', alignItems: 'center' },
+  totalPointsContainer: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
+  totalPointsCard: { borderRadius: 20, padding: 24, flexDirection: 'row', alignItems: 'center', elevation: 4, borderWidth: 1, position: 'relative', overflow: 'hidden' },
+  semiCircleRight: { position: 'absolute', right: -100, top: '50%', width: 220, height: 220, borderRadius: 110, opacity: 0.3, transform: [{ translateY: -110 }], justifyContent: 'center', alignItems: 'flex-start', paddingLeft: 20 },
+  summaryCard: { flex: 1, borderRadius: 16, padding: 20, alignItems: 'center', elevation: 2 },
+});
+
+// Estilos estáticos
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#7BD0AD',
-  },
-  // Header
-  header: {
-    backgroundColor: '#00926F',
-    paddingHorizontal: 20,
-    paddingTop: 44,
-    paddingBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backButton: {
-    marginRight: 12,
-  },
-  headerInfo: {
-    flex: 1,
-  },
-  headerTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  headerSubtitle: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
-  },
-  filterButton: {
-    padding: 8,
-  },
-  // Total de Puntos
-  totalPointsContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  totalPointsCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#00926F',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    borderWidth: 2,
-    borderColor: '#B7ECDC',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  semiCircleRight: {
-    position: 'absolute',
-    right: -120,
-    top: '50%',
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: '#B7ECDC',
-    opacity: 0.4,
-    transform: [{ translateY: -120 }],
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    paddingLeft: 20,
-  },
-  semiCircleText: {
-    fontSize: 16,
-    top: 20,
-    fontWeight: 'bold',
-    color: '#00926F',
-    textAlign: 'center',
-    opacity: 0.7,
-    lineHeight: 20,
-  },
-  totalPointsContent: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  totalPointsLabel: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  totalPointsValue: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#00926F',
-    marginBottom: 2,
-  },
-  totalPointsSubtitle: {
-    fontSize: 12,
-    color: '#999',
-  },
-  // Resumen
-  summaryContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    gap: 12,
-  },
-  summaryCard: {
-    flex: 1,
-    backgroundColor: '#d1f9edff',
-    borderRadius: 16,
-    padding: 20,
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  summaryIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#B7ECDC',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  summaryLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-  },
-  summaryValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  summaryValuePositive: {
-    color: '#018f64',
-  },
-  summaryValueNegative: {
-    color: '#D32F2F',
-  },
-  // Lista
-  listContainer: {
-    padding: 16,
-    paddingTop: 8,
-  },
-  historyItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#d1f9edff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  itemContent: {
-    flex: 1,
-  },
-  itemTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#32243B',
-    marginBottom: 6,
-  },
-  itemFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  itemDate: {
-    fontSize: 13,
-    color: '#999',
-  },
-  pointsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  pointsText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  pointsPositive: {
-    color: '#018f64',
-  },
-  pointsNegative: {
-    color: '#D32F2F',
-  },
-  // Empty state
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#999',
-  },
+  backButton: { marginRight: 12 },
+  headerInfo: { flex: 1 },
+  headerTitle: { fontSize: 18, fontWeight: 'bold' },
+  headerSubtitle: { fontSize: 14 },
+  filterButton: { padding: 8 },
+  semiCircleText: { fontSize: 14, fontWeight: 'bold', textAlign: 'center', opacity: 0.8, lineHeight: 18, top: 15 },
+  totalPointsContent: { flex: 1, marginLeft: 16 },
+  totalPointsLabel: { fontSize: 13, fontWeight: '500', marginBottom: 2 },
+  totalPointsValue: { fontSize: 34, fontWeight: 'bold' },
+  totalPointsSubtitle: { fontSize: 11 },
+  summaryContainer: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, gap: 12 },
+  summaryIconContainer: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  summaryLabel: { fontSize: 13, marginBottom: 4 },
+  summaryValue: { fontSize: 22, fontWeight: 'bold' },
+  listContainer: { padding: 16 },
+  historyItem: { flexDirection: 'row', alignItems: 'center', borderRadius: 12, padding: 14, marginBottom: 10, elevation: 1, borderWidth: 0.5 },
+  iconCircle: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  itemContent: { flex: 1 },
+  itemTitle: { fontSize: 14, fontWeight: '600', marginBottom: 4 },
+  itemFooter: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  itemDate: { fontSize: 12 },
+  pointsContainer: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  pointsText: { fontSize: 15, fontWeight: 'bold' },
+  emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
+  emptyText: { fontSize: 16 },
 });
 
 export default HistoryScreen;

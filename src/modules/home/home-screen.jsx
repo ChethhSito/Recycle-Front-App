@@ -10,6 +10,7 @@ import {
     StatItem,
     ProgramCard
 } from '../../componentes/cards/home';
+
 import { NavItem } from '../../componentes/navigation/NavItem';
 import { DrawerMenu } from '../../componentes/navigation/DrawerMenu';
 import { ProgramDetailModal } from '../../componentes/modal/shared/ProgramDetailModal';
@@ -24,7 +25,7 @@ import { useRequestStore } from '../../hooks/use-request-store';
 
 
 export const HomeScreen = () => {
-
+    const { colors } = useTheme();
     const { user } = useAuthStore();
     const { levels, userLevelStatus, startLoadingUserStatus } = useLevels();
     const { programs, startLoadingPrograms, isLoading } = useProgramStore();
@@ -364,7 +365,7 @@ export const HomeScreen = () => {
 const styles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: theme.colors.inputBackground,
+        backgroundColor: theme.colors.background, // 🚀 Usa el fondo del tema
     },
     scrollContent: {
         flex: 1,
@@ -375,16 +376,15 @@ const styles = (theme) => StyleSheet.create({
         paddingBottom: 100, // Espacio para el nav de abajo
     },
     impactSection: {
-        backgroundColor: theme.colors.inputBackground,
+        backgroundColor: theme.colors.background,
         padding: 20,
     },
     sectionTitle: {
         fontSize: 20,
-        fontWeight: 'bold', // O '700'
-        color: '#1F2937',   // Gris muy oscuro o tu verde corporativo
+        fontWeight: 'bold',
+        color: theme.colors.onSurface, // 🎨 Cambia de negro a blanco automáticamente
         marginBottom: 15,
-        textAlign: 'left',  // Alineación izquierda se ve más moderna
-        paddingHorizontal: 20, // Para que no pegue con el borde de la pantalla
+        paddingHorizontal: 20,
     },
     filterContainer: {
         flexDirection: 'row',
@@ -422,8 +422,7 @@ const styles = (theme) => StyleSheet.create({
         justifyContent: 'space-between',
     },
     programsSection: {
-        backgroundColor: '#b1eedc', // Asegúrate que este sea el mismo color
-        paddingTop: 0, // Ya que la nube hace de "padding"
+        backgroundColor: theme.colors.background, // 🚨 Quitamos el #b1eedc fijo
         paddingBottom: 30,
     },
     programsHeader: {
@@ -445,7 +444,7 @@ const styles = (theme) => StyleSheet.create({
         right: 0,
         flexDirection: 'row',
         justifyContent: 'space-around',
-        backgroundColor: theme.colors.background,
+        backgroundColor: theme.colors.greenMain,
         borderTopLeftRadius: 24, // Bordes más redondeados arriba para un look moderno
         borderTopRightRadius: 24,
         paddingVertical: 10,
@@ -492,7 +491,7 @@ const styles = (theme) => StyleSheet.create({
     },
 
     activeTaskBanner: {
-        backgroundColor: '#31253B', // El color oscuro de tu paleta para que resalte
+        backgroundColor: theme.colors.primary, // Usa tu color primario para que resalte
         marginHorizontal: 20,
         marginTop: 10,
         borderRadius: 20,
@@ -500,9 +499,6 @@ const styles = (theme) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         elevation: 4,
-        shadowColor: '#000',
-        shadowOpacity: 0.2,
-        shadowRadius: 5,
     },
     bannerIconCircle: {
         width: 40,

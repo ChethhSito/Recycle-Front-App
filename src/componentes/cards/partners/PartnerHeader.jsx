@@ -14,7 +14,7 @@ export const PartnerHeader = ({ userName, avatarUrl, onMenuPress }) => {
                 {/* Top Bar simplificada */}
                 <View style={styles.topBar}>
                     <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
-                        <Icon name="menu" size={26} color="#000" />
+                        <Icon name="menu" size={26} color="#fff" />
                     </TouchableOpacity>
 
                     <View style={styles.headerInfo}>
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 19,
 
-        color: '#000000',
+        color: '#fff',
     },
     avatarWrapper: {
         borderWidth: 2,

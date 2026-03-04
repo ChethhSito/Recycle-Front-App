@@ -18,7 +18,7 @@ export const CloudHeader = ({ userName, userType, avatarUrl, onMenuPress }) => {
         <View style={styles.headerRow}>
           <View style={styles.userInfoContainer}>
             <TouchableOpacity onPress={onMenuPress}>
-              <Menu color="#000" size={28} />
+              <Menu color="#fff" size={28} />
             </TouchableOpacity>
             <View style={styles.textContainer}>
               <Text style={styles.greeting}> {userName}</Text>
@@ -78,13 +78,13 @@ const styles = StyleSheet.create({
     marginLeft: 25,
   },
   greeting: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
+    fontSize: 18,
+    fontWeight: 'normal',
+    color: '#fff',
   },
   userType: {
-    fontSize: 14,
-    color: '#000',
+    fontSize: 12,
+    color: '#fff',
   },
   avatar: {
     width: 48,

@@ -1,14 +1,17 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, StatusBar, Alert, Platform } from 'react-native';
-import { Text, Button, Avatar, Divider } from 'react-native-paper';
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, StatusBar, Platform } from 'react-native';
+import { Text, Button, Avatar, Divider, useTheme } from 'react-native-paper'; // 🚀 Importamos useTheme
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRequestStore } from '../../hooks/use-request-store';
 import { AwesomeAlert } from '../../componentes/modal/modal';
-import { useState } from 'react';
 
 const { width, height } = Dimensions.get('window');
 
 export const RequestDetailScreen = ({ route, navigation }) => {
+    const theme = useTheme(); // 🎨 Obtenemos el tema (colores, modo oscuro/claro)
+    const { colors, dark } = theme;
+    const componentStyles = getStyles(theme);
+
     const { request } = route.params || {};
     const { startAcceptingRequest, isLoading } = useRequestStore();
 
@@ -51,7 +54,6 @@ export const RequestDetailScreen = ({ route, navigation }) => {
                 hideAlert();
                 const success = await startAcceptingRequest(item.id);
                 if (success) {
-                    // Pequeño timeout para que la primera alerta cierre antes de la de éxito
                     setTimeout(() => {
                         showAlert("¡Excelente!", "Has aceptado el recojo. Revisa tu ruta en el mapa.", "success", () => {
                             hideAlert();
@@ -60,117 +62,114 @@ export const RequestDetailScreen = ({ route, navigation }) => {
                     }, 500);
                 }
             },
-            hideAlert // Acción al cancelar
+            hideAlert
         );
     };
 
     return (
-        <View style={styles.mainContainer}>
-            <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+        <View style={componentStyles.mainContainer}>
+            {/* Barra de estado dinámica: En modo oscuro el texto es claro */}
+            <StatusBar translucent backgroundColor="transparent" barStyle={dark ? "light-content" : "dark-content"} />
 
-            {/* 1. HEADER FLOTANTE (Encima de la imagen) */}
-            <View style={styles.floatingHeader}>
+            {/* 1. HEADER FLOTANTE (Mantiene contraste sobre la imagen) */}
+            <View style={componentStyles.floatingHeader}>
                 <TouchableOpacity
-                    style={styles.backButton}
+                    style={[componentStyles.backButton, { backgroundColor: dark ? 'rgba(0,0,0,0.5)' : 'rgba(49, 37, 59, 0.4)' }]}
                     onPress={() => navigation.goBack()}
                 >
                     <Ionicons name="arrow-back" size={24} color="#FFF" />
                 </TouchableOpacity>
-                <Text style={styles.headerText}>Detalle del Recojo</Text>
+                <Text style={componentStyles.headerText}>Detalle del Recojo</Text>
             </View>
 
             <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
+                style={componentStyles.scrollView}
+                contentContainerStyle={componentStyles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
                 {/* 2. IMAGEN DE PORTADA */}
-                <View style={styles.imageWrapper}>
-                    <Image source={{ uri: item.image }} style={styles.heroImage} resizeMode="cover" />
-                    <View style={styles.distanceBadge}>
+                <View style={componentStyles.imageWrapper}>
+                    <Image source={{ uri: item.image }} style={componentStyles.heroImage} resizeMode="cover" />
+                    <View style={[componentStyles.distanceBadge, { backgroundColor: colors.primary }]}>
                         <Ionicons name="location" size={12} color="#FFF" />
-                        <Text style={styles.distanceText}>{item.distance}</Text>
+                        <Text style={componentStyles.distanceText}>{item.distance}</Text>
                     </View>
                 </View>
 
-                {/* 3. TARJETA DE INFORMACIÓN (OVERLAP) */}
-                <View style={styles.infoCard}>
-                    {/* Sección Usuario */}
-                    <View style={styles.userRow}>
+                {/* 3. TARJETA DE INFORMACIÓN DINÁMICA */}
+                <View style={[componentStyles.infoCard, { backgroundColor: colors.surface }]}>
+                    <View style={componentStyles.userRow}>
                         <Avatar.Text
                             size={44}
                             label={item.user.substring(0, 2).toUpperCase()}
-                            style={styles.avatar}
+                            style={{ backgroundColor: colors.primary }}
                         />
-                        <View style={styles.userTextContainer}>
-                            <Text style={styles.userName}>{item.user}</Text>
-                            <Text style={styles.userStatus}>Ciudadano verificado</Text>
+                        <View style={componentStyles.userTextContainer}>
+                            <Text style={[componentStyles.userName, { color: colors.onSurface }]}>{item.user}</Text>
+                            <Text style={[componentStyles.userStatus, { color: colors.onSurfaceVariant }]}>Ciudadano verificado</Text>
                         </View>
-                        <View style={styles.ratingBadge}>
+                        <View style={[componentStyles.ratingBadge, { backgroundColor: dark ? colors.surfaceVariant : '#FFF9C4' }]}>
                             <Ionicons name="star" size={14} color="#FBC02D" />
-                            <Text style={styles.ratingText}>5.0</Text>
+                            <Text style={[componentStyles.ratingText, { color: dark ? '#FAC96E' : '#856404' }]}>5.0</Text>
                         </View>
                     </View>
 
-                    <Divider style={styles.mainDivider} />
+                    <Divider style={[componentStyles.mainDivider, { backgroundColor: colors.outlineVariant }]} />
 
-                    {/* Título y Stats */}
-                    <Text style={styles.materialTitle}>{item.title}</Text>
+                    <Text style={[componentStyles.materialTitle, { color: colors.onSurface }]}>{item.title}</Text>
 
-                    <View style={styles.statsGrid}>
-                        <View style={styles.statBox}>
-                            <View style={[styles.iconCircle, { backgroundColor: '#E8F5F1' }]}>
-                                <MaterialCommunityIcons name="weight-kilogram" size={20} color="#018f64" />
+                    <View style={componentStyles.statsGrid}>
+                        <View style={[componentStyles.statBox, { backgroundColor: colors.surfaceVariant, borderColor: colors.outlineVariant }]}>
+                            <View style={[componentStyles.iconCircle, { backgroundColor: dark ? colors.primaryContainer : '#E8F5F1' }]}>
+                                <MaterialCommunityIcons name="weight-kilogram" size={20} color={colors.primary} />
                             </View>
-                            <Text style={styles.statLabel}>Cantidad</Text>
-                            <Text style={styles.statValue}>{item.quantity}</Text>
+                            <Text style={[componentStyles.statLabel, { color: colors.onSurfaceVariant }]}>Cantidad</Text>
+                            <Text style={[componentStyles.statValue, { color: colors.onSurface }]}>{item.quantity}</Text>
                         </View>
 
-                        <View style={styles.statBox}>
-                            <View style={[styles.iconCircle, { backgroundColor: '#E3F2FD' }]}>
-                                <MaterialCommunityIcons name="recycle" size={20} color="#1E88E5" />
+                        <View style={[componentStyles.statBox, { backgroundColor: colors.surfaceVariant, borderColor: colors.outlineVariant }]}>
+                            <View style={[componentStyles.iconCircle, { backgroundColor: dark ? colors.secondaryContainer : '#E3F2FD' }]}>
+                                <MaterialCommunityIcons name="recycle" size={20} color={dark ? colors.secondary : '#1E88E5'} />
                             </View>
-                            <Text style={styles.statLabel}>Tipo</Text>
-                            <Text style={styles.statValue}>Reciclable</Text>
+                            <Text style={[componentStyles.statLabel, { color: colors.onSurfaceVariant }]}>Tipo</Text>
+                            <Text style={[componentStyles.statValue, { color: colors.onSurface }]}>Reciclable</Text>
                         </View>
                     </View>
 
-                    {/* Descripción */}
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Descripción</Text>
-                        <Text style={styles.descriptionText}>{item.description}</Text>
+                    <View style={componentStyles.section}>
+                        <Text style={[componentStyles.sectionTitle, { color: colors.onSurface }]}>Descripción</Text>
+                        <Text style={[componentStyles.descriptionText, { color: colors.onSurfaceVariant }]}>{item.description}</Text>
                     </View>
 
-                    {/* Ubicación */}
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Punto de Recojo</Text>
-                        <View style={styles.locationBox}>
-                            <View style={styles.mapIconCircle}>
-                                <Ionicons name="map-outline" size={20} color="#018f64" />
+                    <View style={componentStyles.section}>
+                        <Text style={[componentStyles.sectionTitle, { color: colors.onSurface }]}>Punto de Recojo</Text>
+                        <View style={[componentStyles.locationBox, { backgroundColor: colors.primaryContainer, borderColor: colors.outlineVariant }]}>
+                            <View style={[componentStyles.mapIconCircle, { backgroundColor: colors.surface }]}>
+                                <Ionicons name="map-outline" size={20} color={colors.primary} />
                             </View>
-                            <Text style={styles.addressText} numberOfLines={2}>{item.address}</Text>
+                            <Text style={[componentStyles.addressText, { color: colors.onPrimaryContainer }]} numberOfLines={2}>{item.address}</Text>
                         </View>
                     </View>
                 </View>
 
-                {/* Espacio final para no tapar con el botón */}
                 <View style={{ height: 120 }} />
             </ScrollView>
 
-            {/* 4. FOOTER FIJO CON BOTÓN */}
-            <View style={styles.footer}>
+            {/* 4. FOOTER FIJO */}
+            <View style={[componentStyles.footer, { backgroundColor: colors.surface, borderTopColor: colors.outlineVariant }]}>
                 <Button
                     mode="contained"
                     icon="truck-delivery"
                     onPress={handleAccept}
                     loading={isLoading}
-                    style={styles.acceptButton}
-                    contentStyle={styles.buttonContent}
-                    labelStyle={styles.buttonLabel}
+                    style={componentStyles.acceptButton}
+                    contentStyle={componentStyles.buttonContent}
+                    labelStyle={[componentStyles.buttonLabel, { color: dark ? '#121212' : '#31253B' }]}
                 >
                     Aceptar Solicitud
                 </Button>
             </View>
+
             <AwesomeAlert
                 visible={alertConfig.visible}
                 title={alertConfig.title}
@@ -178,131 +177,44 @@ export const RequestDetailScreen = ({ route, navigation }) => {
                 type={alertConfig.type}
                 onConfirm={alertConfig.onConfirm}
                 onCancel={alertConfig.onCancel}
+                theme={theme} // 🚨 Pasamos el tema a la alerta
             />
         </View>
     );
 };
-const styles = StyleSheet.create({
-    mainContainer: {
-        flex: 1,
-        backgroundColor: '#b1eedc' // Mantenemos el fondo menta de tu marca
-    },
 
-    // Header flotante sobre la imagen
-    floatingHeader: {
-        position: 'absolute',
-        top: 0, left: 0, right: 0,
-        height: 100,
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 40,
-        zIndex: 10,
-    },
-    backButton: {
-        width: 40, height: 40,
-        borderRadius: 12,
-        backgroundColor: 'rgba(49, 37, 59, 0.4)', // Usamos tu color primary con transparencia
-        justifyContent: 'center', alignItems: 'center',
-    },
-    headerText: {
-        marginLeft: 15, fontSize: 18, fontWeight: 'bold', color: '#FFF',
-        textShadowColor: 'rgba(0, 0, 0, 0.3)', textShadowRadius: 4,
-    },
-
-    // Imagen Hero
+// 🎨 ESTILOS DINÁMICOS
+const getStyles = (theme) => StyleSheet.create({
+    mainContainer: { flex: 1, backgroundColor: theme.colors.background },
+    floatingHeader: { position: 'absolute', top: 0, left: 0, right: 0, height: 100, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 40, zIndex: 10 },
+    backButton: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+    headerText: { marginLeft: 15, fontSize: 18, fontWeight: 'bold', color: '#FFF', textShadowColor: 'rgba(0, 0, 0, 0.3)', textShadowRadius: 4 },
     imageWrapper: { width: width, height: height * 0.4 },
     heroImage: { width: '100%', height: '100%' },
-    distanceBadge: {
-        position: 'absolute',
-        bottom: 45, right: 20,
-        backgroundColor: '#018f64', // Tu verde principal
-        flexDirection: 'row', alignItems: 'center',
-        paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12,
-    },
+    distanceBadge: { position: 'absolute', bottom: 45, right: 20, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
     distanceText: { color: '#FFF', fontSize: 12, fontWeight: 'bold', marginLeft: 4 },
-
-    // --- LA TARJETA AHORA ES BLANCA PARA ROMPER EL VERDE ---
-    infoCard: {
-        flex: 1,
-        backgroundColor: '#FFF', // CAMBIO CLAVE: Blanco para resaltar
-        marginTop: -35,
-        borderTopLeftRadius: 35,
-        borderTopRightRadius: 35,
-        paddingHorizontal: 25,
-        paddingTop: 30,
-        elevation: 10,
-        shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10,
-    },
-
+    infoCard: { flex: 1, marginTop: -35, borderTopLeftRadius: 35, borderTopRightRadius: 35, paddingHorizontal: 25, paddingTop: 30, elevation: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 },
     userRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-    avatar: { backgroundColor: '#018f64' },
     userTextContainer: { flex: 1, marginLeft: 12 },
-    userName: { fontSize: 17, fontWeight: 'bold', color: '#31253B' }, // Color Primary
-    userStatus: { fontSize: 13, color: '#5A7A70' }, // Color Placeholder
-
-    ratingBadge: {
-        flexDirection: 'row', alignItems: 'center',
-        backgroundColor: '#FFF9C4', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8
-    },
-    ratingText: { marginLeft: 4, fontWeight: 'bold', color: '#856404', fontSize: 13 },
-
-    mainDivider: { marginBottom: 20, height: 1, backgroundColor: '#F0F0F0' },
-
-    // Stats Grid con colores diferenciados
-    materialTitle: {
-        fontSize: 24, fontWeight: 'bold', color: '#31253B',
-        marginBottom: 20, textTransform: 'capitalize'
-    },
+    userName: { fontSize: 17, fontWeight: 'bold' },
+    userStatus: { fontSize: 13 },
+    ratingBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+    ratingText: { marginLeft: 4, fontWeight: 'bold', fontSize: 13 },
+    mainDivider: { marginBottom: 20, height: 1 },
+    materialTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textTransform: 'capitalize' },
     statsGrid: { flexDirection: 'row', gap: 12, marginBottom: 25 },
-    statBox: {
-        flex: 1,
-        backgroundColor: '#F9FAFB', // Gris ultra suave
-        borderRadius: 20,
-        padding: 15,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#F0F0F0'
-    },
-    iconCircle: {
-        width: 44, height: 44, borderRadius: 14,
-        justifyContent: 'center', alignItems: 'center', marginBottom: 8
-    },
-    statLabel: { fontSize: 12, color: '#5A7A70', marginBottom: 2 },
-    statValue: { fontSize: 15, fontWeight: 'bold', color: '#31253B' },
-
-    // Secciones de información
+    statBox: { flex: 1, borderRadius: 20, padding: 15, alignItems: 'center', borderWidth: 1 },
+    iconCircle: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+    statLabel: { fontSize: 12, marginBottom: 2 },
+    statValue: { fontSize: 15, fontWeight: 'bold' },
     section: { marginBottom: 25 },
-    sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#31253B', marginBottom: 10 },
-    descriptionText: { fontSize: 15, color: '#4B5563', lineHeight: 24 },
-
-    locationBox: {
-        flexDirection: 'row', alignItems: 'center',
-        backgroundColor: '#E8F5F1', // Verde menta muy suave
-        padding: 15, borderRadius: 18,
-        borderWidth: 1, borderColor: 'rgba(1, 143, 100, 0.1)'
-    },
-    mapIconCircle: {
-        width: 36, height: 36, borderRadius: 10,
-        backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', marginRight: 12
-    },
-    addressText: { flex: 1, fontSize: 14, color: '#018f64', fontWeight: '600' },
-
-    // Footer Fijo
-    footer: {
-        position: 'absolute',
-        bottom: 0, left: 0, right: 0,
-        padding: 20,
-        paddingBottom: Platform.OS === 'ios' ? 40 : 25,
-        backgroundColor: '#FFF', // Blanco para separar de la pantalla
-        borderTopWidth: 1, borderTopColor: '#F0F0F0',
-    },
-    acceptButton: {
-        backgroundColor: '#FAC96E', // Tu color amarillo de acción
-        borderRadius: 18,
-        elevation: 4,
-        shadowColor: '#FAC96E', shadowOpacity: 0.3, shadowRadius: 5
-    },
+    sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
+    descriptionText: { fontSize: 15, lineHeight: 24 },
+    locationBox: { flexDirection: 'row', alignItems: 'center', padding: 15, borderRadius: 18, borderWidth: 1 },
+    mapIconCircle: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+    addressText: { flex: 1, fontSize: 14, fontWeight: '600' },
+    footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, paddingBottom: Platform.OS === 'ios' ? 40 : 25, borderTopWidth: 1 },
+    acceptButton: { backgroundColor: '#FAC96E', borderRadius: 18, elevation: 4 },
     buttonContent: { height: 58 },
-    buttonLabel: { fontSize: 18, fontWeight: 'bold', color: '#31253B' }, // Texto oscuro sobre amarillo
+    buttonLabel: { fontSize: 18, fontWeight: 'bold' },
 });

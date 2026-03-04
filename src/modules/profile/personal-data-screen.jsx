@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -13,45 +12,43 @@ import {
   Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, useTheme, ActivityIndicator } from 'react-native-paper'; // 🚀 Paper para temas
 import { ModernInput } from '../../componentes/cards/inputs/ModernInput';
-import { User, Mail, Phone, ArrowLeft, Save } from 'lucide-react-native';
+import { User, Mail, Phone, Save } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../hooks/use-auth-store';
 
-export const PersonalDataScreen = ({ navigation, route }) => {
-  const { user } = useAuthStore();
-  const userName = user.fullName;
-  const userEmail = user.email;
-  const userAvatar = user.avatar;
-  const userPhone = user.phone;
-  const userDni = user.dni;
+export const PersonalDataScreen = ({ navigation }) => {
+  const theme = useTheme(); // 🎨 Obtenemos el tema dinámico
+  const { colors, dark } = theme;
+  const componentStyles = getStyles(theme);
 
+  const { user } = useAuthStore();
+
+  // 📝 Sincronización con los datos reales del store
   const [formData, setFormData] = useState({
-    name: userName,
-    email: userEmail,
-    phone: userPhone,
-    dni: userDni
+    name: user.fullName || '',
+    email: user.email || '',
+    phone: user.phone || '',
+    dni: user.dni || ''
   });
 
-  const [avatarUri, setAvatarUri] = useState(userAvatar);
+  const [avatarUri, setAvatarUri] = useState(user.avatarUrl || user.avatar);
   const [isEditing, setIsEditing] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const pickImage = async () => {
-    // Pedir permisos
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
     if (status !== 'granted') {
-      Alert.alert('Permiso denegado', 'Se necesita permiso para acceder a la galería de fotos');
+      Alert.alert('Permiso denegado', 'Se necesita permiso para acceder a la galería');
       return;
     }
 
-    // Abrir selector de imágenes
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -63,26 +60,17 @@ export const PersonalDataScreen = ({ navigation, route }) => {
   };
 
   const handleSave = () => {
-    // Validación básica
     if (!formData.name || !formData.email) {
-      Alert.alert('Error', 'Por favor completa todos los campos requeridos');
+      Alert.alert('Error', 'Por favor completa los campos requeridos');
       return;
     }
-
-    // Mostrar modal de confirmación
     setShowSaveModal(true);
   };
 
   const confirmSave = () => {
-    // Cerrar modal de confirmación
     setShowSaveModal(false);
-
-    // Aquí iría la lógica para guardar en el backend
-
-    // Mostrar modal de éxito
+    // 🛠️ Aquí integrarías startUpdatingProfile de tu store
     setShowSuccessModal(true);
-
-    // Cerrar el modal de éxito y salir del modo edición después de 2 segundos
     setTimeout(() => {
       setShowSuccessModal(false);
       setIsEditing(false);
@@ -90,31 +78,30 @@ export const PersonalDataScreen = ({ navigation, route }) => {
   };
 
   const updateField = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <StatusBar barStyle="light-content" backgroundColor="#00926F" />
+    <SafeAreaView style={componentStyles.container} edges={['left', 'right', 'bottom']}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        {/* Header */}
-        <View style={styles.header}>
+        {/* Header Dinámico */}
+        <View style={[componentStyles.header, { backgroundColor: colors.greenMain }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Icon name="chevron-left" size={28} color="#FFFFFF" />
           </TouchableOpacity>
           <View style={styles.headerInfo}>
-            <Text style={styles.headerTitle}>Datos Personales</Text>
-            <Text style={styles.headerSubtitle}>{isEditing ? 'Modo edición' : 'Ver información'}</Text>
+            <Text style={[styles.headerTitle, { color: '#FFF' }]}>Datos Personales</Text>
+            <Text style={[styles.headerSubtitle, { color: 'rgba(255,255,255,0.8)' }]}>
+              {isEditing ? 'Modo edición' : 'Ver información'}
+            </Text>
           </View>
           <TouchableOpacity
             onPress={() => setIsEditing(!isEditing)}
-            style={styles.headerEditButton}
+            style={[styles.headerEditButton, { backgroundColor: dark ? colors.surfaceVariant : 'rgba(255,255,255,0.2)' }]}
           >
             <Text style={styles.editButtonText}>
               {isEditing ? 'Cancelar' : 'Editar'}
@@ -127,21 +114,21 @@ export const PersonalDataScreen = ({ navigation, route }) => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {/* Avatar Section */}
+          {/* Avatar Section con Borde Dinámico */}
           <View style={styles.avatarSection}>
             <Image
               source={{ uri: avatarUri }}
-              style={styles.avatarCircle}
+              style={[styles.avatarCircle, { borderColor: colors.surface, backgroundColor: colors.surfaceVariant }]}
             />
             {isEditing && (
               <TouchableOpacity style={styles.changePhotoButton} onPress={pickImage}>
-                <Text style={styles.changePhotoText}>Cambiar Foto</Text>
+                <Text style={[styles.changePhotoText, { color: colors.primary }]}>Cambiar Foto</Text>
               </TouchableOpacity>
             )}
           </View>
 
-          {/* Formulario */}
-          <View style={styles.formContainer}>
+          {/* Formulario Adaptable */}
+          <View style={[componentStyles.formContainer, { backgroundColor: colors.surface }]}>
             <ModernInput
               label="Nombre Completo"
               value={formData.name}
@@ -149,6 +136,7 @@ export const PersonalDataScreen = ({ navigation, route }) => {
               placeholder="Ingresa tu nombre completo"
               icon={User}
               editable={isEditing}
+              theme={theme} // 🚨 Pasamos el tema al componente hijo
             />
 
             <ModernInput
@@ -157,9 +145,9 @@ export const PersonalDataScreen = ({ navigation, route }) => {
               onChangeText={(value) => updateField('email', value)}
               placeholder="tucorreo@email.com"
               keyboardType="email-address"
-              autoCapitalize="none"
               icon={Mail}
               editable={isEditing}
+              theme={theme}
             />
 
             <ModernInput
@@ -170,27 +158,25 @@ export const PersonalDataScreen = ({ navigation, route }) => {
               keyboardType="phone-pad"
               icon={Phone}
               editable={isEditing}
+              theme={theme}
             />
 
             <ModernInput
               label="DNI"
               value={formData.dni}
-              onChangeText={(value) => updateField('dni', value)}
               placeholder="12345678"
               keyboardType="numeric"
-              editable={false}
+              editable={false} // 💡 DNI bloqueado según tu lógica
+              theme={theme}
             />
 
-            {/* Información adicional */}
-            <View style={styles.infoBox}>
-              <Text style={styles.infoText}>
-                💡 Tu DNI no puede ser modificado. Si necesitas cambiarlo,
-                contacta con soporte.
+            <View style={[componentStyles.infoBox, { backgroundColor: dark ? colors.primaryContainer : '#E8F5F1', borderLeftColor: colors.primary }]}>
+              <Text style={[styles.infoText, { color: colors.onSurfaceVariant }]}>
+                💡 Tu DNI no puede ser modificado. Si necesitas cambiarlo, contacta con soporte.
               </Text>
             </View>
           </View>
 
-          {/* Botón de Guardar */}
           {isEditing && (
             <TouchableOpacity
               onPress={handleSave}
@@ -198,7 +184,7 @@ export const PersonalDataScreen = ({ navigation, route }) => {
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={['#00926F', '#00C7A1']}
+                colors={dark ? [colors.primary, colors.primary] : ['#00926F', '#00C7A1']}
                 style={styles.saveButton}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -209,60 +195,47 @@ export const PersonalDataScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           )}
 
-          {/* Espaciado inferior */}
           <View style={{ height: 40 }} />
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Modal de Confirmación */}
-      <Modal
-        transparent
-        visible={showSaveModal}
-        animationType="fade"
-        onRequestClose={() => setShowSaveModal(false)}
-      >
+      {/* Modales de Confirmación y Éxito Dinámicos */}
+      <Modal transparent visible={showSaveModal} animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalIcon}>
-              <Icon name="help-circle" size={60} color="#00926F" />
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+            <View style={[styles.modalIcon, { backgroundColor: colors.primaryContainer }]}>
+              <Icon name="help-circle" size={60} color={colors.primary} />
             </View>
-            <Text style={styles.modalTitle}>¿Guardar cambios?</Text>
-            <Text style={styles.modalMessage}>
+            <Text style={[styles.modalTitle, { color: colors.onSurface }]}>¿Guardar cambios?</Text>
+            <Text style={[styles.modalMessage, { color: colors.onSurfaceVariant }]}>
               ¿Estás seguro de que deseas guardar estos cambios en tu perfil?
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
+                style={[styles.modalButton, { backgroundColor: colors.surfaceVariant }]}
                 onPress={() => setShowSaveModal(false)}
-                activeOpacity={0.8}
               >
-                <Text style={styles.cancelButtonText}>Cancelar</Text>
+                <Text style={{ color: colors.onSurface }}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, styles.confirmButton]}
+                style={[styles.modalButton, { backgroundColor: colors.primary }]}
                 onPress={confirmSave}
-                activeOpacity={0.8}
               >
-                <Text style={styles.confirmButtonText}>Guardar</Text>
+                <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Guardar</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
 
-      {/* Modal de Éxito */}
-      <Modal
-        transparent
-        visible={showSuccessModal}
-        animationType="fade"
-      >
+      <Modal transparent visible={showSuccessModal} animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={[styles.modalIcon, { backgroundColor: '#E8F5E9' }]}>
-              <Icon name="check-circle" size={60} color="#00926F" />
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+            <View style={[styles.modalIcon, { backgroundColor: dark ? 'rgba(76, 175, 80, 0.2)' : '#E8F5E9' }]}>
+              <Icon name="check-circle" size={60} color={dark ? '#81C784' : "#00926F"} />
             </View>
-            <Text style={styles.modalTitle}>¡Éxito!</Text>
-            <Text style={styles.modalMessage}>
+            <Text style={[styles.modalTitle, { color: colors.onSurface }]}>¡Éxito!</Text>
+            <Text style={[styles.modalMessage, { color: colors.onSurfaceVariant }]}>
               Tus datos han sido actualizados correctamente
             </Text>
           </View>
@@ -272,200 +245,40 @@ export const PersonalDataScreen = ({ navigation, route }) => {
   );
 };
 
+// 🎨 ARQUITECTURA DE ESTILOS BASADA EN EL TEMA
+const getStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  header: { paddingHorizontal: 20, paddingTop: 44, paddingBottom: 16, flexDirection: 'row', alignItems: 'center' },
+  formContainer: { marginHorizontal: 0, borderRadius: 16, padding: 20, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
+  infoBox: { borderRadius: 12, padding: 16, marginTop: 8, borderLeftWidth: 4 },
+});
+
+// Estilos estáticos
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#B7ECDC',
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  // Header
-  header: {
-    backgroundColor: '#00926F',
-    paddingHorizontal: 20,
-    paddingTop: 44,
-    paddingBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backButton: {
-    marginRight: 12,
-  },
-  headerInfo: {
-    flex: 1,
-  },
-  headerTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  headerSubtitle: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
-  },
-  headerEditButton: {
-    backgroundColor: '#00C49A',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  editButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  // Contenido
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 20,
-  },
-  // Avatar
-  avatarSection: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  avatarCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#eee',
-    borderWidth: 4,
-    borderColor: '#FFFFFF',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  changePhotoButton: {
-    marginTop: 12,
-  },
-  changePhotoText: {
-    fontSize: 14,
-    color: '#018f64',
-    fontWeight: '600',
-  },
-  // Formulario
-  formContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  infoBox: {
-    backgroundColor: '#B7ECDC',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#018f64',
-  },
-  infoText: {
-    fontSize: 13,
-    color: '#32243B',
-    lineHeight: 20,
-  },
-  // Botón Guardar
-  saveButtonWrapper: {
-    marginTop: 24,
-    borderRadius: 14,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    gap: 8,
-  },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  // Modales
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
-    width: '85%',
-    maxWidth: 400,
-    alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  modalIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#B7ECDC',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#32243B',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  modalMessage: {
-    fontSize: 15,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 24,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#F5F5F5',
-  },
-  confirmButton: {
-    backgroundColor: '#00926F',
-  },
-  cancelButtonText: {
-    color: '#666',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  confirmButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
+  keyboardView: { flex: 1 },
+  backButton: { marginRight: 12 },
+  headerInfo: { flex: 1 },
+  headerTitle: { fontSize: 18, fontWeight: 'bold' },
+  headerSubtitle: { fontSize: 14 },
+  headerEditButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  editButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: 'bold' },
+  scrollView: { flex: 1 },
+  scrollContent: { padding: 20 },
+  avatarSection: { alignItems: 'center', marginBottom: 32 },
+  avatarCircle: { width: 100, height: 100, borderRadius: 50, borderWidth: 4, elevation: 4 },
+  changePhotoButton: { marginTop: 12 },
+  changePhotoText: { fontSize: 14, fontWeight: '600' },
+  infoText: { fontSize: 13, lineHeight: 20 },
+  saveButtonWrapper: { marginTop: 24, borderRadius: 14, overflow: 'hidden', elevation: 4 },
+  saveButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, paddingHorizontal: 32, gap: 8 },
+  saveButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', alignItems: 'center' },
+  modalContent: { borderRadius: 20, padding: 24, width: '85%', maxWidth: 400, alignItems: 'center', elevation: 8 },
+  modalIcon: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  modalTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' },
+  modalMessage: { fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 24 },
+  modalButtons: { flexDirection: 'row', gap: 12, width: '100%' },
+  modalButton: { flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
 });
 
 export default PersonalDataScreen;

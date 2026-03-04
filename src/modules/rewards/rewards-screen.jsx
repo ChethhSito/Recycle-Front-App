@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert, ActivityIndicator, Dimensions } from 'react-native';
-import { Text } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert, Dimensions } from 'react-native';
+import { Text, useTheme, ActivityIndicator } from 'react-native-paper'; // 🚀 Importación corregida
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { RewardHeader } from '../../componentes/cards/rewards/RewardHeader';
@@ -15,6 +15,10 @@ const { width } = Dimensions.get('window');
 
 export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     const navigation = useNavigation();
+    const theme = useTheme(); // 🎨 Obtenemos el tema dinámico
+    const { colors, dark } = theme;
+    const componentStyles = getStyles(theme);
+
     const { user } = useAuthStore();
     const { rewards, isLoading, startLoadingRewards } = useRewardsStore();
 
@@ -24,7 +28,8 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     const [detailModalVisible, setDetailModalVisible] = useState(false);
     const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
-    const userPoints = user?.points || 0;
+    // 💰 Puntos del usuario desde el store centralizado
+    const userPoints = user?.current_points || 0;
 
     const categories = [
         { id: 'all', label: 'Todos', icon: 'gift-outline' },
@@ -73,44 +78,57 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={componentStyles.container}>
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#018f64']} />
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        colors={[colors.primary]} // ♻️ Color dinámico
+                    />
                 }
             >
-                {/* Header */}
+                {/* Header Dinámico */}
                 <RewardHeader
                     userName={user?.fullName || 'Usuario'}
-                    avatarUrl={user?.avatar || 'https://i.pravatar.cc/150?img=33'}
+                    avatarUrl={user?.avatarUrl}
                     userPoints={userPoints}
                     onMenuPress={onOpenDrawer}
+                    theme={theme}
                 />
 
-                {/* Sección de Categorías (Chips) */}
-                <View style={styles.filtersSection}>
-                    <Text style={styles.sectionTitle}>Explorar categorías</Text>
+                {/* Filtros de Categoría Dinámicos */}
+                <View style={componentStyles.filtersSection}>
+                    <Text style={[componentStyles.sectionTitle, { color: colors.onSurface }]}>
+                        Explorar categorías
+                    </Text>
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.categoriesContainer}
+                        contentContainerStyle={componentStyles.categoriesContainer}
                     >
                         {categories.map((category) => {
                             const isActive = selectedCategory === category.id;
                             return (
                                 <TouchableOpacity
                                     key={category.id}
-                                    style={[styles.categoryChip, isActive && styles.categoryChipActive]}
+                                    style={[
+                                        componentStyles.categoryChip,
+                                        isActive && componentStyles.categoryChipActive
+                                    ]}
                                     onPress={() => setSelectedCategory(category.id)}
                                     activeOpacity={0.8}
                                 >
                                     <Icon
                                         name={category.icon}
                                         size={18}
-                                        color={isActive ? '#FFF' : '#444'}
+                                        color={isActive ? '#FFF' : colors.onSurfaceVariant}
                                     />
-                                    <Text style={[styles.categoryText, isActive && styles.categoryTextActive]}>
+                                    <Text style={[
+                                        componentStyles.categoryText,
+                                        { color: isActive ? '#FFF' : colors.onSurfaceVariant }
+                                    ]}>
                                         {category.label}
                                     </Text>
                                 </TouchableOpacity>
@@ -119,14 +137,16 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                     </ScrollView>
                 </View>
 
-                {/* Lista de Premios */}
+                {/* Grid de Recompensas */}
                 {isLoading && !refreshing ? (
-                    <View style={styles.loaderContainer}>
-                        <ActivityIndicator size="large" color="#018f64" />
-                        <Text style={styles.loaderText}>Buscando recompensas...</Text>
+                    <View style={componentStyles.loaderContainer}>
+                        <ActivityIndicator size="large" color={colors.primary} />
+                        <Text style={[componentStyles.loaderText, { color: colors.primary }]}>
+                            Buscando recompensas...
+                        </Text>
                     </View>
                 ) : (
-                    <View style={styles.rewardsGrid}>
+                    <View style={componentStyles.rewardsGrid}>
                         {filteredRewards.map((reward) => {
                             const imageSource = reward.imageUrl
                                 ? { uri: reward.imageUrl }
@@ -135,18 +155,20 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                             const rewardWithImage = { ...reward, image: imageSource };
 
                             return (
-                                <View key={reward._id} style={styles.rewardCardWrapper}>
+                                <View key={reward._id} style={componentStyles.rewardCardWrapper}>
                                     {reward.isPartner ? (
                                         <PartnerRewardCard
                                             reward={rewardWithImage}
                                             userPoints={userPoints}
                                             onPress={() => handleRewardPress(rewardWithImage)}
+                                            theme={theme} // 🚨 Inyectamos tema
                                         />
                                     ) : (
                                         <RewardCard
                                             reward={rewardWithImage}
                                             userPoints={userPoints}
                                             onPress={() => handleRewardPress(rewardWithImage)}
+                                            theme={theme} // 🚨 Inyectamos tema
                                         />
                                     )}
                                 </View>
@@ -155,17 +177,17 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                     </View>
                 )}
 
-                {/* Estado Vacío */}
+                {/* Estado Vacío Dinámico */}
                 {!isLoading && filteredRewards.length === 0 && (
-                    <View style={styles.emptyState}>
-                        <Icon name="gift-off-outline" size={64} color="rgba(0,0,0,0.15)" />
-                        <Text style={styles.emptyStateText}>
+                    <View style={componentStyles.emptyState}>
+                        <Icon name="gift-off-outline" size={64} color={colors.outlineVariant} />
+                        <Text style={[componentStyles.emptyStateText, { color: colors.onSurfaceVariant }]}>
                             No hay premios disponibles en esta categoría por ahora.
                         </Text>
                     </View>
                 )}
 
-                <View style={styles.bottomSpacing} />
+                <View style={componentStyles.bottomSpacing} />
             </ScrollView>
 
             <RewardDetailModal
@@ -174,6 +196,7 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                 userPoints={userPoints}
                 onClose={() => setDetailModalVisible(false)}
                 onRedeem={handleRedeemFromDetail}
+                theme={theme} // 🚨 Sincronización con el modal
             />
 
             <RedeemConfirmModal
@@ -182,17 +205,18 @@ export const RewardsScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                 userPoints={userPoints}
                 onClose={() => setConfirmModalVisible(false)}
                 onConfirm={handleConfirmRedeem}
+                theme={theme} // 🚨 Sincronización con el modal
             />
         </View>
     );
 };
 
-const styles = StyleSheet.create({
+// 🎨 ARQUITECTURA DE ESTILOS BASADA EN EL TEMA
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#b1eedc', // Mantenemos el fondo menta de la marca
+        backgroundColor: theme.colors.background,
     },
-    // --- FILTROS ---
     filtersSection: {
         marginTop: 20,
         marginBottom: 10,
@@ -200,7 +224,6 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#0D3E32',
         marginLeft: 20,
         marginBottom: 12,
     },
@@ -215,31 +238,21 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 10,
         borderRadius: 25,
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        backgroundColor: theme.colors.surface, // Cambia de blanco a gris oscuro
         gap: 6,
         borderWidth: 1,
-        borderColor: '#FFF',
+        borderColor: theme.colors.outlineVariant,
         elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
     },
     categoryChipActive: {
-        backgroundColor: '#018f64',
-        borderColor: '#018f64',
+        backgroundColor: theme.colors.primary,
+        borderColor: theme.colors.primary,
         elevation: 4,
-        shadowOpacity: 0.2,
     },
     categoryText: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#333',
     },
-    categoryTextActive: {
-        color: '#FFF',
-    },
-    // --- GRID ---
     rewardsGrid: {
         paddingHorizontal: 16,
         flexDirection: 'row',
@@ -247,17 +260,15 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     rewardCardWrapper: {
-        width: '100%', // Se puede cambiar a '48%' si prefieres 2 columnas
+        width: '100%',
         marginBottom: 16,
     },
-    // --- ESTADOS ---
     loaderContainer: {
         padding: 60,
         alignItems: 'center',
     },
     loaderText: {
         marginTop: 12,
-        color: '#018f64',
         fontWeight: '600',
     },
     emptyState: {
@@ -267,7 +278,6 @@ const styles = StyleSheet.create({
     },
     emptyStateText: {
         fontSize: 15,
-        color: 'rgba(0,0,0,0.5)',
         textAlign: 'center',
         marginTop: 16,
         lineHeight: 22,

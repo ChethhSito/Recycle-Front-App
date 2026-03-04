@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated, Dimensions, Image, ScrollView } from 'react-native';
+import { useTheme } from 'react-native-paper'; // 🚀 IMPORTACIÓN CORREGIDA AQUÍ
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LogOut } from 'lucide-react-native';
@@ -11,40 +12,31 @@ const { width } = Dimensions.get('window');
 const DRAWER_WIDTH = width * 0.75;
 
 // Modal de Confirmación de Cierre de Sesión (Se mantiene igual)
-const LogoutModal = ({ visible, onClose, onConfirm }) => {
+const LogoutModal = ({ visible, onClose, onConfirm, theme }) => {
+    const { colors } = theme;
     return (
-        <Modal
-            animationType="fade"
-            transparent={true}
-            visible={visible}
-            onRequestClose={onClose}
-        >
+        <Modal animationType="fade" transparent={true} visible={visible} onRequestClose={onClose}>
             <View style={styles.logoutModalOverlay}>
-                <View style={styles.logoutModalContent}>
+                <View style={[styles.logoutModalContent, { backgroundColor: colors.surface }]}>
                     <View style={styles.logoutModalIconContainer}>
-                        <LogOut color="#D32F2F" size={40} />
+                        <LogOut color={colors.error} size={40} />
                     </View>
-
-                    <Text style={styles.logoutModalTitle}>Cerrar Sesión</Text>
-                    <Text style={styles.logoutModalMessage}>
+                    <Text style={[styles.logoutModalTitle, { color: colors.onSurface }]}>Cerrar Sesión</Text>
+                    <Text style={[styles.logoutModalMessage, { color: colors.onSurfaceVariant }]}>
                         ¿Estás seguro que deseas cerrar sesión?
                     </Text>
-
                     <View style={styles.logoutModalButtons}>
                         <TouchableOpacity
-                            style={[styles.logoutModalButton, styles.logoutCancelButton]}
+                            style={[styles.logoutModalButton, { backgroundColor: colors.surfaceVariant }]}
                             onPress={onClose}
-                            activeOpacity={0.8}
                         >
-                            <Text style={styles.logoutCancelButtonText}>Cancelar</Text>
+                            <Text style={{ color: colors.onSurface }}>Cancelar</Text>
                         </TouchableOpacity>
-
                         <TouchableOpacity
-                            style={[styles.logoutModalButton, styles.logoutConfirmButton]}
+                            style={[styles.logoutModalButton, { backgroundColor: colors.error }]}
                             onPress={onConfirm}
-                            activeOpacity={0.8}
                         >
-                            <Text style={styles.logoutConfirmButtonText}>Cerrar Sesión</Text>
+                            <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Cerrar Sesión</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -55,10 +47,14 @@ const LogoutModal = ({ visible, onClose, onConfirm }) => {
 
 export const DrawerMenu = ({ visible, onClose }) => {
     const navigation = useNavigation();
-
+    const theme = useTheme(); // 🎨 Obtenemos el tema
     // 2. EXTRAER startLogout DEL HOOK
+    const { colors, dark } = theme;
+    const componentStyles = getStyles(theme); // 🛠️ Pasamos el tema a los estilos
     const { startLogout, user } = useAuthStore();
     const { requests } = useRequestStore();
+    const textColor = dark ? colors.onSurface : '#FFFFFF';
+    const iconColor = dark ? colors.primary : '#FFFFFF';
     const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
     const [logoutModalVisible, setLogoutModalVisible] = useState(false);
     const activeTask = user.role === 'RECYCLER'
@@ -135,393 +131,111 @@ export const DrawerMenu = ({ visible, onClose }) => {
     ];
 
     return (
-        <Modal
-            visible={visible}
-            transparent
-            animationType="none"
-            onRequestClose={onClose}
-        >
+        <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
             <View style={styles.modalContainer}>
-                {/* Overlay oscuro */}
-                <TouchableOpacity
-                    style={styles.overlay}
-                    activeOpacity={1}
-                    onPress={onClose}
-                />
+                <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose} />
 
-                {/* Drawer */}
-                <Animated.View
-                    style={[
-                        styles.drawer,
-                        { transform: [{ translateX: slideAnim }] }
-                    ]}
-                >
-                    <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-                        {/* Header del Drawer */}
-                        <View style={styles.drawerHeader}>
-                            <Image
-                                source={{ uri: user.avatar }}
-                                style={styles.avatar}
-                            />
+                <Animated.View style={[componentStyles.drawer, { transform: [{ translateX: slideAnim }] }]}>
+                    <ScrollView showsVerticalScrollIndicator={false}>
+
+                        {/* HEADER: Texto Blanco sobre el verde de Nos Planét */}
+                        <View style={componentStyles.drawerHeader}>
+                            <Image source={{ uri: user.avatar }} style={styles.avatar} />
                             <View style={styles.userInfo}>
-                                <Text style={styles.userName}>{user.fullName}</Text>
-                                <Text style={styles.userEmail}>{user.email}</Text>
-                                <View style={styles.pointsBadge}>
-                                    <Text style={styles.pointsText}>{user.points} puntos</Text>
+                                <Text style={[styles.userName, { color: textColor }]}>{user.fullName}</Text>
+                                <Text style={[styles.userEmail, { color: dark ? colors.onSurfaceVariant : 'rgba(255,255,255,0.7)' }]}>
+                                    {user.email}
+                                </Text>
+                                <View style={[styles.pointsBadge, { backgroundColor: dark ? colors.primaryContainer : 'rgba(255,255,255,0.2)' }]}>
+                                    <Text style={{ color: textColor, fontWeight: 'bold' }}>{user.points} puntos</Text>
                                 </View>
                             </View>
                         </View>
 
-                        {activeTask && (
-                            <View style={styles.activeTaskSection}>
-                                <Text style={styles.activeTaskSectionTitle}>Tarea en curso</Text>
-                                <TouchableOpacity
-                                    style={styles.activeTaskItem}
-                                    onPress={() => {
-                                        navigation.navigate('RecyclerTaskDetail', { request: activeTask });
-                                        onClose();
-                                    }}
-                                >
-                                    <View style={styles.activeTaskIcon}>
-                                        <Icon name="truck-delivery" size={22} color="#018f64" />
-                                    </View>
-                                    <Text style={styles.activeTaskLabel} numberOfLines={1}>
-                                        {activeTask.location?.address || 'Ver detalles del recojo'}
-                                    </Text>
-                                    <View style={styles.activeDot} />
-                                </TouchableOpacity>
-                            </View>
-                        )}
-
-                        {/* Secciones del Menú */}
-                        {menuSections.map((section, sectionIndex) => (
-                            <View key={sectionIndex} style={styles.menuSection}>
-                                <Text style={styles.sectionTitle}>{section.title}</Text>
-                                {section.items.map((item, itemIndex) => (
-                                    <TouchableOpacity
-                                        key={itemIndex}
-                                        style={[
-                                            styles.menuItem,
-                                            item.highlight && styles.menuItemHighlight
-                                        ]}
-                                        onPress={() => {
-                                            item.onPress();
-                                            onClose();
-                                        }}
-                                    >
+                        {/* SECCIONES: Iconos y Textos dinámicos */}
+                        {menuSections.map((section, idx) => (
+                            <View key={idx} style={styles.menuSection}>
+                                <Text style={[styles.sectionTitle, { color: dark ? colors.primary : 'rgba(255,255,255,0.6)' }]}>
+                                    {section.title}
+                                </Text>
+                                {section.items.map((item, i) => (
+                                    <TouchableOpacity key={i} style={styles.menuItem} onPress={() => { item.onPress(); onClose(); }}>
                                         <Icon
                                             name={item.icon}
-                                            size={20}
-                                            color={item.highlight ? '#000' : '#000'}
+                                            size={22}
+                                            color={item.highlight ? (dark ? colors.primary : '#FAC96E') : textColor}
                                         />
-                                        <Text style={[
-                                            styles.menuItemText,
-                                            item.highlight && styles.menuItemTextHighlight
-                                        ]}>
+                                        <Text style={[styles.menuItemText, { color: textColor, fontWeight: item.highlight ? 'bold' : '400' }]}>
                                             {item.label}
                                         </Text>
-                                        {item.highlight && (
-                                            <View style={styles.newBadge}>
-                                                <Text style={styles.newBadgeText}>Nuevo</Text>
-                                            </View>
-                                        )}
                                     </TouchableOpacity>
                                 ))}
                             </View>
                         ))}
 
-                        {/* Footer */}
                         <View style={styles.footer}>
-                            <Text style={styles.versionText}>Recycle App v1.0.0</Text>
-
                             <TouchableOpacity
-                                style={styles.logoutButton}
-                                onPress={handleLogoutPress}
-                                activeOpacity={0.8}
+                                style={[styles.logoutButton, { borderColor: textColor }]}
+                                onPress={() => setLogoutModalVisible(true)}
                             >
-                                <Icon name="logout" size={20} color="#000" />
-                                <Text style={styles.logoutText}>Cerrar Sesión</Text>
-
+                                <Icon name="logout" size={20} color={textColor} />
+                                <Text style={[styles.logoutText, { color: textColor }]}>Cerrar Sesión</Text>
                             </TouchableOpacity>
                         </View>
                     </ScrollView>
 
-                    {/* Modal de Confirmación de Logout */}
-                    <LogoutModal
-                        visible={logoutModalVisible}
-                        onClose={() => setLogoutModalVisible(false)}
-                        onConfirm={confirmLogout}
-                    />
+                    <LogoutModal visible={logoutModalVisible} onClose={() => setLogoutModalVisible(false)} onConfirm={confirmLogout} theme={theme} />
                 </Animated.View>
             </View>
         </Modal>
     );
 };
 
-const styles = StyleSheet.create({
-
-    activeTaskSection: {
-        marginTop: 10,
-        paddingHorizontal: 20,
-    },
-    activeTaskSectionTitle: {
-        fontSize: 11,
-        color: 'rgba(0,0,0,0.5)',
-        textTransform: 'uppercase',
-        fontWeight: 'bold',
-        marginBottom: 8,
-        letterSpacing: 1
-    },
-    activeTaskItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#FFFFFF', // Fondo blanco para que resalte sobre el verde del drawer
-        padding: 12,
-        borderRadius: 15,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-    },
-    activeTaskIcon: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: '#E8F5F1',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 12,
-    },
-    activeTaskLabel: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#018f64',
-        flex: 1,
-    },
-    activeDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#F59E0B', // Ambar para indicar "en proceso"
-        marginLeft: 5,
-    },
-    modalContainer: {
-        flex: 1,
-        flexDirection: 'row',
-    },
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    },
+const getStyles = (theme) => StyleSheet.create({
     drawer: {
         position: 'absolute',
-        left: 0,
-        top: 0,
-        bottom: 0,
+        left: 0, top: 0, bottom: 0,
         width: DRAWER_WIDTH,
-        backgroundColor: '#018f64',
-        shadowColor: '#000',
-        shadowOffset: { width: 4, height: 0 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-        elevation: 8,
-    },
-    scrollView: {
-        flex: 1,
+        // 🚀 Si es oscuro usa el surface de Paper, si es claro usa tu verde principal
+        backgroundColor: theme.dark ? theme.colors.background : theme.colors.greenMain,
+        elevation: 16,
     },
     drawerHeader: {
-        backgroundColor: '#018f64',
-        paddingTop: 30,
+        paddingTop: 50,
         paddingHorizontal: 20,
         paddingBottom: 20,
+        borderBottomWidth: 0.5,
+        borderBottomColor: theme.dark ? theme.colors.outlineVariant : 'rgba(255,255,255,0.2)',
         flexDirection: 'row',
         alignItems: 'center',
     },
-    avatar: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: '#eee',
-        marginRight: 15,
-    },
-    userInfo: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-    userName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#000',
-        marginBottom: 2,
-    },
-    userEmail: {
-        fontSize: 12,
-        color: '#000',
-        marginBottom: 8,
-    },
-    pointsBadge: {
-        backgroundColor: '#B7ECDC',
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 12,
-        alignSelf: 'flex-start',
-    },
-    pointsText: {
-        fontSize: 12,
-        color: '#000',
-        fontWeight: '600',
-    },
-    menuSection: {
-        marginTop: 20,
-        paddingHorizontal: 20,
-    },
-    sectionTitle: {
-        fontSize: 12,
-        color: '#000',
-        marginBottom: 10,
+});
 
-    },
-    menuItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 12,
-    },
-    menuItemHighlight: {
-        backgroundColor: 'rgba(1, 143, 100, 0.1)',
-        paddingHorizontal: 12,
-        borderRadius: 8,
-        marginVertical: 4,
-    },
-    menuItemText: {
-        fontSize: 15,
-        color: '#000',
-        marginLeft: 15,
-        flex: 1,
-    },
-    menuItemTextHighlight: {
-        color: '#000',
-        fontWeight: '600',
-    },
-    newBadge: {
-        backgroundColor: '#F59E0B',
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 10,
-    },
-    newBadgeText: {
-        fontSize: 10,
-        color: '#FFF',
-        fontWeight: 'bold',
-    },
-    footer: {
-        marginTop: 30,
-        paddingHorizontal: 20,
-        paddingBottom: 40,
-        alignItems: 'center',
-    },
-    versionText: {
-        fontSize: 14,
-        color: '#FFFFFF',
-        marginBottom: 15,
-    },
-    logoutButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'transparent',
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderRadius: 8,
-        width: '100%',
-        justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: '#000',
-    },
-    logoutText: {
-        fontSize: 14,
-        color: '#000',
-        fontWeight: '600',
-        marginLeft: 8,
-    },
-    logoutModalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    logoutModalContent: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 24,
-        padding: 28,
-        width: '100%',
-        maxWidth: 340,
-        alignItems: 'center',
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-    },
-    logoutModalIconContainer: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: '#FFEBEE',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
-        shadowColor: '#D32F2F',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 4,
-    },
-    logoutModalTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#32243B',
-        marginBottom: 10,
-    },
-    logoutModalMessage: {
-        fontSize: 15,
-        color: '#666',
-        textAlign: 'center',
-        marginBottom: 28,
-        lineHeight: 22,
-    },
-    logoutModalButtons: {
-        flexDirection: 'row',
-        gap: 12,
-        width: '100%',
-    },
-    logoutModalButton: {
-        flex: 1,
-        paddingVertical: 16,
-        borderRadius: 14,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    logoutCancelButton: {
-        backgroundColor: '#F3F4F6',
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-    },
-    logoutConfirmButton: {
-        backgroundColor: '#D32F2F',
-    },
-    logoutCancelButtonText: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#32243B',
-    },
-    logoutConfirmButtonText: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#FFFFFF',
-    },
+// Estilos estáticos que no dependen del color (Layout)
+const styles = StyleSheet.create({
+    modalContainer: { flex: 1, flexDirection: 'row' },
+    overlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)' },
+    avatar: { width: 70, height: 70, borderRadius: 35, marginRight: 15 },
+    userInfo: { flex: 1 },
+    userName: { fontSize: 16, fontWeight: 'bold' },
+    userEmail: { fontSize: 12 },
+    pointsBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, alignSelf: 'flex-start', marginTop: 5 },
+    menuSection: { marginTop: 20, paddingHorizontal: 20 },
+    sectionTitle: { fontSize: 12, fontWeight: 'bold', marginBottom: 10, textTransform: 'uppercase' },
+    menuItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },
+    menuItemText: { fontSize: 15, marginLeft: 15 },
+    activeTaskSection: { marginTop: 15, paddingHorizontal: 20 },
+    activeTaskSectionTitle: { fontSize: 11, fontWeight: 'bold', marginBottom: 8, textTransform: 'uppercase' },
+    activeTaskItem: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 12 },
+    activeTaskLabel: { fontSize: 13, fontWeight: 'bold', marginLeft: 10, flex: 1 },
+    footer: { marginTop: 30, paddingHorizontal: 20, paddingBottom: 40 },
+    logoutButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 10, borderWidth: 1 },
+    logoutText: { fontSize: 14, fontWeight: 'bold', marginLeft: 8 },
+    logoutModalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', alignItems: 'center' },
+    logoutModalContent: { borderRadius: 24, padding: 28, width: '85%', alignItems: 'center' },
+    logoutModalIconContainer: { width: 70, height: 70, borderRadius: 35, backgroundColor: '#FFEBEE', justifyContent: 'center', alignItems: 'center', marginBottom: 15 },
+    logoutModalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
+    logoutModalMessage: { textAlign: 'center', marginBottom: 20 },
+    logoutModalButtons: { flexDirection: 'row', gap: 10 },
+    logoutModalButton: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center' },
 });

@@ -1,47 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-    View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, StatusBar, Alert, Platform
+    View, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, StatusBar, Platform
 } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Button, ActivityIndicator } from 'react-native-paper';
-// 👇 IMPORTAMOS EL HOOK
+import { Text, Button, useTheme, ActivityIndicator, Divider } from 'react-native-paper'; // 🚀 Importación de Paper
 import { useRequestStore } from '../../hooks/use-request-store';
 import { AwesomeAlert } from '../../componentes/modal/modal';
-import { useState } from 'react';
 
 const { width, height } = Dimensions.get('window');
-
-const COLORS = {
-    primary: '#31253B',
-    greenMain: '#018f64',
-    mintBg: '#b1eedc',
-    white: '#FFFFFF',
-    textGrey: '#5A7A70',
-    lightGrey: '#F9FAFB',
-    danger: '#EF4444'
-};
 
 export const MyRequestDetailScreen = () => {
     const navigation = useNavigation();
     const route = useRoute();
+    const theme = useTheme(); // 🎨 Obtenemos el tema dinámico
+    const { colors, dark } = theme;
+    const componentStyles = getStyles(theme);
 
-    // 👇 EXTRAEMOS LAS FUNCIONES DEL STORE
     const { startCancellingRequest, isLoading } = useRequestStore();
-
     const { request } = route.params || {};
 
     if (!request) return null;
 
+    // CONFIGURACIÓN DE ESTADOS DINÁMICA (Sincronizada con RequestList)
     const getStatusConfig = (status) => {
         const s = status ? status.toUpperCase() : 'PENDING';
         switch (s) {
-            case 'PENDING': return { color: '#F59E0B', bg: '#FFF7ED', label: 'Buscando Reciclador', icon: 'clock-fast' };
-            case 'ACCEPTED': return { color: '#2563EB', bg: '#EFF6FF', label: 'Aceptado', icon: 'account-check' };
-            case 'IN_PROGRESS': return { color: '#7C3AED', bg: '#F5F3FF', label: 'En camino', icon: 'truck-delivery' };
-            case 'COMPLETED': return { color: '#059669', bg: '#ECFDF5', label: 'Completado', icon: 'check-decagram' };
-            case 'CANCELLED': return { color: COLORS.danger, bg: '#FEF2F2', label: 'Cancelado', icon: 'close-circle' };
-            default: return { color: '#4B5563', bg: '#F3F4F6', label: s, icon: 'information' };
+            case 'PENDING': return { color: '#F59E0B', bg: dark ? 'rgba(245, 158, 11, 0.15)' : '#FFF7ED', label: 'Buscando Reciclador', icon: 'clock-fast' };
+            case 'ACCEPTED': return { color: '#2563EB', bg: dark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF', label: 'Aceptado', icon: 'account-check' };
+            case 'IN_PROGRESS': return { color: '#7C3AED', bg: dark ? 'rgba(124, 58, 237, 0.15)' : '#F5F3FF', label: 'En camino', icon: 'truck-delivery' };
+            case 'COMPLETED': return { color: '#059669', bg: dark ? 'rgba(5, 150, 105, 0.15)' : '#ECFDF5', label: 'Completado', icon: 'check-decagram' };
+            case 'CANCELLED': return { color: colors.error, bg: dark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2', label: 'Cancelado', icon: 'close-circle' };
+            default: return { color: colors.onSurfaceVariant, bg: colors.surfaceVariant, label: s, icon: 'information' };
         }
     };
 
@@ -52,6 +42,7 @@ export const MyRequestDetailScreen = () => {
         'glass': 'Vidrio', 'metal': 'Metal', 'electronics': 'RAEE',
         'steel': 'Acero', 'copper': 'Cobre', 'pet': 'Botellas PET', 'hdpe': 'Plástico Duro'
     };
+
     const [alertConfig, setAlertConfig] = useState({
         visible: false,
         title: '',
@@ -72,18 +63,15 @@ export const MyRequestDetailScreen = () => {
         ? new Date(request.createdAt).toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
         : 'Fecha desconocida';
 
-    // 👇 ACTUALIZAMOS LA FUNCIÓN DE CANCELACIÓN
     const handleCancel = () => {
         showAlert(
             "¿Cancelar Solicitud?",
             "Esta acción quitará tu pedido de la lista de los recicladores y no se puede deshacer.",
             "question",
             async () => {
-                hideAlert(); // Cerramos la pregunta
+                hideAlert();
                 const success = await startCancellingRequest(request._id);
-
                 if (success) {
-                    // Pequeño delay para que la transición sea suave
                     setTimeout(() => {
                         showAlert(
                             "Cancelado",
@@ -97,109 +85,102 @@ export const MyRequestDetailScreen = () => {
                     }, 500);
                 }
             },
-            hideAlert // Si cancela, solo cerramos
+            hideAlert
         );
     };
 
     return (
-        <View style={styles.mainContainer}>
+        <View style={componentStyles.mainContainer}>
             <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-            {/* HEADER FLOTANTE */}
-            <View style={styles.floatingHeader}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <View style={componentStyles.floatingHeader}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={componentStyles.backBtn}>
                     <Icon name="arrow-left" size={24} color="#FFF" />
                 </TouchableOpacity>
             </View>
 
-            {/* IMAGEN HERO */}
-            <View style={styles.heroImageContainer}>
+            <View style={componentStyles.heroImageContainer}>
                 {request.imageUrl ? (
-                    <Image source={{ uri: request.imageUrl }} style={styles.heroImage} resizeMode="cover" />
+                    <Image source={{ uri: request.imageUrl }} style={componentStyles.heroImage} resizeMode="cover" />
                 ) : (
-                    <View style={styles.placeholderImage}>
-                        <Icon name="recycle" size={80} color="rgba(255,255,255,0.5)" />
+                    <View style={componentStyles.placeholderImage}>
+                        <Icon name="recycle" size={80} color="rgba(255,255,255,0.4)" />
                     </View>
                 )}
-                <View style={styles.imageGradient} />
+                <View style={componentStyles.imageGradient} />
             </View>
 
-            <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-                showsVerticalScrollIndicator={false}
-            >
-                <View style={styles.infoCard}>
+            <ScrollView style={componentStyles.scrollView} contentContainerStyle={componentStyles.scrollContent} showsVerticalScrollIndicator={false}>
+                <View style={[componentStyles.infoCard, { backgroundColor: colors.surface }]}>
 
-                    {/* Badge de Estado */}
-                    <View style={[styles.statusBadge, { backgroundColor: statusCfg.bg, borderColor: statusCfg.color + '40' }]}>
+                    {/* Badge de Estado Dinámico */}
+                    <View style={[componentStyles.statusBadge, { backgroundColor: statusCfg.bg, borderColor: statusCfg.color + '40' }]}>
                         <Icon name={statusCfg.icon} size={18} color={statusCfg.color} />
-                        <Text style={[styles.statusText, { color: statusCfg.color }]}>{statusCfg.label}</Text>
+                        <Text style={[componentStyles.statusText, { color: statusCfg.color }]}>{statusCfg.label}</Text>
                     </View>
 
-                    <Text style={styles.materialTitle}>{title}</Text>
-                    <Text style={styles.dateText}>Publicado el {dateString}</Text>
+                    <Text style={[componentStyles.materialTitle, { color: colors.onSurface }]}>{title}</Text>
+                    <Text style={[componentStyles.dateText, { color: colors.onSurfaceVariant }]}>Publicado el {dateString}</Text>
 
-                    <View style={styles.divider} />
+                    <Divider style={[componentStyles.divider, { backgroundColor: colors.outlineVariant }]} />
 
-                    {/* Estadísticas Rápidas */}
-                    <View style={styles.statsRow}>
-                        <View style={styles.statBox}>
-                            <View style={[styles.statIconCircle, { backgroundColor: '#E8F5F1' }]}>
-                                <Icon name="scale" size={22} color={COLORS.greenMain} />
+                    <View style={componentStyles.statsRow}>
+                        <View style={[componentStyles.statBox, { backgroundColor: colors.surfaceVariant }]}>
+                            <View style={[componentStyles.statIconCircle, { backgroundColor: dark ? colors.primaryContainer : '#E8F5F1' }]}>
+                                <Icon name="scale" size={22} color={colors.primary} />
                             </View>
-                            <Text style={styles.statLabel}>Cantidad</Text>
-                            <Text style={styles.statValue}>{request.quantity} {unit}</Text>
+                            <Text style={[componentStyles.statLabel, { color: colors.onSurfaceVariant }]}>Cantidad</Text>
+                            <Text style={[componentStyles.statValue, { color: colors.onSurface }]}>{request.quantity} {unit}</Text>
                         </View>
-                        <View style={styles.statBox}>
-                            <View style={[styles.statIconCircle, { backgroundColor: '#FFF7ED' }]}>
+                        <View style={[componentStyles.statBox, { backgroundColor: colors.surfaceVariant }]}>
+                            <View style={[componentStyles.statIconCircle, { backgroundColor: dark ? 'rgba(245, 158, 11, 0.2)' : '#FFF7ED' }]}>
                                 <Icon name="shape-outline" size={22} color="#F59E0B" />
                             </View>
-                            <Text style={styles.statLabel}>Categoría</Text>
-                            <Text style={styles.statValue} numberOfLines={1}>{LABELS[request.category] || 'General'}</Text>
+                            <Text style={[componentStyles.statLabel, { color: colors.onSurfaceVariant }]}>Categoría</Text>
+                            <Text style={[componentStyles.statValue, { color: colors.onSurface }]} numberOfLines={1}>
+                                {LABELS[request.category] || 'General'}
+                            </Text>
                         </View>
                     </View>
 
-                    {/* Ubicación */}
-                    <Text style={styles.sectionTitle}>Ubicación de Recojo</Text>
-                    <View style={styles.widgetBox}>
-                        <View style={styles.widgetIconBg}>
-                            <Icon name="map-marker-radius" size={24} color={COLORS.danger} />
+                    <Text style={[componentStyles.sectionTitle, { color: colors.onSurface }]}>Ubicación de Recojo</Text>
+                    <View style={[componentStyles.widgetBox, { backgroundColor: colors.surfaceVariant }]}>
+                        <View style={[componentStyles.widgetIconBg, { backgroundColor: dark ? 'rgba(239, 68, 68, 0.2)' : '#FFEBEE' }]}>
+                            <Icon name="map-marker-radius" size={24} color={colors.error} />
                         </View>
-                        <View style={styles.widgetTextContainer}>
-                            <Text style={styles.widgetValue}>
+                        <View style={componentStyles.widgetTextContainer}>
+                            <Text style={[componentStyles.widgetValue, { color: colors.onSurface }]}>
                                 {request.location?.address || 'Ubicación registrada'}
                             </Text>
                         </View>
                     </View>
 
-                    {/* Notas */}
                     {request.description ? (
                         <>
-                            <Text style={styles.sectionTitle}>Notas Adicionales</Text>
-                            <View style={styles.widgetBox}>
-                                <Text style={styles.descriptionText}>{request.description}</Text>
+                            <Text style={[componentStyles.sectionTitle, { color: colors.onSurface }]}>Notas Adicionales</Text>
+                            <View style={[componentStyles.widgetBox, { backgroundColor: colors.surfaceVariant }]}>
+                                <Text style={[componentStyles.descriptionText, { color: colors.onSurfaceVariant }]}>{request.description}</Text>
                             </View>
                         </>
                     ) : null}
 
-                    {/* Botón de Cancelar (Solo si está pendiente) */}
+                    {/* Botón de Cancelar Dinámico */}
                     {(request.status === 'PENDING' || !request.status) && (
                         <Button
                             mode="outlined"
                             onPress={handleCancel}
-                            style={styles.cancelBtn}
-                            textColor={COLORS.danger}
+                            style={[componentStyles.cancelBtn, { borderColor: colors.error }]}
+                            textColor={colors.error}
                             icon="close-circle-outline"
-                            loading={isLoading} // Muestra el spinner si está cancelando
+                            loading={isLoading}
                             disabled={isLoading}
                         >
                             Cancelar Solicitud
                         </Button>
                     )}
-
                 </View>
             </ScrollView>
+
             <AwesomeAlert
                 visible={alertConfig.visible}
                 title={alertConfig.title}
@@ -207,71 +188,39 @@ export const MyRequestDetailScreen = () => {
                 type={alertConfig.type}
                 onConfirm={alertConfig.onConfirm}
                 onCancel={alertConfig.onCancel}
+                theme={theme} // 🚨 Sincronización con el modal
             />
         </View>
     );
 };
 
-const styles = StyleSheet.create({
-    mainContainer: { flex: 1, backgroundColor: COLORS.mintBg },
-    floatingHeader: {
-        position: 'absolute', top: 0, left: 0, right: 0,
-        paddingTop: Platform.OS === 'ios' ? 50 : (StatusBar.currentHeight || 0) + 10,
-        paddingHorizontal: 20, zIndex: 10,
-    },
-    backBtn: {
-        width: 44, height: 44, borderRadius: 22,
-        backgroundColor: 'rgba(0,0,0,0.3)',
-        justifyContent: 'center', alignItems: 'center',
-    },
-    heroImageContainer: {
-        position: 'absolute', top: 0, left: 0, right: 0,
-        height: height * 0.4, backgroundColor: COLORS.greenMain,
-    },
+// 🎨 ESTILOS DINÁMICOS BASADOS EN EL TEMA
+const getStyles = (theme) => StyleSheet.create({
+    mainContainer: { flex: 1, backgroundColor: theme.colors.background },
+    floatingHeader: { position: 'absolute', top: 0, left: 0, right: 0, paddingTop: Platform.OS === 'ios' ? 50 : (StatusBar.currentHeight || 0) + 10, paddingHorizontal: 20, zIndex: 10 },
+    backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center' },
+    heroImageContainer: { position: 'absolute', top: 0, left: 0, right: 0, height: height * 0.4, backgroundColor: theme.colors.primary },
     heroImage: { width: '100%', height: '100%' },
     placeholderImage: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    imageGradient: {
-        position: 'absolute', top: 0, left: 0, right: 0, height: 100,
-        backgroundColor: 'rgba(0,0,0,0.2)',
-    },
+    imageGradient: { position: 'absolute', top: 0, left: 0, right: 0, height: 100, backgroundColor: 'rgba(0,0,0,0.2)' },
     scrollView: { flex: 1 },
     scrollContent: { paddingTop: height * 0.32, paddingBottom: 40 },
-    infoCard: {
-        backgroundColor: COLORS.white,
-        borderTopLeftRadius: 35, borderTopRightRadius: 35,
-        minHeight: height * 0.68, paddingHorizontal: 25,
-        paddingTop: 35, paddingBottom: 20,
-        elevation: 15, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 20,
-    },
-    statusBadge: {
-        position: 'absolute', top: -18, right: 30,
-        flexDirection: 'row', alignItems: 'center',
-        paddingHorizontal: 16, paddingVertical: 8,
-        borderRadius: 20, borderWidth: 1,
-        backgroundColor: COLORS.white, elevation: 4, gap: 6
-    },
+    infoCard: { borderTopLeftRadius: 35, borderTopRightRadius: 35, minHeight: height * 0.68, paddingHorizontal: 25, paddingTop: 35, paddingBottom: 20, elevation: 15 },
+    statusBadge: { position: 'absolute', top: -18, right: 30, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, elevation: 4, gap: 6 },
     statusText: { fontSize: 13, fontWeight: 'bold' },
-    materialTitle: { fontSize: 26, fontWeight: 'bold', color: COLORS.primary, marginBottom: 5 },
-    dateText: { fontSize: 14, color: COLORS.textGrey },
-    divider: { height: 1, backgroundColor: '#F0F0F0', marginVertical: 20 },
+    materialTitle: { fontSize: 26, fontWeight: 'bold', marginBottom: 5 },
+    dateText: { fontSize: 14 },
+    divider: { height: 1, marginVertical: 20 },
     statsRow: { flexDirection: 'row', gap: 15, marginBottom: 25 },
-    statBox: {
-        flex: 1, backgroundColor: COLORS.lightGrey,
-        padding: 15, borderRadius: 20,
-        alignItems: 'center', borderWidth: 1, borderColor: '#F0F0F0'
-    },
+    statBox: { flex: 1, padding: 15, borderRadius: 20, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(0,0,0,0.05)' },
     statIconCircle: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
-    statLabel: { fontSize: 12, color: COLORS.textGrey, marginBottom: 2 },
-    statValue: { fontSize: 15, fontWeight: 'bold', color: COLORS.primary },
-    sectionTitle: { fontSize: 15, fontWeight: 'bold', color: COLORS.primary, marginBottom: 12, marginTop: 5 },
-    widgetBox: {
-        flexDirection: 'row', alignItems: 'center',
-        backgroundColor: COLORS.lightGrey, padding: 16, borderRadius: 20,
-        borderWidth: 1, borderColor: '#F0F0F0', marginBottom: 20
-    },
-    widgetIconBg: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#FFEBEE', justifyContent: 'center', alignItems: 'center', marginRight: 15 },
+    statLabel: { fontSize: 12, marginBottom: 2 },
+    statValue: { fontSize: 15, fontWeight: 'bold' },
+    sectionTitle: { fontSize: 15, fontWeight: 'bold', marginBottom: 12, marginTop: 5 },
+    widgetBox: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 20, marginBottom: 20 },
+    widgetIconBg: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
     widgetTextContainer: { flex: 1 },
-    widgetValue: { fontSize: 14, fontWeight: '600', color: COLORS.primary, lineHeight: 20 },
-    descriptionText: { fontSize: 14, color: '#4B5563', lineHeight: 22 },
-    cancelBtn: { marginTop: 10, borderColor: COLORS.danger, borderRadius: 15, borderWidth: 1.5, paddingVertical: 4 },
+    widgetValue: { fontSize: 14, fontWeight: '600', lineHeight: 20 },
+    descriptionText: { fontSize: 14, lineHeight: 22 },
+    cancelBtn: { marginTop: 10, borderRadius: 15, borderWidth: 1.5, paddingVertical: 4 },
 });
