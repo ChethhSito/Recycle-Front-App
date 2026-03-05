@@ -2,59 +2,55 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, useWindowDimensions, Animated, ActivityIndicator } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import {
-    UserHeader,
-    CloudHeader,
-    QuoteCard,
-    ProgressCard,
-    StatItem,
-    ProgramCard
-} from '../../componentes/cards/home';
+import { useNavigation } from '@react-navigation/native';
 
+// Tus componentes personalizados
+import { CloudHeader, QuoteCard, ProgressCard, StatItem } from '../../componentes/cards/home';
 import { NavItem } from '../../componentes/navigation/NavItem';
 import { DrawerMenu } from '../../componentes/navigation/DrawerMenu';
-import { ProgramDetailModal } from '../../componentes/modal/shared/ProgramDetailModal';
-import { AssistantNotification, getRandomMessage } from '../../componentes/shared/AssistantNotification';
-import { useNavigation } from '@react-navigation/native';
+import { AssistantNotification } from '../../componentes/shared/AssistantNotification';
+import { EnvironmentalProgramModal } from '../../componentes/modal/programs/EnvironmentalProgramModal';
+import { EnvironmentalProgramCard } from '../../componentes/cards/programs/EnvironmentalProgramCard';
+
+// Hooks de tu arquitectura
 import { useAuthStore } from '../../hooks/use-auth-store';
 import { useLevels } from '../../hooks/use-levels-store';
 import { useProgramStore } from '../../hooks/use-program-store';
-import { EnvironmentalProgramModal } from '../../componentes/modal/programs/EnvironmentalProgramModal';
-import { EnvironmentalProgramCard } from '../../componentes/cards/programs/EnvironmentalProgramCard';
 import { useRequestStore } from '../../hooks/use-request-store';
-
+import { useTranslation } from '../../hooks/use-translation'; // 🗣️ Hook de traducción
 
 export const HomeScreen = () => {
-    const { colors } = useTheme();
+    const t = useTranslation(); // 🗣️ Inicializar traducciones
+    const theme = useTheme();
+    const { colors } = theme;
     const { user } = useAuthStore();
-    const { levels, userLevelStatus, startLoadingUserStatus } = useLevels();
+    const { userLevelStatus, startLoadingUserStatus } = useLevels();
     const { programs, startLoadingPrograms, isLoading } = useProgramStore();
     const { requests, startLoadingRequests } = useRequestStore();
-    const [isCitizen, setIsCitizen] = useState(user.role === 'CITIZEN');
+
+    const [isCitizen] = useState(user.role === 'CITIZEN');
     const stats = user?.recyclingStats?.by_category;
 
     const [hasActiveTask, setHasActiveTask] = useState(false);
     const [activeTask, setActiveTask] = useState(null);
-
-    const navigation = useNavigation();
-    const theme = useTheme();
-    const { height } = useWindowDimensions(); // <--- 1. OBTENEMOS LA ALTURA DE LA PANTALLA
-    const componentStyles = styles(theme);
-
     const [filterType, setFilterType] = useState('peso');
     const [selectedProgram, setSelectedProgram] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [notificationVisible, setNotificationVisible] = useState(false);
 
-    // Animaciones para el FAB
+    const { height } = useWindowDimensions();
+    const navigation = useNavigation();
+    const componentStyles = styles(theme);
+
+    // Animaciones
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const pulseAnim = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
         startLoadingPrograms();
         startLoadingRequests();
-        startLoadingUserStatus(); // 🚨 NUEVO: Carga el "objeto bonito" del nivel
+        startLoadingUserStatus();
     }, []);
 
     // Animación de pulso continua para el FAB
@@ -91,9 +87,7 @@ export const HomeScreen = () => {
             clearInterval(intervalId);
         };
     }, []);
-    useEffect(() => {
-        console.log("usuarioi actual", user)
-    }, [user]);
+
 
     useEffect(() => {
         if (user.role !== 'RECYCLER' || !requests) return;
@@ -137,56 +131,16 @@ export const HomeScreen = () => {
     // Datos según el tipo de filtro
     const currentImpact = {
         peso: [
-            {
-                image: require('../../../assets/botella.jpg'),
-                label: 'Plástico',
-                value: `${stats?.plastic?.kg || 0} kg`, //
-                overlayColor: '#D4E7FF'
-            },
-            {
-                image: require('../../../assets/papelcarton.jpg'),
-                label: 'Cartón',
-                value: `${stats?.paper?.kg || 0} kg`, //
-                overlayColor: '#FFE4CC'
-            },
-            {
-                image: require('../../../assets/metales.jpg'),
-                label: 'Metal',
-                value: `${stats?.metal?.kg || 0} kg`,
-                overlayColor: '#F3F4F6'
-            },
-            {
-                image: require('../../../assets/electrodomesticos.jpg'),
-                label: 'RAEE',
-                value: `${stats?.electronics?.kg || 0} kg`,
-                overlayColor: '#FFDDDD'
-            },
+            { image: require('../../../assets/botella.jpg'), label: t.home.categories.plastic, value: `${stats?.plastic?.kg || 0} ${t.home.units.kg}`, overlayColor: '#D4E7FF' },
+            { image: require('../../../assets/papelcarton.jpg'), label: t.home.categories.cardboard, value: `${stats?.paper?.kg || 0} ${t.home.units.kg}`, overlayColor: '#FFE4CC' },
+            { image: require('../../../assets/metales.jpg'), label: t.home.categories.metal, value: `${stats?.metal?.kg || 0} ${t.home.units.kg}`, overlayColor: '#F3F4F6' },
+            { image: require('../../../assets/electrodomesticos.jpg'), label: t.home.categories.electronics, value: `${stats?.electronics?.kg || 0} ${t.home.units.kg}`, overlayColor: '#FFDDDD' },
         ],
         cantidad: [
-            {
-                image: require('../../../assets/botella.jpg'),
-                label: 'Plástico',
-                value: `${stats?.plastic?.units || 0} und`,
-                overlayColor: '#D4E7FF'
-            },
-            {
-                image: require('../../../assets/papelcarton.jpg'),
-                label: 'Cartón',
-                value: `${stats?.paper?.units || 0} und`,
-                overlayColor: '#FFE4CC'
-            },
-            {
-                image: require('../../../assets/metales.jpg'),
-                label: 'Metal',
-                value: `${stats?.metal?.units || 0} und`,
-                overlayColor: '#F3F4F6'
-            },
-            {
-                image: require('../../../assets/electrodomesticos.jpg'),
-                label: 'RAEE',
-                value: `${stats?.electronics?.units || 0} und`,
-                overlayColor: '#FFDDDD'
-            },
+            { image: require('../../../assets/botella.jpg'), label: t.home.categories.plastic, value: `${stats?.plastic?.units || 0} ${t.home.units.und}`, overlayColor: '#D4E7FF' },
+            { image: require('../../../assets/papelcarton.jpg'), label: t.home.categories.cardboard, value: `${stats?.paper?.units || 0} ${t.home.units.und}`, overlayColor: '#FFE4CC' },
+            { image: require('../../../assets/metales.jpg'), label: t.home.categories.metal, value: `${stats?.metal?.units || 0} ${t.home.units.und}`, overlayColor: '#F3F4F6' },
+            { image: require('../../../assets/electrodomesticos.jpg'), label: t.home.categories.electronics, value: `${stats?.electronics?.units || 0} ${t.home.units.und}`, overlayColor: '#FFDDDD' },
         ]
     };
 
@@ -200,33 +154,32 @@ export const HomeScreen = () => {
                 style={componentStyles.scrollContent}
                 contentContainerStyle={componentStyles.scrollContentContainer}
                 showsVerticalScrollIndicator={false}
-                nestedScrollEnabled={true}
             >
-                {/* 4. HEADER CONECTADO A REDUX */}
+                {/* Header dinámico */}
                 <CloudHeader
-                    userName={`Hola, ${user.fullName || 'Usuario'}`}
-                    userType={user.role === 'CITIZEN' ? 'Ciudadano' : 'Reciclador'}
-                    avatarUrl={user.avatar} // Si es null, el componente CloudHeader debería manejar un default
+                    userName={`${t.home.greeting}, ${user.fullName || 'User'}`}
+                    userType={user.role === 'CITIZEN' ? t.home.roles.citizen : t.home.roles.recycler}
+                    avatarUrl={user.avatar}
                     onMenuPress={() => setDrawerVisible(true)}
                 />
 
-                <QuoteCard quote="El mejor momento para plantar un árbol fue hace 20 años. El segundo mejor momento es ahora." />
+                <QuoteCard quote={t.home.quote} />
 
-                {/* BANNER DE TAREA ACTIVA (Solo para Recicladores con tarea pendiente) */}
+                {/* Banner de Tarea Activa Traducido */}
                 {hasActiveTask && activeTask && (
                     <TouchableOpacity
-                        style={styles(theme).activeTaskBanner}
+                        style={componentStyles.activeTaskBanner}
                         onPress={() => navigation.navigate('RecyclerTaskDetail', { request: activeTask })}
                         activeOpacity={0.9}
                     >
                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                            <View style={styles(theme).bannerIconCircle}>
+                            <View style={componentStyles.bannerIconCircle}>
                                 <Icon name="truck-delivery" size={22} color="#FFFFFF" />
                             </View>
                             <View style={{ marginLeft: 12, flex: 1 }}>
-                                <Text style={styles(theme).bannerTitle}>Recojo en curso</Text>
-                                <Text style={styles(theme).bannerSubtitle} numberOfLines={1}>
-                                    {activeTask.location?.address || 'Ver detalles de la ruta'}
+                                <Text style={componentStyles.bannerTitle}>{t.home.activeTask.title}</Text>
+                                <Text style={componentStyles.bannerSubtitle} numberOfLines={1}>
+                                    {activeTask.location?.address || t.home.activeTask.subtitle}
                                 </Text>
                             </View>
                         </View>
@@ -234,33 +187,42 @@ export const HomeScreen = () => {
                     </TouchableOpacity>
                 )}
 
-                {/* 5. TARJETA DE PROGRESO 100% DINÁMICA */}
+                {/* Tarjeta de Progreso */}
                 {userLevelStatus ? (
-                    console.log("userLevelStatus", userLevelStatus),
                     <ProgressCard
-                        badgeIcon={userLevelStatus.currentLevel.icon}       // 'spa', 'tree', etc.
-                        badgeTitle={userLevelStatus.currentLevel.name}     // 'Rama Fuerte'
-                        rank={userLevelStatus.currentLevel.rank}           // 'Nivel 5'
-                        progress={userLevelStatus.progress}                // 0.81 (calculado en el back)
-                        currentPoints={userLevelStatus.points.current}     // 2270
-                        maxPoints={userLevelStatus.points.max}             // 2800 (¡Ya no saldrá 400!)
+                        badgeIcon={userLevelStatus.currentLevel.icon}
+                        badgeTitle={userLevelStatus.currentLevel.name}
+                        rank={userLevelStatus.currentLevel.rank}
+                        progress={userLevelStatus.progress}
+                        currentPoints={userLevelStatus.points.current}
+                        maxPoints={userLevelStatus.points.max}
                         bgColor={userLevelStatus.currentLevel.color}
                         iconColor={userLevelStatus.currentLevel.bgColor}
-                        nextLevelTitle={userLevelStatus.nextLevel.name}    // 'Árbol Guardián'
+                        nextLevelTitle={userLevelStatus.nextLevel.name}
                     />
                 ) : (
-                    <ActivityIndicator color={theme.colors.primary} /> // O un esqueleto de carga
+                    <ActivityIndicator style={{ marginVertical: 20 }} color={colors.primary} />
                 )}
 
-                {/* Sección de Impacto */}
+                {/* Sección de Impacto con Filtros Traducidos */}
                 <View style={componentStyles.impactSection}>
-                    <Text style={componentStyles.sectionTitle}>Tu impacto este mes:</Text>
+                    <Text style={[componentStyles.sectionTitle, { paddingHorizontal: 0 }]}>{t.home.impact.title}</Text>
                     <View style={componentStyles.filterContainer}>
-                        <TouchableOpacity style={[componentStyles.filterButton, filterType === 'peso' && componentStyles.filterButtonActive]} onPress={() => setFilterType('peso')}>
-                            <Text style={[componentStyles.filterText, filterType === 'peso' && componentStyles.filterTextActive]}>Peso</Text>
+                        <TouchableOpacity
+                            style={[componentStyles.filterButton, filterType === 'peso' && componentStyles.filterButtonActive]}
+                            onPress={() => setFilterType('peso')}
+                        >
+                            <Text style={[componentStyles.filterText, filterType === 'peso' && componentStyles.filterTextActive]}>
+                                {t.home.impact.weight}
+                            </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={[componentStyles.filterButton, filterType === 'cantidad' && componentStyles.filterButtonActive]} onPress={() => setFilterType('cantidad')}>
-                            <Text style={[componentStyles.filterText, filterType === 'cantidad' && componentStyles.filterTextActive]}>Cantidad</Text>
+                        <TouchableOpacity
+                            style={[componentStyles.filterButton, filterType === 'cantidad' && componentStyles.filterButtonActive]}
+                            onPress={() => setFilterType('cantidad')}
+                        >
+                            <Text style={[componentStyles.filterText, filterType === 'cantidad' && componentStyles.filterTextActive]}>
+                                {t.home.impact.quantity}
+                            </Text>
                         </TouchableOpacity>
                     </View>
 
@@ -271,13 +233,11 @@ export const HomeScreen = () => {
                     </View>
                 </View>
 
-
-
-                {/* Programas */}
+                {/* Programas Populares */}
                 <View style={componentStyles.programsSection}>
-                    <View style={[componentStyles.programsHeader, { paddingHorizontal: 20 }]}>
-                        <Text style={[componentStyles.sectionTitle, { color: '#31253B' }]}>
-                            Programas Populares
+                    <View style={componentStyles.programsHeader}>
+                        <Text style={[componentStyles.sectionTitle, { color: colors.onSurface }]}>
+                            {t.home.programs.popular}
                         </Text>
                     </View>
 
@@ -286,28 +246,16 @@ export const HomeScreen = () => {
                             popularPrograms.map((program) => (
                                 <View key={program._id} style={{ width: 280, marginRight: 15 }}>
                                     <EnvironmentalProgramCard
-                                        key={program._id}
-                                        {...program} // Pasamos todo (title, imageUrl, etc.)
-
-                                        // 1. Para la TARJETA (Visualización en lista):
-                                        // La tarjeta sí espera una prop 'image' que sea un objeto source ({uri: ...})
-                                        image={
-                                            (program.imageUrl && program.imageUrl.startsWith('http'))
-                                                ? { uri: program.imageUrl }
-                                                : require('../../../assets/botella.jpg')
-                                        }
-
-                                        // 2. Para el MODAL (Al hacer click):
+                                        {...program}
+                                        image={program.imageUrl ? { uri: program.imageUrl } : require('../../../assets/botella.jpg')}
                                         onPress={() => {
                                             const programForModal = {
                                                 ...program,
-                                                // Solo arreglamos el contacto (que sabemos que era el problema anterior)
                                                 image: { uri: program.imageUrl },
                                                 contactInfo: program.contactInfo
                                                     ? `${program.contactInfo.email || ''}\n${program.contactInfo.phone || ''}`
-                                                    : 'Sin contacto'
+                                                    : 'No contact info'
                                             };
-
                                             setSelectedProgram(programForModal);
                                             setModalVisible(true);
                                         }}
@@ -315,49 +263,29 @@ export const HomeScreen = () => {
                                 </View>
                             ))
                         ) : (
-                            // Estado vacío o de carga
-                            <Text style={{ marginLeft: 10, color: '#555' }}>
-                                {isLoading ? 'Cargando programas...' : 'No hay programas destacados hoy.'}
+                            <Text style={{ marginLeft: 20, color: colors.onSurfaceVariant }}>
+                                {isLoading ? t.home.programs.loading : t.home.programs.empty}
                             </Text>
                         )}
                     </ScrollView>
                 </View>
             </ScrollView>
 
-            {/* Bottom Nav */}
+            {/* Bottom Nav Traducido */}
             <View style={componentStyles.bottomNav}>
-                <NavItem icon="home" label="Inicio" active />
-                {isCitizen && (
-                    <NavItem icon="recycle" label="Reciclar" onPress={() => navigation.navigate('RequestList')} />
+                <NavItem icon="home" label={t.home.nav.start} active />
+                {isCitizen ? (
+                    <NavItem icon="recycle" label={t.home.nav.recycle} onPress={() => navigation.navigate('RequestList')} />
+                ) : (
+                    <NavItem icon="map" label={t.home.nav.requests} onPress={() => navigation.navigate('Map')} />
                 )}
-                {!isCitizen && (
-                    <NavItem icon="map" label="Solicitudes" onPress={() => navigation.navigate('Map')} />
-                )}
-                <NavItem icon="trophy" label="Premios" onPress={() => navigation.navigate('Rewards')} />
+                <NavItem icon="trophy" label={t.home.nav.rewards} onPress={() => navigation.navigate('Rewards')} />
             </View>
 
-
-            {/* 6. DRAWER CONECTADO A REDUX (Ya lo tenías bien) */}
-            <DrawerMenu
-                visible={drawerVisible}
-                onClose={() => setDrawerVisible(false)}
-            />
-
+            <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} theme={theme} />
             <AssistantNotification visible={notificationVisible} onClose={() => setNotificationVisible(false)} onOpen={() => navigation.navigate('VirtualAssistant')} />
 
-            {/* FAB */}
-            <Animated.View style={[componentStyles.fabContainer, { transform: [{ scale: scaleAnim }] }]}>
-                <TouchableOpacity style={componentStyles.fab} onPress={handleFabPress} activeOpacity={0.8}>
-                    <Animated.View style={[componentStyles.fabPulse, { transform: [{ scale: pulseAnim }] }]} />
-                    <Icon name="robot-happy" size={32} color="#FFFFFF" />
-                    <View style={componentStyles.fabBadge}><Icon name="lightning-bolt" size={12} color="#FFF" /></View>
-                </TouchableOpacity>
-            </Animated.View>
-            <EnvironmentalProgramModal
-                visible={modalVisible}
-                onClose={() => setModalVisible(false)}
-                program={selectedProgram}
-            />
+            <EnvironmentalProgramModal visible={modalVisible} onClose={() => setModalVisible(false)} program={selectedProgram} />
         </View>
     );
 };
@@ -407,7 +335,7 @@ const styles = (theme) => StyleSheet.create({
         elevation: 4,
     },
     filterText: {
-        color: '#000',
+        color: theme.colors.text,
         fontSize: 13,
         fontWeight: '500',
         marginLeft: 5,

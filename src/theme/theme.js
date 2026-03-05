@@ -25,21 +25,26 @@ export const lightTheme = {
     },
 };
 
-// 3. Definición del Modo Oscuro
 export const darkTheme = {
-    ...MD3DarkTheme, // 🚨 Importante: Usamos la base oscura de Paper
+    ...MD3DarkTheme,
     fonts: configureFonts({ config: fontConfig }),
     colors: {
         ...MD3DarkTheme.colors,
-        primary: '#264f6e',       // Cambiamos el morado por un amarillo/oro que resalte
-        background: '#051d30',    // El fondo b1eedc cambia a un gris casi negro
-        primaryContainer: '#2D2D2D', // 👈 En modo oscuro, un gris carbón para los contenedores
-        onPrimaryContainer: '#FAC96E',
-        surface: '#1E1E1E',       // Las tarjetas serán un gris ligeramente más claro
-        accent: '#00C7A1',
-        greenMain: '#018f64',     // Mantenemos tu identidad verde
-        text: '#F0F4F5',          // Texto claro para fondo oscuro
-        inputBackground: '#2C2C2C',
-        placeholder: '#A0A0A0',
+        // 🚀 Ajuste Pro: Un verde esmeralda vibrante para que resalte en la oscuridad
+        primary: '#00C7A1',
+        // 🌲 Ajuste Pro: Fondo gris casi negro pero con tinte verde (no azul)
+        background: '#0D1110',
+        // 🧱 Ajuste Pro: Tarjetas en un tono ligeramente más claro para dar profundidad
+        surface: '#1A1F1E',
+        surfaceVariant: '#252B2A',
+        primaryContainer: '#153A2D', // Verde bosque oscuro para botones secundarios
+        onPrimaryContainer: '#B1EEDC', // Letras menta sobre el contenedor oscuro
+
+        greenMain: '#018f64',     // Mantenemos tu identidad intacta
+        accent: '#FAC96E',        // El amarillo ahora funciona como acento de "atención"
+        text: '#E0E3E1',          // Blanco roto para no cansar la vista
+        inputBackground: '#1A1F1E',
+        placeholder: '#7A8582',
+        outline: '#3F4947',       // Color para los bordes de los inputs
     },
 };

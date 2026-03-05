@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 
 
@@ -22,6 +22,8 @@ import { VirtualAssistantScreen } from '../modules/assistant/VirtualAssistantScr
 import { EditProfileModal } from '../modules/settings/editprofilemodal-screen';
 import { DonationScreen } from '../modules/donations';
 import { MyRequestDetailScreen, RecyclerTaskDetailScreen } from '../modules/citizen';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 
 import { TwoFactorInfoScreen } from '../modules/settings/two-factor-auth/two-factor-info-screen';
 import { TwoFactorMethodScreen } from '../modules/settings/two-factor-auth/two-factor-method-screen';
@@ -35,8 +37,10 @@ const Stack = createStackNavigator();
 
 
 export const AppRoutes = () => {
+    const { isDarkMode } = useSelector(state => state.theme);
     const [drawerVisible, setDrawerVisible] = useState(false);
     const { status, checkAuthToken, user } = useAuthStore();
+    const navigationTheme = isDarkMode ? DarkTheme : DefaultTheme;
 
 
     useEffect(() => {
@@ -63,7 +67,7 @@ export const AppRoutes = () => {
         }
     };
     return (
-        <NavigationContainer>
+        <NavigationContainer theme={navigationTheme}>
             <Stack.Navigator
 
                 screenOptions={{

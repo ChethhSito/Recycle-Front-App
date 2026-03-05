@@ -3,38 +3,21 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, StatusBar, ActivityIndi
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { Text, useTheme } from 'react-native-paper'; // 🚀 Importación de Paper para temas
+import { Text, useTheme } from 'react-native-paper';
 
-// Componentes
+// Componentes e Hooks
 import { PostCard } from '../../componentes/cards/forum/PostCard';
 import { ForumDetailView } from '../../componentes/views/ForumDetailView';
 import { CreatePostModal } from '../../componentes/modal/forum/CreatePostModal';
 import { DrawerMenu } from '../../componentes/navigation/DrawerMenu';
 import { CloudHeader } from '../../componentes/cards/home';
-
-// Hooks
 import { useAuthStore } from '../../hooks/use-auth-store';
 import { useForumStore } from '../../hooks/use-forum-store';
-
-const getTimeAgo = (dateString) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const seconds = Math.floor((now - date) / 1000);
-  let interval = seconds / 31536000;
-  if (interval > 1) return `hace ${Math.floor(interval)} años`;
-  interval = seconds / 2592000;
-  if (interval > 1) return `hace ${Math.floor(interval)} meses`;
-  interval = seconds / 86400;
-  if (interval > 1) return `hace ${Math.floor(interval)} días`;
-  interval = seconds / 3600;
-  if (interval > 1) return `hace ${Math.floor(interval)} horas`;
-  interval = seconds / 60;
-  if (interval > 1) return `hace ${Math.floor(interval)} min`;
-  return "hace un momento";
-};
+import { useTranslation } from '../../hooks/use-translation'; // 🗣️ Hook
 
 export const ForumScreen = ({ navigation }) => {
-  const theme = useTheme(); // 🎨 Obtenemos el tema dinámico
+  const t = useTranslation();
+  const theme = useTheme();
   const { colors, dark } = theme;
   const componentStyles = getStyles(theme);
 
@@ -46,17 +29,39 @@ export const ForumScreen = ({ navigation }) => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
+
+  // 🕒 Función de tiempo adaptada al idioma
+  const getTimeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    const timeT = t.forum.time;
+
+    let interval = seconds / 31536000;
+    if (interval > 1) return `${timeT.ago} ${Math.floor(interval)} ${timeT.years}`;
+    interval = seconds / 2592000;
+    if (interval > 1) return `${timeT.ago} ${Math.floor(interval)} ${timeT.months}`;
+    interval = seconds / 86400;
+    if (interval > 1) return `${timeT.ago} ${Math.floor(interval)} ${timeT.days}`;
+    interval = seconds / 3600;
+    if (interval > 1) return `${timeT.ago} ${Math.floor(interval)} ${timeT.hours}`;
+    interval = seconds / 60;
+    if (interval > 1) return `${timeT.ago} ${Math.floor(interval)} ${timeT.minutes}`;
+    return timeT.now;
+  };
+
+  const categories = [
+    { id: 'Todos', label: t.forum.categories.all },
+    { id: 'Dudas', label: t.forum.categories.doubts },
+    { id: 'Proyectos', label: t.forum.categories.projects },
+    { id: 'General', label: t.forum.categories.general },
+  ];
+
   useFocusEffect(
     useCallback(() => {
       startLoadingPosts();
     }, [])
   );
-
-  const handleLike = (postId) => {
-    startTogglingLike(postId);
-  };
-
-  const categories = ['Todos', 'Dudas', 'Proyectos', 'General'];
 
   const filteredPosts = activeCategory === 'Todos'
     ? posts
@@ -69,9 +74,7 @@ export const ForumScreen = ({ navigation }) => {
       content: newPostData.description,
       category: categoryToSend,
     });
-    if (success) {
-      setShowCreateModal(false);
-    }
+    if (success) setShowCreateModal(false);
   };
 
   if (selectedPost) {
@@ -79,14 +82,13 @@ export const ForumScreen = ({ navigation }) => {
       <ForumDetailView
         post={selectedPost}
         onBack={() => setSelectedPost(null)}
-        theme={theme} // 🚨 Pasamos el tema a la vista de detalle
+        theme={theme}
       />
     );
   }
 
   return (
     <SafeAreaView style={componentStyles.container} edges={['left', 'right', 'bottom']}>
-      {/* Sincronización de la barra de estado */}
       <StatusBar
         barStyle={dark ? "light-content" : "dark-content"}
         backgroundColor={dark ? colors.surface : colors.background}
@@ -95,28 +97,28 @@ export const ForumScreen = ({ navigation }) => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <CloudHeader
           userName={user?.fullName || 'Usuario'}
-          userType="¡Bienvenido al Foro!"
-          avatarUrl={user?.avatar} // 📸 Usamos avatarUrl consistente
+          userType={t.forum.title}
+          avatarUrl={user?.avatar}
           onMenuPress={() => setDrawerVisible(true)}
           theme={theme}
         />
 
         <View style={componentStyles.categoriesContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={componentStyles.categories}>
-            {categories.map((category) => (
+            {categories.map((cat) => (
               <TouchableOpacity
-                key={category}
-                onPress={() => setActiveCategory(category)}
+                key={cat.id}
+                onPress={() => setActiveCategory(cat.id)}
                 style={[
                   componentStyles.categoryButton,
-                  activeCategory === category && componentStyles.categoryButtonActive
+                  activeCategory === cat.id && componentStyles.categoryButtonActive
                 ]}
               >
                 <Text style={[
                   componentStyles.categoryText,
-                  { color: activeCategory === category ? '#FFF' : colors.onSurfaceVariant }
+                  { color: activeCategory === cat.id ? '#FFF' : colors.onSurfaceVariant }
                 ]}>
-                  {category}
+                  {cat.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -124,21 +126,20 @@ export const ForumScreen = ({ navigation }) => {
         </View>
 
         <View style={componentStyles.content}>
-          {/* Banner Adaptable */}
+          {/* Banner con saludo dinámico */}
           <View style={[componentStyles.banner, { backgroundColor: dark ? colors.primaryContainer : colors.primary }]}>
             <View style={componentStyles.bannerContent}>
               <View style={componentStyles.bannerHeader}>
                 <Text style={[componentStyles.bannerTitle, { color: dark ? colors.onPrimaryContainer : '#FFF' }]}>
-                  ¡Hola, {user?.fullName?.split(' ')[0]}!
+                  {t.forum.banner.welcome.replace('{{name}}', user?.fullName?.split(' ')[0] || '')}
                 </Text>
                 <Icon name="leaf" size={20} color={dark ? colors.onPrimaryContainer : '#FFF'} />
               </View>
               <Text style={[componentStyles.bannerDescription, { color: dark ? colors.onPrimaryContainer : '#FFF' }]}>
-                Conéctate con tu comunidad y comparte ideas verdes.
+                {t.forum.banner.description}
               </Text>
             </View>
-            <View style={[componentStyles.decorativeCircle, componentStyles.decorativeCircle1]} />
-            <View style={[componentStyles.decorativeCircle, componentStyles.decorativeCircle2]} />
+            <View style={componentStyles.decorativeCircle} />
           </View>
 
           <View style={componentStyles.postsContainer}>
@@ -147,19 +148,12 @@ export const ForumScreen = ({ navigation }) => {
             ) : (
               filteredPosts.map((post) => {
                 const postAdapted = {
+                  ...post,
                   id: post._id,
                   author: post.author?.fullName,
-                  authorInitials: post.author?.fullName ? post.author.fullName.substring(0, 2).toUpperCase() : 'US',
                   time: getTimeAgo(post.createdAt),
-                  title: post.title,
                   description: post.content,
-                  fullDescription: post.content,
                   likes: post.likes ? post.likes.length : 0,
-                  comments: post.commentsCount || 0,
-                  category: post.category,
-                  image: null,
-                  isPinned: false,
-                  isAdmin: false
                 };
 
                 return (
@@ -167,8 +161,8 @@ export const ForumScreen = ({ navigation }) => {
                     key={post._id}
                     post={postAdapted}
                     onPress={() => setSelectedPost(postAdapted)}
-                    onLikePress={() => handleLike(post._id)}
-                    theme={theme} // 🚨 Inyectamos tema en la tarjeta del post
+                    onLikePress={() => startTogglingLike(post._id)}
+                    theme={theme}
                   />
                 );
               })
@@ -176,14 +170,13 @@ export const ForumScreen = ({ navigation }) => {
 
             {!isLoading && filteredPosts.length === 0 && (
               <Text style={{ textAlign: 'center', color: colors.onSurfaceVariant, marginTop: 20 }}>
-                No hay publicaciones en esta categoría.
+                {t.forum.empty}
               </Text>
             )}
           </View>
         </View>
       </ScrollView>
 
-      {/* FAB Dinámico */}
       <TouchableOpacity
         style={[componentStyles.fab, { backgroundColor: colors.primary }]}
         onPress={() => setShowCreateModal(true)}
@@ -196,13 +189,10 @@ export const ForumScreen = ({ navigation }) => {
         visible={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreatePost}
-        theme={theme} // 🚨 Sincronización con el modal de creación
+        theme={theme}
       />
 
-      <DrawerMenu
-        visible={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
-      />
+      <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
     </SafeAreaView>
   );
 };

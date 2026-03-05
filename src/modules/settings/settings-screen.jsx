@@ -14,12 +14,15 @@ import { ChangePasswordModal } from '../../componentes/modal/settings/ChangePass
 import { ToggleConfirmModal } from '../../componentes/modal/settings/ToggleConfirmModal';
 import { EditProfileModal } from './editprofilemodal-screen';
 import { useAuthStore } from '../../hooks/use-auth-store';
-
+// 🚀 Añade estas importaciones arriba
+import { useTranslation } from '../../hooks/use-translation'; // O donde hayas creado el hook
+import { setLanguage } from '../../store/language';
+import { languageSlice } from '../../store/language';
 import { toggleTheme } from '../../store/theme';
 
 const { width } = Dimensions.get('window');
 
-// --- COMPONENTES AUXILIARES ADAPTATIVOS ---
+import { TwoFactorInfoScreen } from './two-factor-auth/two-factor-info-screen';
 
 const ToggleSwitch = ({ value, onValueChange, theme }) => (
     <Switch
@@ -65,6 +68,8 @@ const SettingsItem = ({ icon, label, value, onPress, rightComponent, isDanger, i
 };
 
 export const SettingsScreen = ({ onOpenDrawer }) => {
+    const t = useTranslation();
+    const { language } = useSelector(state => state.language);
     const navigation = useNavigation();
     const theme = useTheme(); // 🎨 Obtenemos el tema (Light o Dark)
     const { colors, dark } = theme;
@@ -74,6 +79,11 @@ export const SettingsScreen = ({ onOpenDrawer }) => {
     // 📦 Conectamos con el estado de Redux para el modo oscuro
     const { isDarkMode } = useSelector(state => state.theme);
     const dispatch = useDispatch();
+
+    const toggleLanguage = () => {
+        const newLang = language === 'es' ? 'en' : 'es';
+        dispatch(setLanguage(newLang));
+    };
 
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
@@ -112,57 +122,59 @@ export const SettingsScreen = ({ onOpenDrawer }) => {
                     <TouchableOpacity onPress={onOpenDrawer} style={styles.menuBtn}>
                         <Icon name="menu" size={26} color="#FFF" />
                     </TouchableOpacity>
-                    <Text style={[styles.headerTitle, { color: '#FFF' }]}>Configuración</Text>
+                    {/* 🗣️ Título dinámico */}
+                    <Text style={[styles.headerTitle, { color: '#FFF' }]}>{t.settings.title}</Text>
                     <View style={{ width: 40 }} />
                 </View>
             </LinearGradient>
 
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-                <SettingsSection title="GENERAL" theme={theme}>
-                    <SettingsItem icon="web" label="Idioma" value="Español" theme={theme} onPress={() => { }} />
+                {/* 🗣️ Sección General */}
+                <SettingsSection title={t.settings.general} theme={theme}>
+                    <SettingsItem
+                        icon="web"
+                        label={t.settings.language}
+                        value={language === 'es' ? 'Español' : 'English'}
+                        theme={theme}
+                        onPress={toggleLanguage}
+                    />
                     <SettingsItem
                         icon="bell-outline"
-                        label="Notificaciones"
+                        label={t.settings.notification} // Asegúrate de tenerlo en translations.js
                         theme={theme}
                         rightComponent={<ToggleSwitch value={notificationsEnabled} onValueChange={handleNotificationsToggle} theme={theme} />}
                     />
                     <SettingsItem
                         icon="theme-light-dark"
-                        label="Modo Oscuro"
-                        value={dark ? "Activado" : "Desactivado"}
+                        label={t.settings.darkMode}
+                        value={isDarkMode ? t.settings.enabled : t.settings.disabled}
                         theme={theme}
                         isLast
-                        rightComponent={<ToggleSwitch value={dark} onValueChange={handleThemeToggle} theme={theme} />}
+                        rightComponent={<ToggleSwitch value={isDarkMode} onValueChange={handleThemeToggle} theme={theme} />}
                     />
                 </SettingsSection>
 
-                <SettingsSection title="SEGURIDAD" theme={theme}>
-                    <SettingsItem icon="lock-outline" label="Cambiar Contraseña" theme={theme} onPress={() => setChangePasswordModalVisible(true)} />
-                    <SettingsItem icon="account-edit-outline" label="Editar Perfil" theme={theme} onPress={() => setEditProfileModalVisible(true)} />
+                {/* 🗣️ Sección Seguridad */}
+                <SettingsSection title={t.settings.security} theme={theme}>
+                    <SettingsItem icon="lock-outline" label={t.settings.changePassword} theme={theme} onPress={() => setChangePasswordModalVisible(true)} />
+                    <SettingsItem icon="account-edit-outline" label={t.settings.editProfile} theme={theme} onPress={() => setEditProfileModalVisible(true)} />
                     <SettingsItem
                         icon="shield-check-outline"
-                        label="Verificación en 2 pasos"
+                        label={t.settings.twoStep}
                         theme={theme}
                         isLast
+                        onPress={() => set}
                     />
                 </SettingsSection>
 
-                <SettingsSection title="AYUDA & LEGAL" theme={theme}>
-                    <SettingsItem icon="lifebuoy" label="Centro de Ayuda" theme={theme} onPress={() => setSupportModalVisible(true)} />
-                    <SettingsItem icon="file-document-outline" label="Términos y Privacidad" theme={theme} isLast onPress={() => setTermsModalVisible(true)} />
+                <SettingsSection title={t.settings.help} theme={theme}>
+                    <SettingsItem icon="lifebuoy" label={t.settings.center} theme={theme} onPress={() => setSupportModalVisible(true)} />
+                    <SettingsItem icon="file-document-outline" label={t.settings.terms} theme={theme} isLast onPress={() => setTermsModalVisible(true)} />
                 </SettingsSection>
 
                 <View style={styles.dangerZone}>
-                    <SettingsItem
-                        icon="theme-light-dark"
-                        label="Modo Oscuro"
-                        value={isDarkMode ? "Activado" : "Desactivado"}
-                        theme={theme}
-                        isLast
-                        // 💡 Usamos isDarkMode de Redux para el valor del Switch
-                        rightComponent={<ToggleSwitch value={isDarkMode} onValueChange={handleThemeToggle} theme={theme} />}
-                    />
+
                 </View>
 
                 <View style={styles.versionInfo}>
@@ -177,7 +189,7 @@ export const SettingsScreen = ({ onOpenDrawer }) => {
             <DeleteAccountModal visible={deleteAccountModalVisible} onClose={() => setDeleteAccountModalVisible(false)} userEmail={user.email} theme={theme} />
             <TermsModal visible={termsModalVisible} onClose={() => setTermsModalVisible(false)} theme={theme} />
             <ChangePasswordModal visible={changePasswordModalVisible} onClose={() => setChangePasswordModalVisible(false)} theme={theme} />
-            <EditProfileModal visible={editProfileModalVisible} onClose={() => setEditProfileModalVisible(false)} theme={theme} />
+            <EditProfileModal visible={editProfileModalVisible} onClose={() => setEditProfileModalVisible(false)} theme={theme} currentUser={user} />
             {toggleModalConfig && <ToggleConfirmModal visible={toggleModalVisible} {...toggleModalConfig} onClose={() => setToggleModalVisible(false)} theme={theme} />}
         </View>
     );

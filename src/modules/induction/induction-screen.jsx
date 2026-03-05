@@ -2,19 +2,28 @@ import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { Text, useTheme } from 'react-native-paper'; // 🚀 Importación de Paper
+import { Text, useTheme } from 'react-native-paper';
 import { CloudHeader } from '../../componentes/cards/home/CloudHeader';
 import { VideoCard } from '../../componentes/cards/VideoCard';
 import { VideoPlayerModal } from '../../componentes/modal/shared/VideoPlayerModal';
 import { useInduction } from '../../hooks/use-induction-store';
 import { useAuthStore } from '../../hooks/use-auth-store';
-
-const CATEGORIES = ['Todos', 'Tutorial', 'Reciclaje', 'Eco-Tips', 'Premios'];
+import { useTranslation } from '../../hooks/use-translation'; // 🗣️ Hook de traducción
 
 export const InductionScreen = ({ navigation, onOpenDrawer }) => {
-    const theme = useTheme(); // 🎨 Obtenemos el tema global
+    const t = useTranslation(); // 🗣️ Inicializar traducciones
+    const theme = useTheme();
     const { colors, dark } = theme;
     const componentStyles = getStyles(theme);
+
+    // 📋 Categorías dinámicas mapeadas al ID interno del store
+    const CATEGORIES = [
+        { id: 'Todos', label: t.induction.categories.all },
+        { id: 'Tutorial', label: t.induction.categories.tutorial },
+        { id: 'Reciclaje', label: t.induction.categories.recycling },
+        { id: 'Eco-Tips', label: t.induction.categories.tips },
+        { id: 'Premios', label: t.induction.categories.rewards },
+    ];
 
     const [selectedCategory, setSelectedCategory] = useState('Todos');
     const [selectedVideo, setSelectedVideo] = useState(null);
@@ -55,7 +64,6 @@ export const InductionScreen = ({ navigation, onOpenDrawer }) => {
 
     return (
         <SafeAreaView style={componentStyles.safeArea} edges={['left', 'right', 'bottom']}>
-            {/* Barra de estado dinámica */}
             <StatusBar
                 barStyle={dark ? "light-content" : "dark-content"}
                 backgroundColor={dark ? colors.surface : colors.background}
@@ -63,9 +71,9 @@ export const InductionScreen = ({ navigation, onOpenDrawer }) => {
 
             <View style={componentStyles.container}>
                 <CloudHeader
-                    userName={user.fullName} // 👤 Usando fullName corregido
-                    userType="Aprende todo sobre el reciclaje"
-                    avatarUrl={user.avatar} // 📸 Usando avatarUrl corregido
+                    userName={user.fullName}
+                    userType={t.induction.subtitle}
+                    avatarUrl={user.avatar}
                     onMenuPress={onOpenDrawer}
                 />
 
@@ -75,20 +83,20 @@ export const InductionScreen = ({ navigation, onOpenDrawer }) => {
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={componentStyles.filtersContainer}
                     >
-                        {CATEGORIES.map((category) => (
+                        {CATEGORIES.map((cat) => (
                             <TouchableOpacity
-                                key={category}
+                                key={cat.id}
                                 style={[
                                     componentStyles.filterChip,
-                                    selectedCategory === category && componentStyles.filterChipActive
+                                    selectedCategory === cat.id && componentStyles.filterChipActive
                                 ]}
-                                onPress={() => setSelectedCategory(category)}
+                                onPress={() => setSelectedCategory(cat.id)}
                             >
                                 <Text style={[
                                     componentStyles.filterText,
-                                    selectedCategory === category && componentStyles.filterTextActive
+                                    selectedCategory === cat.id && componentStyles.filterTextActive
                                 ]}>
-                                    {category}
+                                    {cat.label}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -99,7 +107,7 @@ export const InductionScreen = ({ navigation, onOpenDrawer }) => {
                     <View style={componentStyles.loadingContainer}>
                         <ActivityIndicator size="large" color={colors.primary} />
                         <Text style={[componentStyles.loadingText, { color: colors.onSurfaceVariant }]}>
-                            Cargando lecciones...
+                            {t.induction.loading}
                         </Text>
                     </View>
                 ) : (
@@ -115,13 +123,13 @@ export const InductionScreen = ({ navigation, onOpenDrawer }) => {
                                     video={video}
                                     onPress={() => handleVideoPress(video)}
                                     isCompleted={completedVideos.has(video._id)}
-                                    theme={theme} // 🚨 Pasamos el tema a la tarjeta
+                                    theme={theme}
                                 />
                             ))
                         ) : (
                             <View style={componentStyles.emptyState}>
                                 <Text style={[componentStyles.emptyText, { color: colors.onSurfaceVariant }]}>
-                                    No hay videos en esta categoría
+                                    {t.induction.empty}
                                 </Text>
                             </View>
                         )}
@@ -138,7 +146,7 @@ export const InductionScreen = ({ navigation, onOpenDrawer }) => {
                         }}
                         onVideoComplete={() => handleVideoComplete(selectedVideo._id)}
                         onLike={() => handleLike(selectedVideo._id)}
-                        theme={theme} // 🚨 Pasamos el tema al modal
+                        theme={theme}
                     />
                 )}
             </View>

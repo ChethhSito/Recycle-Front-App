@@ -13,71 +13,66 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { Text, useTheme, IconButton } from 'react-native-paper'; // 🚀 Paper para temas
+import { Text, useTheme } from 'react-native-paper';
 import QRCode from 'react-native-qrcode-svg';
+import { useTranslation } from '../../hooks/use-translation'; // 🗣️ Hook
 
 const { width } = Dimensions.get('window');
 
 export const DonationScreen = () => {
+    const t = useTranslation();
     const navigation = useNavigation();
-    const theme = useTheme(); // 🎨 Obtenemos el tema dinámico
+    const theme = useTheme();
     const { colors, dark } = theme;
     const componentStyles = getStyles(theme);
 
     const [copied, setCopied] = useState(false);
 
-    // --- DATOS DEL BENEFICIARIO ---
-    const BENEFICIARY = "Juan David Huayta Ortega"; //
-    const PHONE_NUMBER = "987 654 321";
-
+    const BENEFICIARY = t.donation.card.beneficiary;
+    const PHONE_NUMBER = "987 654 321"; // Mantener número real
     const QR_PAYLOAD = "0002010102113932d809945ad03c50dab5bbc62f328f9e5e5204561153036045802PE5906YAPERO6004Lima6304EE87";
     const YAPE_LOGO = require("../../../assets/Logo.png");
 
     const handleCopy = () => {
         Clipboard.setString(PHONE_NUMBER);
         setCopied(true);
-        Alert.alert("¡Copiado!", "Número copiado al portapapeles.");
+        Alert.alert(t.donation.alerts.copiedTitle, t.donation.alerts.copiedMsg);
         setTimeout(() => setCopied(false), 2000);
     };
 
     return (
         <SafeAreaView style={componentStyles.container}>
-            {/* Sincronización de la barra de estado */}
             <StatusBar barStyle={dark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
-            {/* Header Dinámico */}
             <View style={componentStyles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={componentStyles.backButton}>
                     <Icon name="arrow-left" size={24} color={colors.onSurface} />
                 </TouchableOpacity>
-                <Text style={[componentStyles.headerTitle, { color: colors.onSurface }]}>Hacer una donación</Text>
+                <Text style={[componentStyles.headerTitle, { color: colors.onSurface }]}>{t.donation.header}</Text>
                 <View style={{ width: 40 }} />
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={componentStyles.scrollContent}>
 
-                {/* Héroe Adaptable */}
                 <View style={componentStyles.heroSection}>
                     <View style={[componentStyles.heroIconContainer, { backgroundColor: colors.primaryContainer }]}>
                         <Icon name="hand-heart-outline" size={40} color={colors.primary} />
                     </View>
-                    <Text style={[componentStyles.heroTitle, { color: colors.onSurface }]}>Apoya nuestra causa</Text>
+                    <Text style={[componentStyles.heroTitle, { color: colors.onSurface }]}>{t.donation.hero.title}</Text>
                     <Text style={[componentStyles.heroSubtitle, { color: colors.onSurfaceVariant }]}>
-                        Escanea el QR o copia el número para realizar tu aporte voluntario.
+                        {t.donation.hero.subtitle}
                     </Text>
                 </View>
 
-                {/* --- TARJETA QR (Adaptable) --- */}
                 <View style={[componentStyles.qrCard, { backgroundColor: colors.surface }]}>
                     <View style={componentStyles.yapeHeader}>
                         <View style={componentStyles.yapeBadge}>
                             <Icon name="qrcode-scan" size={14} color="#FFF" />
                             <Text style={componentStyles.yapeBadgeText}>Yape</Text>
                         </View>
-                        <Text style={[componentStyles.cardHelperText, { color: colors.onSurfaceVariant }]}>Sin comisiones</Text>
+                        <Text style={[componentStyles.cardHelperText, { color: colors.onSurfaceVariant }]}>{t.donation.card.helper}</Text>
                     </View>
 
-                    {/* Contenedor del QR: Siempre blanco por fuera para garantizar escaneo */}
                     <View style={[componentStyles.qrContainer, { backgroundColor: '#FFF', padding: 15, borderRadius: 20 }]}>
                         <QRCode
                             value={QR_PAYLOAD}
@@ -95,14 +90,13 @@ export const DonationScreen = () => {
 
                     <View style={[componentStyles.divider, { backgroundColor: colors.outlineVariant }]} />
 
-                    {/* Sección de Copiado Dinámica */}
                     <TouchableOpacity
                         style={[componentStyles.copySection, { backgroundColor: colors.surfaceVariant }]}
                         onPress={handleCopy}
                         activeOpacity={0.7}
                     >
                         <View>
-                            <Text style={[componentStyles.copyLabel, { color: colors.onSurfaceVariant }]}>Número de celular:</Text>
+                            <Text style={[componentStyles.copyLabel, { color: colors.onSurfaceVariant }]}>{t.donation.card.phoneLabel}</Text>
                             <Text style={[componentStyles.numberText, { color: dark ? colors.primary : '#742284' }]}>{PHONE_NUMBER}</Text>
                         </View>
                         <View style={[componentStyles.copyIconBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }, copied && componentStyles.copyIconBtnSuccess]}>
@@ -122,10 +116,9 @@ export const DonationScreen = () => {
                     <Text style={[componentStyles.linkText, { color: colors.primary, fontWeight: 'bold' }]}>Nos Planét SAC</Text>
                 </TouchableOpacity>
 
-                {/* Nota de Seguridad */}
                 <View style={componentStyles.trustNote}>
                     <Icon name="shield-check-outline" size={16} color={colors.primary} />
-                    <Text style={[componentStyles.trustText, { color: colors.onSurfaceVariant }]}>Tu donación ayuda a mantener los servidores.</Text>
+                    <Text style={[componentStyles.trustText, { color: colors.onSurfaceVariant }]}>{t.donation.footer}</Text>
                 </View>
 
             </ScrollView>

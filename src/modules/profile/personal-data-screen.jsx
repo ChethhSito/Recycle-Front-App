@@ -1,33 +1,22 @@
 import React, { useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-  Image,
-  StatusBar,
-  Modal
-} from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Image, StatusBar, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, useTheme, ActivityIndicator } from 'react-native-paper'; // 🚀 Paper para temas
+import { Text, useTheme } from 'react-native-paper';
 import { ModernInput } from '../../componentes/cards/inputs/ModernInput';
 import { User, Mail, Phone, Save } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../hooks/use-auth-store';
+import { useTranslation } from '../../hooks/use-translation'; // 🗣️ Hook
 
 export const PersonalDataScreen = ({ navigation }) => {
-  const theme = useTheme(); // 🎨 Obtenemos el tema dinámico
+  const t = useTranslation();
+  const theme = useTheme();
   const { colors, dark } = theme;
   const componentStyles = getStyles(theme);
-
   const { user } = useAuthStore();
 
-  // 📝 Sincronización con los datos reales del store
   const [formData, setFormData] = useState({
     name: user.fullName || '',
     email: user.email || '',
@@ -43,25 +32,21 @@ export const PersonalDataScreen = ({ navigation }) => {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permiso denegado', 'Se necesita permiso para acceder a la galería');
+      Alert.alert(t.personalData.alerts.permissionTitle, t.personalData.alerts.permissionMsg);
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
     });
-
-    if (!result.canceled) {
-      setAvatarUri(result.assets[0].uri);
-    }
+    if (!result.canceled) setAvatarUri(result.assets[0].uri);
   };
 
   const handleSave = () => {
     if (!formData.name || !formData.email) {
-      Alert.alert('Error', 'Por favor completa los campos requeridos');
+      Alert.alert(t.personalData.alerts.errorTitle, t.personalData.alerts.emptyFields);
       return;
     }
     setShowSaveModal(true);
@@ -69,7 +54,6 @@ export const PersonalDataScreen = ({ navigation }) => {
 
   const confirmSave = () => {
     setShowSaveModal(false);
-    // 🛠️ Aquí integrarías startUpdatingProfile de tu store
     setShowSuccessModal(true);
     setTimeout(() => {
       setShowSuccessModal(false);
@@ -84,19 +68,17 @@ export const PersonalDataScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={componentStyles.container} edges={['left', 'right', 'bottom']}>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        {/* Header Dinámico */}
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
+
+        {/* Header con Textos Dinámicos */}
         <View style={[componentStyles.header, { backgroundColor: colors.greenMain }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Icon name="chevron-left" size={28} color="#FFFFFF" />
           </TouchableOpacity>
           <View style={styles.headerInfo}>
-            <Text style={[styles.headerTitle, { color: '#FFF' }]}>Datos Personales</Text>
+            <Text style={[styles.headerTitle, { color: '#FFF' }]}>{t.personalData.title}</Text>
             <Text style={[styles.headerSubtitle, { color: 'rgba(255,255,255,0.8)' }]}>
-              {isEditing ? 'Modo edición' : 'Ver información'}
+              {isEditing ? t.personalData.editing : t.personalData.viewing}
             </Text>
           </View>
           <TouchableOpacity
@@ -104,17 +86,14 @@ export const PersonalDataScreen = ({ navigation }) => {
             style={[styles.headerEditButton, { backgroundColor: dark ? colors.surfaceVariant : 'rgba(255,255,255,0.2)' }]}
           >
             <Text style={styles.editButtonText}>
-              {isEditing ? 'Cancelar' : 'Editar'}
+              {isEditing ? t.personalData.cancel : t.personalData.edit}
             </Text>
           </TouchableOpacity>
         </View>
 
-        <ScrollView
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* Avatar Section con Borde Dinámico */}
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+
+          {/* Avatar Section */}
           <View style={styles.avatarSection}>
             <Image
               source={{ uri: avatarUri }}
@@ -122,28 +101,28 @@ export const PersonalDataScreen = ({ navigation }) => {
             />
             {isEditing && (
               <TouchableOpacity style={styles.changePhotoButton} onPress={pickImage}>
-                <Text style={[styles.changePhotoText, { color: colors.primary }]}>Cambiar Foto</Text>
+                <Text style={[styles.changePhotoText, { color: colors.primary }]}>{t.personalData.changePhoto}</Text>
               </TouchableOpacity>
             )}
           </View>
 
-          {/* Formulario Adaptable */}
+          {/* Formulario con el Tema Inyectado */}
           <View style={[componentStyles.formContainer, { backgroundColor: colors.surface }]}>
             <ModernInput
-              label="Nombre Completo"
+              label={t.personalData.labels.name}
               value={formData.name}
               onChangeText={(value) => updateField('name', value)}
-              placeholder="Ingresa tu nombre completo"
+              placeholder={t.personalData.placeholders.name}
               icon={User}
               editable={isEditing}
-              theme={theme} // 🚨 Pasamos el tema al componente hijo
+              theme={theme}
             />
 
             <ModernInput
-              label="Correo Electrónico"
+              label={t.personalData.labels.email}
               value={formData.email}
               onChangeText={(value) => updateField('email', value)}
-              placeholder="tucorreo@email.com"
+              placeholder={t.personalData.placeholders.email}
               keyboardType="email-address"
               icon={Mail}
               editable={isEditing}
@@ -151,10 +130,10 @@ export const PersonalDataScreen = ({ navigation }) => {
             />
 
             <ModernInput
-              label="Teléfono"
+              label={t.personalData.labels.phone}
               value={formData.phone}
               onChangeText={(value) => updateField('phone', value)}
-              placeholder="+51 999 999 999"
+              placeholder={t.personalData.placeholders.phone}
               keyboardType="phone-pad"
               icon={Phone}
               editable={isEditing}
@@ -162,27 +141,23 @@ export const PersonalDataScreen = ({ navigation }) => {
             />
 
             <ModernInput
-              label="DNI"
+              label={t.personalData.labels.dni}
               value={formData.dni}
               placeholder="12345678"
               keyboardType="numeric"
-              editable={false} // 💡 DNI bloqueado según tu lógica
+              editable={false}
               theme={theme}
             />
 
             <View style={[componentStyles.infoBox, { backgroundColor: dark ? colors.primaryContainer : '#E8F5F1', borderLeftColor: colors.primary }]}>
               <Text style={[styles.infoText, { color: colors.onSurfaceVariant }]}>
-                💡 Tu DNI no puede ser modificado. Si necesitas cambiarlo, contacta con soporte.
+                {t.personalData.dniLock}
               </Text>
             </View>
           </View>
 
           {isEditing && (
-            <TouchableOpacity
-              onPress={handleSave}
-              style={styles.saveButtonWrapper}
-              activeOpacity={0.8}
-            >
+            <TouchableOpacity onPress={handleSave} style={styles.saveButtonWrapper} activeOpacity={0.8}>
               <LinearGradient
                 colors={dark ? [colors.primary, colors.primary] : ['#00926F', '#00C7A1']}
                 style={styles.saveButton}
@@ -190,7 +165,7 @@ export const PersonalDataScreen = ({ navigation }) => {
                 end={{ x: 1, y: 0 }}
               >
                 <Save color="#FFFFFF" size={20} />
-                <Text style={styles.saveButtonText}>Guardar Cambios</Text>
+                <Text style={styles.saveButtonText}>{t.personalData.saveChanges}</Text>
               </LinearGradient>
             </TouchableOpacity>
           )}
@@ -199,29 +174,29 @@ export const PersonalDataScreen = ({ navigation }) => {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Modales de Confirmación y Éxito Dinámicos */}
+      {/* Modales Sincronizados */}
       <Modal transparent visible={showSaveModal} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
             <View style={[styles.modalIcon, { backgroundColor: colors.primaryContainer }]}>
               <Icon name="help-circle" size={60} color={colors.primary} />
             </View>
-            <Text style={[styles.modalTitle, { color: colors.onSurface }]}>¿Guardar cambios?</Text>
+            <Text style={[styles.modalTitle, { color: colors.onSurface }]}>{t.personalData.confirmModal.title}</Text>
             <Text style={[styles.modalMessage, { color: colors.onSurfaceVariant }]}>
-              ¿Estás seguro de que deseas guardar estos cambios en tu perfil?
+              {t.personalData.confirmModal.message}
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: colors.surfaceVariant }]}
                 onPress={() => setShowSaveModal(false)}
               >
-                <Text style={{ color: colors.onSurface }}>Cancelar</Text>
+                <Text style={{ color: colors.onSurface }}>{t.personalData.cancel}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: colors.primary }]}
                 onPress={confirmSave}
               >
-                <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Guardar</Text>
+                <Text style={{ color: '#FFF', fontWeight: 'bold' }}>{t.personalData.confirmModal.confirm}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -234,9 +209,9 @@ export const PersonalDataScreen = ({ navigation }) => {
             <View style={[styles.modalIcon, { backgroundColor: dark ? 'rgba(76, 175, 80, 0.2)' : '#E8F5E9' }]}>
               <Icon name="check-circle" size={60} color={dark ? '#81C784' : "#00926F"} />
             </View>
-            <Text style={[styles.modalTitle, { color: colors.onSurface }]}>¡Éxito!</Text>
+            <Text style={[styles.modalTitle, { color: colors.onSurface }]}>{t.personalData.alerts.successTitle}</Text>
             <Text style={[styles.modalMessage, { color: colors.onSurfaceVariant }]}>
-              Tus datos han sido actualizados correctamente
+              {t.personalData.alerts.successMsg}
             </Text>
           </View>
         </View>

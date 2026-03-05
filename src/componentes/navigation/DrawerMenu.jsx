@@ -1,18 +1,18 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated, Dimensions, Image, ScrollView } from 'react-native';
-import { useTheme } from 'react-native-paper'; // 🚀 IMPORTACIÓN CORREGIDA AQUÍ
+import { View, StyleSheet, TouchableOpacity, Modal, Animated, Dimensions, Image, ScrollView } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LogOut } from 'lucide-react-native';
 import { useRequestStore } from '../../hooks/use-request-store';
-// 1. IMPORTAR EL HOOK
 import { useAuthStore } from '../../hooks/use-auth-store';
+import { useTranslation } from '../../hooks/use-translation'; // 🗣️ Importar Traducción
 
 const { width } = Dimensions.get('window');
 const DRAWER_WIDTH = width * 0.75;
 
-// Modal de Confirmación de Cierre de Sesión (Se mantiene igual)
 const LogoutModal = ({ visible, onClose, onConfirm, theme }) => {
+    const t = useTranslation(); // 🗣️ Traducción para el modal
     const { colors } = theme;
     return (
         <Modal animationType="fade" transparent={true} visible={visible} onRequestClose={onClose}>
@@ -21,22 +21,24 @@ const LogoutModal = ({ visible, onClose, onConfirm, theme }) => {
                     <View style={styles.logoutModalIconContainer}>
                         <LogOut color={colors.error} size={40} />
                     </View>
-                    <Text style={[styles.logoutModalTitle, { color: colors.onSurface }]}>Cerrar Sesión</Text>
+                    <Text style={[styles.logoutModalTitle, { color: colors.onSurface }]}>
+                        {t.logoutModal.title}
+                    </Text>
                     <Text style={[styles.logoutModalMessage, { color: colors.onSurfaceVariant }]}>
-                        ¿Estás seguro que deseas cerrar sesión?
+                        {t.logoutModal.message}
                     </Text>
                     <View style={styles.logoutModalButtons}>
                         <TouchableOpacity
                             style={[styles.logoutModalButton, { backgroundColor: colors.surfaceVariant }]}
                             onPress={onClose}
                         >
-                            <Text style={{ color: colors.onSurface }}>Cancelar</Text>
+                            <Text style={{ color: colors.onSurface }}>{t.logoutModal.cancel}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.logoutModalButton, { backgroundColor: colors.error }]}
                             onPress={onConfirm}
                         >
-                            <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Cerrar Sesión</Text>
+                            <Text style={{ color: '#FFF', fontWeight: 'bold' }}>{t.logoutModal.confirm}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -46,20 +48,17 @@ const LogoutModal = ({ visible, onClose, onConfirm, theme }) => {
 };
 
 export const DrawerMenu = ({ visible, onClose }) => {
+    const t = useTranslation(); // 🗣️ Hook de traducción
     const navigation = useNavigation();
-    const theme = useTheme(); // 🎨 Obtenemos el tema
-    // 2. EXTRAER startLogout DEL HOOK
+    const theme = useTheme();
     const { colors, dark } = theme;
-    const componentStyles = getStyles(theme); // 🛠️ Pasamos el tema a los estilos
+    const componentStyles = getStyles(theme);
     const { startLogout, user } = useAuthStore();
     const { requests } = useRequestStore();
+
     const textColor = dark ? colors.onSurface : '#FFFFFF';
-    const iconColor = dark ? colors.primary : '#FFFFFF';
     const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
     const [logoutModalVisible, setLogoutModalVisible] = useState(false);
-    const activeTask = user.role === 'RECYCLER'
-        ? requests.find(req => req.status === 'ACCEPTED')
-        : null;
 
     useEffect(() => {
         if (visible) {
@@ -78,52 +77,46 @@ export const DrawerMenu = ({ visible, onClose }) => {
         }
     }, [visible]);
 
-    const handleLogoutPress = () => {
-        setLogoutModalVisible(true);
-    };
-
-    // 3. FUNCIÓN LOGOUT SIMPLIFICADA
     const confirmLogout = () => {
         setLogoutModalVisible(false);
-        onClose(); // Cierra el drawer visualmente
-
-        // Llamada directa al hook (sin try-catch ni async/await necesarios aquí, el hook lo maneja)
+        onClose();
         startLogout();
     };
 
+    // Estructura del menú traducida dinámicamente
     const menuSections = [
         {
-            title: 'Principal',
+            title: t.drawer.sections.main,
             items: [
-                { icon: 'home', label: 'Inicio', onPress: () => navigation.navigate('Home') },
-                { icon: 'robot-happy', label: 'Asistente Virtual', onPress: () => navigation.navigate('VirtualAssistant'), highlight: true },
-                { icon: 'leaf', label: 'EcoPuntos', onPress: () => navigation.navigate('Rank') },
-                { icon: 'sprout', label: 'Tu huella verde', onPress: () => navigation.navigate('GreenFootprint') },
-                { icon: 'account', label: 'Mi perfil', onPress: () => navigation.navigate('Profile') },
-                { icon: 'handshake', label: 'Donaciones', onPress: () => navigation.navigate('Donation') },
-                // { icon: 'map', label: 'Solicitudes', onPress: () => navigation.navigate('Map') },
+                { icon: 'home', label: t.drawer.items.home, onPress: () => navigation.navigate('Home') },
+                { icon: 'robot-happy', label: t.drawer.items.assistant, onPress: () => navigation.navigate('VirtualAssistant'), highlight: true },
+                { icon: 'leaf', label: t.drawer.items.rank, onPress: () => navigation.navigate('Rank') },
+                { icon: 'sprout', label: t.drawer.items.footprint, onPress: () => navigation.navigate('GreenFootprint') },
+                { icon: 'account', label: t.drawer.items.profile, onPress: () => navigation.navigate('Profile') },
+                { icon: 'handshake', label: t.drawer.items.donations, onPress: () => navigation.navigate('Donation') },
             ]
         },
         {
-            title: 'Explorar',
+            title: t.drawer.sections.explore,
             items: [
-                { icon: 'handshake', label: 'Convenios', onPress: () => navigation.navigate('Partners') },
-                { icon: 'pine-tree', label: 'Programas Ambientales', onPress: () => navigation.navigate('EnvironmentalPrograms') },
-                { icon: 'play-circle', label: 'Inducción', onPress: () => navigation.navigate('Induction') },
-                { icon: 'forum', label: 'Foro', onPress: () => navigation.navigate('Forum') },
-                { icon: 'information', label: 'Acerca de Nos Planét', onPress: () => navigation.navigate('AboutUs') },
+                { icon: 'handshake', label: t.drawer.items.partners, onPress: () => navigation.navigate('Partners') },
+                { icon: 'pine-tree', label: t.drawer.items.programs, onPress: () => navigation.navigate('EnvironmentalPrograms') },
+                { icon: 'play-circle', label: t.drawer.items.induction, onPress: () => navigation.navigate('Induction') },
+                { icon: 'forum', label: t.drawer.items.forum, onPress: () => navigation.navigate('Forum') },
+                { icon: 'information', label: t.drawer.items.about, onPress: () => navigation.navigate('AboutUs') },
             ]
         },
         {
-            title: 'Cuenta',
+            title: t.drawer.sections.account,
             items: [
                 {
-                    icon: 'cog', label: 'Configuración', onPress: () => navigation.navigate('Settings', {
-                        // Pasamos los datos del usuario que sacaste del store
+                    icon: 'cog',
+                    label: t.drawer.items.settings,
+                    onPress: () => navigation.navigate('Settings', {
                         userAvatar: user.avatar,
                         userName: user.fullName,
                         userEmail: user.email,
-                        userPhone: user.phone // Agregamos el teléfono también
+                        userPhone: user.phone
                     })
                 },
             ]
@@ -138,7 +131,7 @@ export const DrawerMenu = ({ visible, onClose }) => {
                 <Animated.View style={[componentStyles.drawer, { transform: [{ translateX: slideAnim }] }]}>
                     <ScrollView showsVerticalScrollIndicator={false}>
 
-                        {/* HEADER: Texto Blanco sobre el verde de Nos Planét */}
+                        {/* HEADER */}
                         <View style={componentStyles.drawerHeader}>
                             <Image source={{ uri: user.avatar }} style={styles.avatar} />
                             <View style={styles.userInfo}>
@@ -147,12 +140,14 @@ export const DrawerMenu = ({ visible, onClose }) => {
                                     {user.email}
                                 </Text>
                                 <View style={[styles.pointsBadge, { backgroundColor: dark ? colors.primaryContainer : 'rgba(255,255,255,0.2)' }]}>
-                                    <Text style={{ color: textColor, fontWeight: 'bold' }}>{user.points} puntos</Text>
+                                    <Text style={{ color: textColor, fontWeight: 'bold' }}>
+                                        {user.points} {t.drawer.points}
+                                    </Text>
                                 </View>
                             </View>
                         </View>
 
-                        {/* SECCIONES: Iconos y Textos dinámicos */}
+                        {/* SECCIONES */}
                         {menuSections.map((section, idx) => (
                             <View key={idx} style={styles.menuSection}>
                                 <Text style={[styles.sectionTitle, { color: dark ? colors.primary : 'rgba(255,255,255,0.6)' }]}>
@@ -173,13 +168,14 @@ export const DrawerMenu = ({ visible, onClose }) => {
                             </View>
                         ))}
 
+                        {/* FOOTER */}
                         <View style={styles.footer}>
                             <TouchableOpacity
                                 style={[styles.logoutButton, { borderColor: textColor }]}
                                 onPress={() => setLogoutModalVisible(true)}
                             >
                                 <Icon name="logout" size={20} color={textColor} />
-                                <Text style={[styles.logoutText, { color: textColor }]}>Cerrar Sesión</Text>
+                                <Text style={[styles.logoutText, { color: textColor }]}>{t.drawer.logout}</Text>
                             </TouchableOpacity>
                         </View>
                     </ScrollView>

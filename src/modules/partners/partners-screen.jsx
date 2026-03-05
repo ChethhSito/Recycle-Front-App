@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
-import { Text, useTheme } from 'react-native-paper'; // 🚀 Importación corregida de Paper
+import { Text, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { PartnerHeader } from '../../componentes/cards/partners/PartnerHeader';
@@ -8,12 +8,12 @@ import { PartnerCard } from '../../componentes/cards/partners/PartnerCard';
 import { ContactModal } from '../../componentes/modal/partners/ContactModal';
 import { PartnerDetailModal } from '../../componentes/modal/partners/PartnerDetailModal';
 import { usePartners } from '../../hooks/use-partners-store';
-
-const { width } = Dimensions.get('window');
+import { useTranslation } from '../../hooks/use-translation'; // 🗣️ Hook de traducción
 
 export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
+    const t = useTranslation(); // 🗣️ Inicializar traducciones
     const navigation = useNavigation();
-    const theme = useTheme(); // 🎨 Obtenemos el tema (colores, fuentes, modo)
+    const theme = useTheme();
     const { colors, dark } = theme;
     const componentStyles = getStyles(theme);
 
@@ -25,12 +25,13 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
 
     const { partners, loading, refetch } = usePartners();
 
+    // 📋 Filtros traducidos dinámicamente
     const filters = [
-        { id: 'all', label: 'Todos', icon: 'view-grid-outline' },
-        { id: 'financial', label: 'Financieros', icon: 'bank-outline' },
-        { id: 'government', label: 'Gobierno', icon: 'shield-account-outline' },
-        { id: 'ong', label: 'ONGs', icon: 'hand-heart-outline' },
-        { id: 'corporate', label: 'Corporativos', icon: 'domain' },
+        { id: 'all', label: t.partners.filterLabels.all, icon: 'view-grid-outline' },
+        { id: 'financial', label: t.partners.filterLabels.financial, icon: 'bank-outline' },
+        { id: 'government', label: t.partners.filterLabels.government, icon: 'shield-account-outline' },
+        { id: 'ong', label: t.partners.filterLabels.ong, icon: 'hand-heart-outline' },
+        { id: 'corporate', label: t.partners.filterLabels.corporate, icon: 'domain' },
     ];
 
     useFocusEffect(
@@ -78,13 +79,12 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
-                        colors={[colors.primary]} // ♻️ Color dinámico
+                        colors={[colors.primary]}
                         tintColor={colors.primary}
                     />
                 }
                 contentContainerStyle={{ paddingBottom: 40 }}
             >
-                {/* Header dinámico */}
                 <PartnerHeader
                     userName={userName}
                     avatarUrl={userAvatar}
@@ -94,7 +94,7 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
 
                 <View style={componentStyles.filtersContainer}>
                     <Text style={[componentStyles.sectionTitle, { color: colors.onSurface }]}>
-                        Categorías
+                        {t.partners.categories}
                     </Text>
                     <ScrollView
                         horizontal
@@ -134,7 +134,7 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                     <View style={componentStyles.loadingContainer}>
                         <ActivityIndicator size="large" color={colors.primary} />
                         <Text style={[componentStyles.loadingText, { color: colors.primary }]}>
-                            Buscando aliados...
+                            {t.partners.loading}
                         </Text>
                     </View>
                 ) : (
@@ -151,7 +151,7 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                                         <PartnerCard
                                             partner={partnerFixed}
                                             onPress={() => handlePartnerPress(partnerFixed)}
-                                            theme={theme} // 🚨 Pasamos el tema a la sub-card
+                                            theme={theme}
                                         />
                                     </View>
                                 );
@@ -162,14 +162,14 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                             <View style={componentStyles.emptyState}>
                                 <Icon name="folder-search-outline" size={60} color={colors.outlineVariant} />
                                 <Text style={[componentStyles.emptyStateText, { color: colors.onSurfaceVariant }]}>
-                                    No hay convenios en esta categoría
+                                    {t.partners.emptyState}
                                 </Text>
                             </View>
                         )}
                     </>
                 )}
 
-                {/* Banner de Información Dinámico */}
+                {/* Banner de Información Traducido */}
                 <View style={[
                     componentStyles.infoSection,
                     { backgroundColor: dark ? colors.surfaceVariant : colors.primary }
@@ -177,9 +177,9 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                     <View style={componentStyles.infoContent}>
                         <Icon name="handshake" size={32} color="#FFF" />
                         <View style={{ flex: 1 }}>
-                            <Text style={componentStyles.infoTitle}>¿Quieres ser un aliado?</Text>
+                            <Text style={componentStyles.infoTitle}>{t.partners.allianceBanner.title}</Text>
                             <Text style={componentStyles.infoText}>
-                                Únete a nuestra red de empresas sostenibles.
+                                {t.partners.allianceBanner.subtitle}
                             </Text>
                         </View>
                     </View>
@@ -191,7 +191,7 @@ export const PartnersScreen = ({ userAvatar, userName, onOpenDrawer }) => {
                             componentStyles.contactButtonText,
                             { color: dark ? '#FFF' : colors.primary }
                         ]}>
-                            Contactar
+                            {t.partners.allianceBanner.button}
                         </Text>
                         <Icon name="arrow-right" size={16} color={dark ? '#FFF' : colors.primary} />
                     </TouchableOpacity>

@@ -1,62 +1,64 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Modal, Share, Dimensions, Image } from 'react-native';
-import { Text, useTheme, Divider } from 'react-native-paper'; // 🚀 Paper para componentes y temas
+import { View, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Modal, Share, Dimensions } from 'react-native';
+import { Text, useTheme, Divider } from 'react-native-paper';
 import { CloudHeader } from '../../componentes/cards/home/CloudHeader';
 import { MemberCard } from '../../componentes/cards/profile/MemberCard';
 import { Recycle, Droplet, Trophy, User, History, Settings, LogOut, ChevronRight, Share2 } from 'lucide-react-native';
 import { useAuthStore } from '../../hooks/use-auth-store';
+import { useTranslation } from '../../hooks/use-translation';
+import { useLevels } from '../../hooks/use-levels-store';
 
 const { width } = Dimensions.get('window');
 
 export const ProfileScreen = ({ navigation, onOpenDrawer }) => {
-  const theme = useTheme(); // 🎨 Obtenemos el tema dinámico
+  const t = useTranslation(); // 🗣️ Inicializamos traducciones
+  const theme = useTheme();
   const { colors, dark } = theme;
   const componentStyles = getStyles(theme);
-
+  const { userLevelStatus, startLoadingUserStatus } = useLevels();
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const { user } = useAuthStore();
-
+  const currentUserPoints = userLevelStatus.points.current;
+  const currentUserLevel = userLevelStatus.currentLevel.rank;
   const handleInviteFriends = async () => {
     try {
-      const message = `🌱 ¡Únete a Nos Planét! \nRecicla, gana puntos y canjea premios sostenibles. \nhttps://nosplanet.org/app`;
-      await Share.share({ message });
+      await Share.share({ message: t.profile.share.message });
     } catch (error) { console.error(error); }
   };
 
   return (
     <View style={componentStyles.mainWrapper}>
-      {/* Sincronizamos la barra de estado con el tema */}
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
 
       <ScrollView style={componentStyles.scrollView} showsVerticalScrollIndicator={false}>
 
-        {/* 1. HEADER (Adaptado a Nos Planét) */}
+        {/* 1. HEADER */}
         <CloudHeader
           userName={user?.fullName}
-          userType="Ciudadano Eco"
+          userType={t.profile.userType}
           avatarUrl={user?.avatarUrl || user?.avatar}
           onMenuPress={onOpenDrawer}
           theme={theme}
         />
 
-        {/* 2. TARJETA DE MEMBRESÍA (Inyectamos el tema) */}
+        {/* 2. TARJETA DE MEMBRESÍA */}
         <MemberCard
           userName={user?.fullName}
-          level={user?.gamification?.currentLevel?.name || "Nivel 1"}
+          level={currentUserLevel}
           avatarUrl={user?.avatarUrl || user?.avatar}
           progress={user?.gamification?.progress || 0}
-          currentPoints={user?.points || 0}
+          currentPoints={currentUserPoints}
           nextLevelPoints={user?.gamification?.points?.max || 1000}
           theme={theme}
         />
 
-        {/* 3. WIDGETS DE ESTADÍSTICAS (Colores Semánticos Dinámicos) */}
+        {/* 3. WIDGETS DE ESTADÍSTICAS */}
         <View style={componentStyles.statsGrid}>
           <QuickStat
             icon={Recycle}
             value={user?.recyclingStats?.total_kg || "0.0"}
             unit="kg"
-            label="Reciclado"
+            label={t.profile.stats.recycled}
             color={colors.primary}
             theme={theme}
           />
@@ -64,7 +66,7 @@ export const ProfileScreen = ({ navigation, onOpenDrawer }) => {
             icon={Droplet}
             value="120"
             unit="L"
-            label="Agua"
+            label={t.profile.stats.water}
             color="#00C6A0"
             theme={theme}
           />
@@ -72,47 +74,47 @@ export const ProfileScreen = ({ navigation, onOpenDrawer }) => {
             icon={Trophy}
             value="12"
             unit=""
-            label="Logros"
+            label={t.profile.stats.achievements}
             color="#FAC96E"
             theme={theme}
           />
         </View>
 
-        {/* 4. MENÚ DE OPCIONES (Estilo Premium Adaptable) */}
+        {/* 4. MENÚ DE OPCIONES */}
         <View style={componentStyles.menuWrapper}>
           <Text style={[componentStyles.menuSectionTitle, { color: colors.onSurfaceVariant }]}>
-            Cuenta y Seguridad
+            {t.profile.sections.security}
           </Text>
           <View style={[componentStyles.menuGroup, { backgroundColor: colors.surface }]}>
             <MenuOption
               icon={User}
-              title="Datos Personales"
+              title={t.profile.menu.personalData}
               theme={theme}
               onPress={() => navigation.navigate('PersonalData')}
             />
             <Divider style={{ backgroundColor: colors.outlineVariant, marginLeft: 50 }} />
             <MenuOption
               icon={History}
-              title="Historial"
+              title={t.profile.menu.history}
               theme={theme}
               onPress={() => navigation.navigate('History')}
             />
           </View>
 
           <Text style={[componentStyles.menuSectionTitle, { color: colors.onSurfaceVariant }]}>
-            Comunidad
+            {t.profile.sections.community}
           </Text>
           <View style={[componentStyles.menuGroup, { backgroundColor: colors.surface }]}>
             <MenuOption
               icon={Share2}
-              title="Invitar Amigos"
+              title={t.profile.menu.invite}
               theme={theme}
               onPress={handleInviteFriends}
             />
             <Divider style={{ backgroundColor: colors.outlineVariant, marginLeft: 50 }} />
             <MenuOption
               icon={Settings}
-              title="Configuración"
+              title={t.profile.menu.settings}
               theme={theme}
               onPress={() => navigation.navigate('Settings')}
             />
@@ -123,19 +125,20 @@ export const ProfileScreen = ({ navigation, onOpenDrawer }) => {
             onPress={() => setLogoutModalVisible(true)}
           >
             <LogOut color={colors.error} size={20} />
-            <Text style={[componentStyles.logoutText, { color: colors.error }]}>Cerrar Sesión</Text>
+            <Text style={[componentStyles.logoutText, { color: colors.error }]}>{t.profile.menu.logout}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={{ height: 50 }} />
       </ScrollView>
 
-      {/* Modal de Logout Sincronizado */}
+      {/* Modal de Logout Traducido */}
       <LogoutModal
         visible={logoutModalVisible}
         onClose={() => setLogoutModalVisible(false)}
         onConfirm={() => navigation.reset({ index: 0, routes: [{ name: 'Login' }] })}
         theme={theme}
+        t={t}
       />
     </View>
   );
@@ -167,26 +170,26 @@ const MenuOption = ({ icon: Icon, title, onPress, theme }) => (
   </TouchableOpacity>
 );
 
-const LogoutModal = ({ visible, onClose, onConfirm, theme }) => (
+const LogoutModal = ({ visible, onClose, onConfirm, theme, t }) => (
   <Modal animationType="fade" transparent visible={visible}>
     <View style={styles.modalOverlay}>
       <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
         <View style={[styles.modalAlertCircle, { backgroundColor: theme.dark ? 'rgba(211, 47, 47, 0.15)' : '#FFEBEE' }]}>
           <LogOut color={theme.colors.error} size={32} />
         </View>
-        <Text style={[styles.modalTitle, { color: theme.colors.onSurface }]}>¿Ya te vas?</Text>
+        <Text style={[styles.modalTitle, { color: theme.colors.onSurface }]}>{t.profile.logoutModal.title}</Text>
         <Text style={[styles.modalMsg, { color: theme.colors.onSurfaceVariant }]}>
-          Tu impacto ambiental es muy valioso. ¿Estás seguro de cerrar sesión?
+          {t.profile.logoutModal.message}
         </Text>
         <View style={styles.modalBtnsRow}>
           <TouchableOpacity style={styles.btnCancel} onPress={onClose}>
-            <Text style={[styles.btnCancelText, { color: theme.colors.onSurfaceVariant }]}>Cancelar</Text>
+            <Text style={[styles.btnCancelText, { color: theme.colors.onSurfaceVariant }]}>{t.profile.logoutModal.cancel}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.btnConfirm, { backgroundColor: theme.colors.error }]}
             onPress={onConfirm}
           >
-            <Text style={styles.btnConfirmText}>Cerrar Sesión</Text>
+            <Text style={styles.btnConfirmText}>{t.profile.logoutModal.confirm}</Text>
           </TouchableOpacity>
         </View>
       </View>

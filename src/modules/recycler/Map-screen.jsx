@@ -3,28 +3,33 @@ import { View, StyleSheet, TouchableOpacity, FlatList, Dimensions, ActivityIndic
 import { WebView } from 'react-native-webview';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { Text, useTheme } from 'react-native-paper'; // 🚀 Paper para temas
+import { Text, useTheme } from 'react-native-paper';
 import * as Location from 'expo-location';
 import { useRequestStore } from '../../hooks/use-request-store';
+import { useTranslation } from '../../hooks/use-translation'; // 🗣️ Hook de traducción
 
-const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
-
-// 🎨 CATEGORÍAS (Mantenemos los colores semánticos, pero adaptables)
-const getCategoryStyles = (isDark) => ({
-    PLASTIC: { color: '#29B6F6', label: 'Plástico', icon: 'bottle-soda' },
-    PAPER: { color: isDark ? '#FFA726' : '#FF9800', label: 'Papel', icon: 'package-variant' },
-    CARDBOARD: { color: isDark ? '#FFA726' : '#FF9800', label: 'Cartón', icon: 'package-variant' },
-    GLASS: { color: '#8BC34A', label: 'Vidrio', icon: 'glass-fragile' },
-    METAL: { color: '#78909C', label: 'Metal', icon: 'screw-machine-flat-top' },
-    ELECTRONICS: { color: '#E91E63', label: 'RAEE', icon: 'monitor' }
-});
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const MapScreen = () => {
+    const t = useTranslation(); // 🗣️ Inicializar traducciones
     const navigation = useNavigation();
     const theme = useTheme();
     const { colors, dark } = theme;
     const componentStyles = getStyles(theme);
-    const CATEGORIES = getCategoryStyles(dark);
+
+    // 🎨 CATEGORÍAS TRADUCIDAS DINÁMICAMENTE
+    const CATEGORIES = {
+        PLASTIC: {
+            color: '#29B6F6',
+            label: t.map?.categories?.plastic || 'Plastic', // 🛡️ Si t.map no existe, usa 'Plastic'
+            icon: 'bottle-soda'
+        },
+        PAPER: { color: dark ? '#FFA726' : '#FF9800', label: t.map.categories.paper, icon: 'package-variant' },
+        CARDBOARD: { color: dark ? '#FFA726' : '#FF9800', label: t.map.categories.cardboard, icon: 'package-variant' },
+        GLASS: { color: '#8BC34A', label: t.map.categories.glass, icon: 'glass-fragile' },
+        METAL: { color: '#78909C', label: t.map.categories.metal, icon: 'screw-machine-flat-top' },
+        ELECTRONICS: { color: '#E91E63', label: t.map.categories.raee, icon: 'monitor' }
+    };
 
     const [location, setLocation] = useState(null);
     const [selectedFilter, setSelectedFilter] = useState('all');
@@ -34,7 +39,7 @@ export const MapScreen = () => {
         (async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
-                Alert.alert("Permiso denegado", "No podemos mostrar el mapa sin tu ubicación.");
+                Alert.alert(t.map.permissions.denied, t.map.permissions.message);
                 return;
             }
             let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
@@ -45,7 +50,6 @@ export const MapScreen = () => {
         })();
     }, []);
 
-    // 🌙 FILTRO DARK MODE PARA EL MAPA (Truco de Ingeniería)
     const mapFilter = dark
         ? 'filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);'
         : '';
@@ -58,9 +62,9 @@ export const MapScreen = () => {
             ...item,
             id: item._id,
             image: item.imageUrl || item.image,
-            user: item.citizen?.fullName || item.user || 'Usuario Anónimo',
-            title: item.materialType || item.category,
-            address: item.location?.address || 'Ubicación cercana'
+            user: item.citizen?.fullName || item.user || t.map.anonymous,
+            title: item.materialType || catStyle.label,
+            address: item.location?.address || t.map.nearby
         };
 
         return (
@@ -73,7 +77,7 @@ export const MapScreen = () => {
                     <MaterialCommunityIcons name={catStyle.icon} size={24} color="#FFF" />
                 </View>
                 <View style={componentStyles.cardContent}>
-                    <Text style={componentStyles.cardTitle}>{requestData.title}</Text>
+                    <Text style={[componentStyles.cardTitle, { color: colors.onSurface }]}>{requestData.title}</Text>
                     <Text style={[componentStyles.metaText, { color: colors.onSurfaceVariant }]}>
                         {item.quantity} • {requestData.address.split(',')[0]}
                     </Text>
@@ -89,8 +93,8 @@ export const MapScreen = () => {
         <View style={[componentStyles.loadingContainer, { backgroundColor: colors.background }]}>
             <View style={[componentStyles.loaderBox, { backgroundColor: colors.elevation.level3 }]}>
                 <ActivityIndicator size="large" color={colors.primary} />
-                <Text style={[componentStyles.loadingText, { color: colors.onSurface }]}>Localizando puntos...</Text>
-                <Text style={{ color: colors.onSurfaceVariant }}>Buscando solicitudes cerca de ti</Text>
+                <Text style={[componentStyles.loadingText, { color: colors.onSurface }]}>{t.map.loading}</Text>
+                <Text style={{ color: colors.onSurfaceVariant }}>{t.map.searching}</Text>
             </View>
         </View>
     );
@@ -126,14 +130,13 @@ export const MapScreen = () => {
                 style={componentStyles.map}
             />
 
-            {/* HEADER FLOTANTE DINÁMICO */}
             <View style={componentStyles.headerWrapper}>
                 <View style={componentStyles.topNav}>
                     <TouchableOpacity style={[componentStyles.backBtn, { backgroundColor: colors.primary }]} onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={24} color="#FFF" />
                     </TouchableOpacity>
-                    <Text style={[componentStyles.headerTitle, { color: colors.onSurface, textShadowColor: dark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.8)' }]}>
-                        Solicitudes Cercanas
+                    <Text style={[componentStyles.headerTitle, { color: colors.onSurface }]}>
+                        {t.map.title}
                     </Text>
                 </View>
 
@@ -142,7 +145,7 @@ export const MapScreen = () => {
                         style={[componentStyles.filterChip, selectedFilter === 'all' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
                         onPress={() => setSelectedFilter('all')}
                     >
-                        <Text style={[componentStyles.filterChipText, { color: selectedFilter === 'all' ? '#FFF' : colors.onSurface }]}>Todos</Text>
+                        <Text style={[componentStyles.filterChipText, { color: selectedFilter === 'all' ? '#FFF' : colors.onSurface }]}>{t.map.categories.all}</Text>
                     </TouchableOpacity>
                     {Object.keys(CATEGORIES).map(key => (
                         <TouchableOpacity
@@ -161,11 +164,10 @@ export const MapScreen = () => {
                 </ScrollView>
             </View>
 
-            {/* PANEL INFERIOR DINÁMICO */}
-            <View style={[componentStyles.bottomSheet, { backgroundColor: dark ? colors.surface : colors.background }]}>
+            <View style={[componentStyles.bottomSheet, { backgroundColor: colors.surface }]}>
                 <View style={[componentStyles.dragHandle, { backgroundColor: colors.outlineVariant }]} />
                 <View style={componentStyles.sheetHeader}>
-                    <Text style={[componentStyles.sheetTitle, { color: colors.onSurface }]}>Disponibles ahora</Text>
+                    <Text style={[componentStyles.sheetTitle, { color: colors.onSurface }]}>{t.map.availableNow}</Text>
                     <View style={[componentStyles.countBadge, { backgroundColor: colors.primary }]}>
                         <Text style={componentStyles.countText}>{nearbyRequests.length}</Text>
                     </View>
@@ -180,7 +182,7 @@ export const MapScreen = () => {
                     ListEmptyComponent={
                         <View style={componentStyles.emptyContainer}>
                             <MaterialCommunityIcons name="map-marker-off" size={50} color={colors.outline} style={{ opacity: 0.3 }} />
-                            <Text style={{ color: colors.onSurfaceVariant }}>No hay solicitudes en esta zona</Text>
+                            <Text style={{ color: colors.onSurfaceVariant }}>{t.map.empty}</Text>
                         </View>
                     }
                 />
