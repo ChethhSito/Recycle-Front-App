@@ -51,6 +51,9 @@ export const HomeScreen = () => {
         startLoadingPrograms();
         startLoadingRequests();
         startLoadingUserStatus();
+        console.log("datos de user de nose que ", userLevelStatus)
+        console.log("datos de user store ", user)
+        console.log("datos programs creo ", programs)
     }, []);
 
     // Animación de pulso continua para el FAB
@@ -148,6 +151,18 @@ export const HomeScreen = () => {
         setFilterType(prev => prev === 'peso' ? 'cantidad' : 'peso');
     };
 
+    const displayLevelData = {
+        // Usamos los estilos/iconos del store de niveles (si existen)
+        ...userLevelStatus,
+        // Pero MANDAN los puntos y el progreso que vienen del usuario real
+        points: {
+            current: user?.gamification?.points?.current ?? user?.points ?? 0,
+            max: user?.gamification?.points?.max ?? userLevelStatus?.points?.max ?? 1000
+        },
+        progress: user?.gamification?.progress ?? 0,
+        currentLevel: user?.gamification?.currentLevel ?? userLevelStatus?.currentLevel
+    };
+
     return (
         <View style={[componentStyles.container, Platform.OS === 'web' && { height: height, overflow: 'hidden' }]}>
             <ScrollView
@@ -189,16 +204,17 @@ export const HomeScreen = () => {
 
                 {/* Tarjeta de Progreso */}
                 {userLevelStatus ? (
+
                     <ProgressCard
-                        badgeIcon={userLevelStatus.currentLevel.icon}
-                        badgeTitle={userLevelStatus.currentLevel.name}
-                        rank={userLevelStatus.currentLevel.rank}
-                        progress={userLevelStatus.progress}
-                        currentPoints={userLevelStatus.points.current}
-                        maxPoints={userLevelStatus.points.max}
-                        bgColor={userLevelStatus.currentLevel.color}
-                        iconColor={userLevelStatus.currentLevel.bgColor}
-                        nextLevelTitle={userLevelStatus.nextLevel.name}
+                        badgeIcon={displayLevelData.currentLevel?.icon || 'seed'}
+                        badgeTitle={displayLevelData.currentLevel?.name || 'Cargando...'}
+                        rank={displayLevelData.currentLevel?.rank || 'Nivel 1'}
+                        progress={displayLevelData.progress}
+                        currentPoints={displayLevelData.points.current}
+                        maxPoints={displayLevelData.points.max}
+                        bgColor={displayLevelData.currentLevel?.color || '#ccc'}
+                        iconColor={displayLevelData.currentLevel?.bgColor || '#eee'}
+                        nextLevelTitle={displayLevelData.nextLevel?.name || 'Siguiente Nivel'}
                     />
                 ) : (
                     <ActivityIndicator style={{ marginVertical: 20 }} color={colors.primary} />

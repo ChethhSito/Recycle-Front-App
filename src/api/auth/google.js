@@ -3,21 +3,28 @@ import * as Linking from 'expo-linking';
 import { urlBaseAuth } from "../helper/url-auth";
 
 // Asegúrate de usar TU IP REAL
-const BACKEND_URL = 'http://192.168.1.2.nip.io:3000/api/auth/google' || `${urlBaseAuth}/google`;
+const BACKEND_URL = 'http://192.168.18.9.nip.io:3000/api/auth/google' || `${urlBaseAuth}/google`;
 
 WebBrowser.maybeCompleteAuthSession();
 
 export const handleGoogleLogin = async () => {
     try {
-        // 1. PREPARAR EL NAVEGADOR (Mejora la velocidad y consistencia)
+        // 🚩 LOG 1: Verificar la URL de redirección que genera Expo
+        const expectedReturnUrl = Linking.createURL('/login');
+        console.log("1. Mi App espera que el backend regrese a:", expectedReturnUrl);
+
         await WebBrowser.warmUpAsync();
+
+        console.log("2. Abriendo navegador hacia:", BACKEND_URL);
 
         const result = await WebBrowser.openAuthSessionAsync(
             BACKEND_URL,
-            Linking.createURL('/login')
+            expectedReturnUrl // 👈 Usamos la variable que acabamos de loguear
         );
 
-        // 2. ENFRIAR EL NAVEGADOR (Crucial para que funcione la segunda vez)
+        // 🚩 LOG 2: Este solo saldrá si el navegador se cierra y regresa datos
+        console.log("3. El navegador regresó este resultado:", result);
+
         await WebBrowser.coolDownAsync();
 
         if (result.type === 'success' && result.url) {
@@ -25,13 +32,10 @@ export const handleGoogleLogin = async () => {
             return queryParams.token || null;
         }
 
-        // Si el usuario lo cerró manualmente
         return null;
-
     } catch (error) {
-        // Asegurarnos de enfriar el navegador incluso si falla
         await WebBrowser.coolDownAsync();
-        console.error("Error en Google Login helper:", error);
+        console.error("❌ Error en el flujo:", error);
         throw error;
     }
 };

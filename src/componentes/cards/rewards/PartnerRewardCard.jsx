@@ -1,18 +1,23 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { Text, useTheme } from 'react-native-paper'; // 🚀 Importamos componentes de Paper
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
 export const PartnerRewardCard = ({ reward, onPress, userPoints }) => {
+    const theme = useTheme();
+    const { colors, dark } = theme;
+    const styles = getStyles(theme);
+
     const canRedeem = userPoints >= reward.points;
     const pointsNeeded = reward.points - userPoints;
 
     const partnerThemes = {
         yape: { color: '#6C3FB5', icon: 'cellphone' },
         bcp: { color: '#002C77', icon: 'bank' },
-        corporate: { color: '#00796B', icon: 'office-building' },
+        corporate: { color: colors.primary, icon: 'office-building' },
     };
 
-    const theme = partnerThemes[reward.partnerType] || partnerThemes.corporate;
+    const partnerStyle = partnerThemes[reward.partnerType] || partnerThemes.corporate;
 
     return (
         <TouchableOpacity
@@ -25,41 +30,45 @@ export const PartnerRewardCard = ({ reward, onPress, userPoints }) => {
                 <Image source={reward.image} style={styles.image} resizeMode="cover" />
 
                 {/* Badge de Partner Flotante */}
-                <View style={[styles.partnerBadge, { backgroundColor: theme.color }]}>
-                    <Icon name={theme.icon} size={14} color="#FFF" />
+                <View style={[styles.partnerBadge, { backgroundColor: partnerStyle.color }]}>
+                    <Icon name={partnerStyle.icon} size={14} color="#FFF" />
                     <Text style={styles.partnerText}>{reward.partnerName}</Text>
                 </View>
 
                 {!canRedeem && (
-                    <View style={styles.lockOverlay}>
-                        <View style={styles.lockCircle}>
-                            <Icon name="lock" size={20} color="#666" />
+                    <View style={[styles.lockOverlay, { backgroundColor: dark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.4)' }]}>
+                        <View style={[styles.lockCircle, { backgroundColor: colors.surface }]}>
+                            <Icon name="lock" size={20} color={colors.outline} />
                         </View>
                     </View>
                 )}
             </View>
 
             <View style={styles.content}>
-                <Text style={styles.title} numberOfLines={1}>{reward.title}</Text>
-                <Text style={styles.description} numberOfLines={2}>{reward.description}</Text>
+                <Text style={[styles.title, { color: colors.onSurface }]} numberOfLines={1}>
+                    {reward.title}
+                </Text>
+                <Text style={[styles.description, { color: colors.onSurfaceVariant }]} numberOfLines={2}>
+                    {reward.description}
+                </Text>
 
                 {/* Info de Puntos */}
                 <View style={styles.pointsRow}>
-                    <View style={styles.pointsBadge}>
+                    <View style={[styles.pointsBadge, { backgroundColor: dark ? 'rgba(1, 143, 100, 0.15)' : '#E8F5F1' }]}>
                         <Icon name="leaf" size={16} color="#018f64" />
                         <Text style={styles.pointsText}>{reward.points} pts</Text>
                     </View>
                     {!canRedeem && (
-                        <Text style={styles.neededText}>Faltan {pointsNeeded} pts</Text>
+                        <Text style={[styles.neededText, { color: colors.error }]}>Faltan {pointsNeeded} pts</Text>
                     )}
                 </View>
 
                 {/* Botón */}
                 <View style={[
                     styles.button,
-                    { backgroundColor: canRedeem ? theme.color : '#F3F4F6' }
+                    { backgroundColor: canRedeem ? partnerStyle.color : colors.surfaceVariant }
                 ]}>
-                    <Text style={[styles.buttonText, { color: canRedeem ? '#FFF' : '#9CA3AF' }]}>
+                    <Text style={[styles.buttonText, { color: canRedeem ? '#FFF' : colors.outline }]}>
                         {canRedeem ? 'Canjear ahora' : 'Puntos insuficientes'}
                     </Text>
                 </View>
@@ -68,9 +77,9 @@ export const PartnerRewardCard = ({ reward, onPress, userPoints }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     card: {
-        backgroundColor: '#FFF',
+        backgroundColor: theme.colors.surface,
         borderRadius: 24,
         overflow: 'hidden',
         elevation: 4,
@@ -78,11 +87,13 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 10,
         marginBottom: 16,
+        borderWidth: 1,
+        borderColor: theme.colors.outlineVariant,
     },
     imageContainer: {
         height: 150,
         width: '100%',
-        backgroundColor: '#F0F0F0',
+        backgroundColor: theme.colors.surfaceVariant,
     },
     image: {
         width: '100%',
@@ -106,7 +117,6 @@ const styles = StyleSheet.create({
     },
     lockOverlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(255,255,255,0.4)',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -114,7 +124,6 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: '#FFF',
         justifyContent: 'center',
         alignItems: 'center',
         elevation: 3,
@@ -125,12 +134,10 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#1F2937',
         marginBottom: 4,
     },
     description: {
         fontSize: 13,
-        color: '#6B7280',
         marginBottom: 12,
     },
     pointsRow: {
@@ -142,7 +149,6 @@ const styles = StyleSheet.create({
     pointsBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#E8F5F1',
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 8,
@@ -153,7 +159,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     neededText: {
-        color: '#EF4444',
         fontSize: 12,
         fontWeight: '600',
     },

@@ -10,77 +10,78 @@ import {
 } from "../store/programs";
 import { urlPrograms } from "../api/helper/url-auth";
 import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage'; // 🔑 Crucial para el token
 
 
 export const useProgramStore = () => {
     const { programs, isLoading, activeProgram, errorMessage } = useSelector(state => state.programs);
     const dispatch = useDispatch();
 
+    const getAuthConfig = async () => {
+        const token = await AsyncStorage.getItem('user_token');
+        console.log("toke auth:", token)
+        return {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        };
+    };
 
     const startLoadingPrograms = async () => {
         dispatch(onLoadingPrograms());
-
         try {
-            // 👇 1. IMPRIME LA URL PARA VER SI ES LA CORRECTA
-            console.log("📡 Intentando conectar a:", urlPrograms);
+            const config = await getAuthConfig(); // 🎫 Obtenemos credenciales
+            console.log("📡 Conectando con token a:", urlPrograms);
 
-            const response = await axios.get(`${urlPrograms}`);
 
-            // 👇 2. IMPRIME TODO LA RESPUESTA, NO SOLO DATA
-            console.log("✅ Respuesta Status:", response.status);
-            console.log("📦 Respuesta Data:", JSON.stringify(response.data, null, 2));
-
-            dispatch(onSetPrograms(response.data));
+            const { data } = await axios.get(urlPrograms, config);
+            dispatch(onSetPrograms(data));
 
         } catch (error) {
-            console.log('❌ Error:', error.message);
-            // Si es error de red, imprime detalles
-            if (error.response) console.log('Server Error:', error.response.data);
+            console.log('❌ Error 401/500 en Programs:', error.response?.data || error.message);
             dispatch(onLoadError('Error al cargar los programas'));
         }
     };
 
     const startLoadingProgramByType = async (type) => {
         dispatch(onLoadingPrograms());
-
         try {
-            // Petición al backend
-            const { data } = await axios.get(`${urlPrograms}/${type}`);
-            // Guardamos en Redux
+            const config = await getAuthConfig();
+            const { data } = await axios.get(`${urlPrograms}/${type}`, config);
             dispatch(onSetPrograms(data));
         } catch (error) {
-            console.log('Error cargando programas', error);
-            dispatch(onLoadError('Error al cargar los programas'));
+            dispatch(onLoadError('Error al filtrar programas'));
         }
     };
 
     const startSavingProgram = async (program) => {
         dispatch(onLoadingPrograms());
-
         try {
-            // Si tiene ID (_id), es ACTUALIZACIÓN
+            const config = await getAuthConfig();
+
             if (program._id) {
-                const { data } = await axios.patch(`${urlBase}/programs/${program._id}`, program);
+                // PATCH: data es 2do param, config el 3ro
+                const { data } = await axios.patch(`${urlPrograms}/${program._id}`, program, config);
                 dispatch(onUpdateProgram(data));
                 return;
             }
 
-            // Si no tiene ID, es CREACIÓN
-            const { data } = await axios.post(`${urlBase}/programs`, program);
+            // POST: data es 2do param, config el 3ro
+            const { data } = await axios.post(urlPrograms, program, config);
             dispatch(onAddNewProgram(data));
 
         } catch (error) {
-            console.log(error);
             dispatch(onLoadError(error.response?.data?.message || 'Error al guardar'));
         }
     };
+
     const startDeletingProgram = async (id) => {
         try {
-            await axios.delete(`${urlBase}/programs/${id}`);
+            const config = await getAuthConfig();
+            await axios.delete(`${urlPrograms}/${id}`, config);
             dispatch(onDeleteProgram(id));
         } catch (error) {
-            console.log(error);
-            dispatch(onLoadError('Error al eliminar'));
+            dispatch(onLoadError('Error al eliminar el programa'));
         }
     };
     return {

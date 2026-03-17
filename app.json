@@ -21,7 +21,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.juancitoalimana.recycle"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -30,6 +31,17 @@
       "expo-font",
       "expo-asset",
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3e57adde-a8c1-4483-883e-0c78e1622181"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3e57adde-a8c1-4483-883e-0c78e1622181"
+    }
   }
 }

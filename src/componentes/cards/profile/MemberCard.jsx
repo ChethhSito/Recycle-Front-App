@@ -2,22 +2,32 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Award } from 'lucide-react-native';
-import { ProgressBar } from 'react-native-paper';
+import { ProgressBar, useTheme } from 'react-native-paper'
+import { useTranslation } from '../../../hooks/use-translation';
 
 const { width } = Dimensions.get('window');
 
-export const MemberCard = ({ 
-  userName = "Usuario", 
-  level = "Semilla de Cambio 🌱", 
+export const MemberCard = ({
+  userName,
+  level,
   avatarUrl = "https://via.placeholder.com/80",
-  progress = 0.66,
-  currentPoints = 330,
-  nextLevelPoints = 500
+  progress = 0,
+  currentPoints = 0,
+  nextLevelPoints = 100
 }) => {
+  const theme = useTheme();
+  const { colors } = theme;
+  const t = useTranslation();
+
+  // 🛡️ Valores por defecto traducidos
+  const displayUser = userName || t.memberCard.defaultUser;
+  const displayLevel = level || t.memberCard.defaultLevel;
+
   return (
     <LinearGradient
+      // 🎨 Mantenemos el verde "Recycle", pero podrías usar colors.primary si lo prefieres
       colors={['#00926F', '#007A5C']}
-      style={styles.container}
+      style={[styles.container, { shadowColor: colors.shadow }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
@@ -27,18 +37,18 @@ export const MemberCard = ({
           <View style={styles.avatarContainer}>
             <Image
               source={{ uri: avatarUrl }}
-              style={styles.avatar}
+              style={[styles.avatar, { borderColor: '#FFCB4D' }]} // Oro para el rango
             />
           </View>
-          
+
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>{userName}</Text>
+            <Text style={styles.userName}>{displayUser}</Text>
             <View style={styles.levelChip}>
-              <Text style={styles.levelText}>{level}</Text>
+              <Text style={styles.levelText}>{displayLevel}</Text>
             </View>
           </View>
 
-          {/* Trofeo a la derecha */}
+          {/* Trofeo */}
           <View style={styles.trophyContainer}>
             <Award color="#FFCB4D" size={36} fill="#FFCB4D" />
           </View>
@@ -47,11 +57,15 @@ export const MemberCard = ({
         {/* Barra de Progreso */}
         <View style={styles.progressSection}>
           <View style={styles.progressInfo}>
-            <Text style={styles.progressLabel}>Progreso al siguiente nivel</Text>
-            <Text style={styles.progressPoints}>{currentPoints}/{nextLevelPoints} pts</Text>
+            <Text style={styles.progressLabel}>
+              {t.memberCard.progressLabel} {/* 🗣️ Traducido */}
+            </Text>
+            <Text style={styles.progressPoints}>
+              {currentPoints}/{nextLevelPoints} {t.memberCard.pointsUnit}
+            </Text>
           </View>
-          <ProgressBar 
-            progress={progress} 
+          <ProgressBar
+            progress={progress}
             color="#FFCB4D"
             style={styles.progressBar}
           />
@@ -68,7 +82,6 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     overflow: 'hidden',
     elevation: 8,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -90,7 +103,6 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     backgroundColor: '#eee',
     borderWidth: 3,
-    borderColor: '#FFCB4D',
   },
   userInfo: {
     flex: 1,
@@ -98,7 +110,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#FFFFFF', // Siempre blanco sobre fondo verde
     marginBottom: 8,
   },
   levelChip: {

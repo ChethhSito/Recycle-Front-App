@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Card, Text, ProgressBar, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { useTranslation } from '../../../hooks/use-translation';
 
 export const ProgressCard = ({
     badgeIcon,
@@ -15,6 +16,7 @@ export const ProgressCard = ({
     nextLevelTitle,
 }) => {
     const theme = useTheme();
+    const t = useTranslation();
     const componentStyles = styles(theme);
 
     return (
@@ -30,13 +32,16 @@ export const ProgressCard = ({
                     </View>
                 </View>
 
+                {/* 🗣️ Traducción de "Siguiente nivel" */}
                 <Text style={componentStyles.progressText}>
-                    Siguiente nivel: {nextLevelTitle}
+                    {t.home.nextLevel} {nextLevelTitle}
                 </Text>
 
+                {/* 🗣️ Traducción de "TU PROGRESO ACTUAL" */}
                 <Text style={[componentStyles.progressLabel, { color: iconColor }]}>
-                    TU PROGRESO ACTUAL
+                    {t.home.currentProgress}
                 </Text>
+
                 <ProgressBar
                     progress={progress}
                     color={iconColor}
@@ -44,7 +49,10 @@ export const ProgressCard = ({
                 />
 
                 <View style={componentStyles.pointsContainer}>
-                    <Text style={componentStyles.points}>{currentPoints}/{maxPoints} pts</Text>
+                    {/* 🗣️ Traducción de la unidad "pts" */}
+                    <Text style={componentStyles.points}>
+                        {currentPoints}/{maxPoints} {t.home.pointsUnit}
+                    </Text>
                 </View>
             </Card.Content>
         </Card>

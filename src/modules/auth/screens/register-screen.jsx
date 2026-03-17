@@ -154,7 +154,7 @@ export const RegisterScreen = ({ navigation }) => {
                                     onPress={() => setRole('citizen')}
                                 >
                                     <MaterialCommunityIcons name="human-greeting" size={20} color={role === 'citizen' ? '#FFF' : '#31253B'} />
-                                    <Text style={[styles.roleText, role === 'citizen' && styles.roleTextActive]}>Ciudadano</Text>
+                                    <Text style={[styles.roleText, role === 'citizen' && styles.roleTextActive]}>Generador</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
@@ -172,7 +172,10 @@ export const RegisterScreen = ({ navigation }) => {
                                 render={({ field: { onChange, value } }) => (
                                     <TextInput
                                         mode="flat" placeholder="Nombres Completos:"
-                                        placeholderTextColor="#384745" style={styles.input} value={value} onChangeText={onChange}
+                                        placeholderTextColor="#000000"
+                                        textColor="#000000"
+                                        style={styles.input}
+                                        value={value} onChangeText={onChange}
                                         underlineColor="transparent" activeUnderlineColor="transparent"
                                         left={<TextInput.Icon icon="account" color="#000000" />}
                                         disabled={isLoading}
@@ -188,7 +191,9 @@ export const RegisterScreen = ({ navigation }) => {
                                         render={({ field: { onChange, value } }) => (
                                             <TextInput
                                                 mode="flat" placeholder="DNI / Documento:"
-                                                placeholderTextColor="#384745" style={styles.input} value={value} onChangeText={onChange}
+                                                placeholderTextColor="#000000"
+                                                textColor="#000000"
+                                                style={styles.input} value={value} onChangeText={onChange}
                                                 keyboardType="numeric" underlineColor="transparent" activeUnderlineColor="transparent"
                                                 left={<TextInput.Icon icon="card-account-details" color="#000000" />}
                                                 disabled={isLoading}
@@ -200,7 +205,8 @@ export const RegisterScreen = ({ navigation }) => {
                                         render={({ field: { onChange, value } }) => (
                                             <TextInput
                                                 mode="flat" placeholder="Número de celular:"
-                                                placeholderTextColor="#384745" style={styles.input} value={value} onChangeText={onChange}
+                                                placeholderTextColor="#000000"
+                                                textColor="#000000" style={styles.input} value={value} onChangeText={onChange}
                                                 keyboardType="phone-pad" underlineColor="transparent" activeUnderlineColor="transparent"
                                                 left={<TextInput.Icon icon="phone" color="#000000" />}
                                                 disabled={isLoading}
@@ -214,7 +220,8 @@ export const RegisterScreen = ({ navigation }) => {
                                 control={control} name="email" rules={{ required: true, validate: (text) => validateEmail(text) }}
                                 render={({ field: { onChange, value } }) => (
                                     <TextInput
-                                        mode="flat" placeholder="Email:" placeholderTextColor="#384745" style={styles.input}
+                                        mode="flat" placeholder="Email:" placeholderTextColor="#000000"
+                                        textColor="#000000" style={styles.input}
                                         value={value} onChangeText={(text) => onChange(text.trim())} underlineColor="transparent" activeUnderlineColor="transparent"
                                         left={<TextInput.Icon icon="email" color="#000000" />}
                                         disabled={isLoading}
@@ -242,7 +249,8 @@ export const RegisterScreen = ({ navigation }) => {
                                 rules={{ required: true }}
                                 render={({ field: { onChange, value } }) => (
                                     <TextInput
-                                        mode="flat" placeholder="Confirmar Contraseña:" placeholderTextColor="#384745" style={styles.input}
+                                        mode="flat" placeholder="Confirmar Contraseña:" placeholderTextColor="#000000"
+                                        textColor="#000000" style={styles.input}
                                         value={value} onChangeText={onChange}
                                         secureTextEntry={!showConfirmPassword}
                                         underlineColor="transparent" activeUnderlineColor="transparent"
@@ -257,6 +265,7 @@ export const RegisterScreen = ({ navigation }) => {
                                 <Button
                                     mode="contained"
                                     onPress={handleSubmit(onSubmit)}
+                                    textColor="#fff"
                                     style={styles.registerBtn}
                                     labelStyle={{ fontSize: 16 }}
                                     disabled={isLoading}

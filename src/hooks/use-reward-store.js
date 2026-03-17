@@ -1,5 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // 🔑 Importante
 import { urlRewards } from '../api/helper/url-auth'; // Asegúrate de definir urlRewards si prefieres
 import {
     onAddNewReward,
@@ -15,19 +16,25 @@ export const useRewardsStore = () => {
 
     const { rewards, isLoading, activeReward, errorMessage } = useSelector(state => state.rewards);
     const dispatch = useDispatch();
-
+    const getAuthConfig = async () => {
+        const token = await AsyncStorage.getItem('user_token');
+        return {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        };
+    };
     // ==========================================
     // CARGAR PREMIOS (Con filtro opcional)
     // ==========================================
     const startLoadingRewards = async () => {
         dispatch(onLoadingRewards());
         try {
-            const { data } = await axios.get(`${urlRewards}`);
-
+            const config = await getAuthConfig();
+            const { data } = await axios.get(`${urlRewards}`, config);
             dispatch(onSetRewards(data));
-
         } catch (error) {
-            console.log('Error cargando premios:', error);
+            console.log('Error cargando premios:', error.response?.data || error);
             dispatch(onLoadError('Error al cargar los premios'));
         }
     };
@@ -35,21 +42,25 @@ export const useRewardsStore = () => {
     const startLoadingRewardsByCategory = async (category) => {
         dispatch(onLoadingRewards());
         try {
-            const { data } = await axios.get(`${urlRewards}?category=${category}`);
+            const config = await getAuthConfig();
+            const { data } = await axios.get(`${urlRewards}?category=${category}`, config);
             dispatch(onSetRewards(data));
         } catch (error) {
-            console.log('Error cargando premios:', error);
-            dispatch(onLoadError('Error al cargar los premios'));
+            dispatch(onLoadError('Error al cargar los premios por categoría'));
         }
     };
 
+    // ==========================================
+    // CRUD DE PREMIOS (POST, PATCH, DELETE)
+    // ==========================================
     const createReward = async (reward) => {
         dispatch(onLoadingRewards());
         try {
-            const { data } = await axios.post(`${urlRewards}`, reward);
+            const config = await getAuthConfig();
+            // Nota: data es el 2do param, config el 3ro
+            const { data } = await axios.post(`${urlRewards}`, reward, config);
             dispatch(onAddNewReward(data));
         } catch (error) {
-            console.log('Error creando premio:', error);
             dispatch(onLoadError('Error al crear el premio'));
         }
     };
@@ -57,10 +68,10 @@ export const useRewardsStore = () => {
     const updateReward = async (reward) => {
         dispatch(onLoadingRewards());
         try {
-            const { data } = await axios.patch(`${urlRewards}/${reward._id}`, reward);
+            const config = await getAuthConfig();
+            const { data } = await axios.patch(`${urlRewards}/${reward._id}`, reward, config);
             dispatch(onUpdateReward(data));
         } catch (error) {
-            console.log('Error actualizando premio:', error);
             dispatch(onLoadError('Error al actualizar el premio'));
         }
     };
@@ -68,21 +79,17 @@ export const useRewardsStore = () => {
     const deleteReward = async (rewardId) => {
         dispatch(onLoadingRewards());
         try {
-            await axios.delete(`${urlRewards}/${rewardId}`);
+            const config = await getAuthConfig();
+            await axios.delete(`${urlRewards}/${rewardId}`, config);
             dispatch(onDeleteReward(rewardId));
         } catch (error) {
-            console.log('Error eliminando premio:', error);
             dispatch(onLoadError('Error al eliminar el premio'));
         }
     };
 
-    // ==========================================
-    // SELECCIONAR PREMIO ACTIVO
-    // ==========================================
     const setActiveReward = (reward) => {
         dispatch(onSetActiveReward(reward));
     };
-
     return {
         // Propiedades
         rewards,

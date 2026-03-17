@@ -19,12 +19,12 @@ import { handleGoogleLogin } from '../../../api/auth/google';
 import { useAuthStore } from '../../../hooks/use-auth-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AwesomeAlert } from '../../../componentes/modal/modal';
-
+import { useDispatch } from 'react-redux';
 const { width, height } = Dimensions.get('window');
 
 export const LoginScreen = ({ navigation }) => {
     const { startLogin, errorMessage, status } = useAuthStore();
-
+    const dispatch = useDispatch();
     const loading = status === 'checking';
     const [googleLoading, setGoogleLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -143,6 +143,7 @@ export const LoginScreen = ({ navigation }) => {
                                 mode="flat"
                                 placeholder="Email:"
                                 placeholderTextColor="#000000"
+                                textColor="#000000" // 🚀 AGREGA ESTO: Fuerza el texto a negro siempre
                                 style={styles.input}
                                 value={value}
                                 onChangeText={onChange}
@@ -163,6 +164,7 @@ export const LoginScreen = ({ navigation }) => {
                                 mode="flat"
                                 placeholder="Contraseña:"
                                 placeholderTextColor="#000000"
+                                textColor="#000000" // 🚀 AGREGA ESTO: Fuerza el texto a negro siempre
                                 style={styles.input}
                                 value={value}
                                 onChangeText={onChange}
@@ -191,6 +193,7 @@ export const LoginScreen = ({ navigation }) => {
                         mode="contained"
                         onPress={handleSubmit(onSubmit)}
                         style={styles.loginBtn}
+                        textColor="#fff"
                         labelStyle={{ fontSize: 16 }}
                         loading={loading}    // Muestra ruedita
                         disabled={loading}   // Evita doble click
@@ -202,6 +205,7 @@ export const LoginScreen = ({ navigation }) => {
                         icon={() => <GoogleIcon />}
                         loading={googleLoading}
                         disabled={googleLoading}
+
                         onPress={onGooglePress}
                         style={styles.googleBtn}
                         labelStyle={{ color: '#000000', fontSize: 16 }}

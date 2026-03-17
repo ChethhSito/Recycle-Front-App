@@ -18,6 +18,23 @@ export const translations = {
             center: "Centro de ayuda"
 
         },
+        ai: {
+            title: "Planet Bot",
+            subtitle: "Asistente Planetario",
+            welcome: "¡Hola! Soy Planet Bot 🌿. Estoy aquí para ayudarte a reciclar mejor. Selecciona una pregunta de arriba o escribe la tuya.",
+            suggested: "Preguntas frecuentes:",
+            placeholder: "Escribe tu duda sobre reciclaje...",
+            typing: "Planet Bot está escribiendo...",
+            error: "❌ Lo siento, Planet Bot tuvo un problema. Intenta de nuevo.",
+            tips: [
+                "💡 ¿Sabías que? Una botella de plástico tarda 500 años en degradarse.",
+                "🌿 ¡Reciclar 1 tonelada de papel salva 17 árboles!",
+                "🧴 Recuerda lavar y aplastar tus botellas antes de reciclarlas.",
+                "🔋 Las pilas nunca van a la basura común, ¡son tóxicas!",
+                "🔄 La economía circular ayuda a reducir residuos.",
+                "🌍 Pequeñas acciones generan grandes cambios."
+            ]
+        },
         password: {
             description: "Crea una contraseña segura de al menos 8 caracteres",
             currentLabel: "Contraseña Actual",
@@ -245,8 +262,54 @@ export const translations = {
                 message: "🌱 ¡Únete a Nos Planét! \nRecicla, gana puntos y canjea premios sostenibles. \nhttps://nosplanet.org/app"
             }
         },
+        rewards: {
+            title: "Recompensas",
+            explore: "Explorar categorías",
+            searching: "Buscando recompensas...",
+            empty: "No hay premios disponibles en esta categoría por ahora.",
+            successTitle: "¡Canje Exitoso! 🎉",
+            successMsg: "Has canjeado \"{{title}}\".\n\nRevisa tu correo para las instrucciones.",
+            accept: "Aceptar",
+            categories: {
+                all: "Todos",
+                partners: "Convenios",
+                products: "Productos",
+                discounts: "Descuentos",
+                experiences: "Experiencias",
+                donations: "Donaciones"
+            },
+            greeting: "Hola, {{name}}",
+            headerTitle: "Tienda de Premios",
+            pointsLabel: "Tus EcoPuntos",
+            historyText: "Historial",
+            modal: {
+                confirmTitle: "Confirmar Canje",
+                confirmPrompt: "¿Estás seguro que deseas canjear tus puntos por:",
+                currentPoints: "Tus puntos actuales:",
+                pointsToRedeem: "Puntos a canjear:",
+                remainingPoints: "Puntos restantes:",
+                warningLow: "Te quedarán pocos puntos. ¡Sigue reciclando!",
+                redeemNote: "Recibirás un código de canje que podrás usar para reclamar tu premio.",
+                cancel: "Cancelar",
+                confirm: "Confirmar",
+                locked: "Bloqueado",
+                needed: "Puntos necesarios",
+                missing: "Te faltan {{count}} puntos",
+                canRedeem: "¡Puedes canjearlo!",
+                description: "Descripción",
+                details: "Detalles",
+                stock: "Stock disponible: {{count}} unidades",
+                validUntil: "Válido hasta: {{date}}",
+                sponsored: "Patrocinado por: {{name}}",
+                terms: "Términos y Condiciones",
+                actionRedeem: "Canjear Premio"
+            }
+        },
         home: {
             greeting: "Hola",
+            nextLevel: "Siguiente nivel:",
+            currentProgress: "TU PROGRESO ACTUAL",
+            pointsUnit: "pts",
             roles: { citizen: "Generador", recycler: "Reciclador" },
             quote: "El mejor momento para plantar un árbol fue hace 20 años. El segundo mejor momento es ahora.",
             activeTask: { title: "Recojo en curso", subtitle: "Ver detalles de la ruta" },
@@ -345,7 +408,40 @@ export const translations = {
             },
             create: {
                 success: "Publicación creada con éxito"
-            }
+            },
+            createPost: {
+                title: "Crear Publicación",
+                labels: {
+                    category: "Categoría",
+                    title: "Título",
+                    description: "Descripción",
+                    image: "Imagen (opcional)",
+                    addImage: "Agregar imagen"
+                },
+                placeholders: {
+                    title: "¿Qué quieres compartir?",
+                    description: "Cuéntanos más detalles..."
+                },
+                alerts: {
+                    permissionTitle: "Permiso denegado",
+                    permissionMsg: "Necesitamos permiso para acceder a tus fotos y compartir tu idea."
+                },
+                buttons: {
+                    submit: "Publicar"
+                }
+            },
+            banner: {
+                welcome: "¡Hola, {{name}}! 🌱",
+                description: "Conéctate con tu comunidad y comparte ideas verdes."
+            },
+            empty: "No hay publicaciones en esta categoría todavía.",
+            categories: {
+                all: "Todos",
+                doubts: "Dudas",
+                projects: "Proyectos",
+                general: "General"
+            },
+            title2: "Foro Comunitario",
         },
         donation: {
             header: "Hacer una donación",
@@ -465,6 +561,16 @@ export const translations = {
                 copyright: "© 2025 Nos Planét SAC. Todos los derechos reservados."
             }
         },
+        assistant: {
+            title: "Asistente Virtual",
+            messages: [
+                "¡Hola! ¿Tienes dudas sobre reciclaje? 🌱",
+                "¡Bienvenido! Estoy aquí para ayudarte 👋",
+                "¿Necesitas ayuda con algo? Pregúntame 💬",
+                "Aprende a reciclar mejor conmigo 📚",
+                "¿Sabías que puedo ayudarte 24/7? ⏰"
+            ]
+        },
         rank: {
             loading: "Cargando rangos...",
             levelLabel: "Nivel",
@@ -476,7 +582,24 @@ export const translations = {
             shareBtn: "Compartir",
             points: "puntos",
             shareMessage: "🌿 *¡Mi Progreso en Nos Planét!* 🌿\n\n🏆 *Rango Actual:* {{name}} (Nivel {{level}})\n✨ _{{desc}}_\n\nPuntos: {{current}} / {{max}} XP\n\n♻️ ¡Ayúdame a salvar el planeta! 🌎"
-        }
+        },
+        memberCard: {
+            progressLabel: "Progreso al siguiente nivel",
+            defaultLevel: "Semilla de Cambio 🌱",
+            defaultUser: "Usuario",
+            pointsUnit: "pts"
+        },
+        team: {
+            title: "Nuestro Equipo",
+            leadership: "Liderazgo",
+            devTeam: "Equipo de Desarrollo",
+            roles: {
+                ceo: "CEO & Fundadora",
+                ops: "Director de Operaciones",
+                dev: "Desarrollador"
+            }
+        },
+
     },
     en: {
         settings: {
@@ -495,6 +618,22 @@ export const translations = {
             deleteAccount: "Delete Account",
             help: "Support & Legal",
             center: "Help Center"
+        },
+        team: {
+            title: "Our Team",
+            leadership: "Leadership",
+            devTeam: "Development Team",
+            roles: {
+                ceo: "CEO & Founder",
+                ops: "Director of Operations",
+                dev: "Developer"
+            }
+        },
+        memberCard: {
+            progressLabel: "Progress to next level",
+            defaultLevel: "Seed of Change 🌱",
+            defaultUser: "User",
+            pointsUnit: "pts"
         },
         map: {
             title: "Nearby Requests",
@@ -516,6 +655,59 @@ export const translations = {
                 glass: "Glass",
                 metal: "Metal",
                 raee: "WEEE"
+            }
+        },
+        assistant: {
+            title: "Virtual Assistant",
+            messages: [
+                "Hi! Do you have questions about recycling? 🌱",
+                "Welcome! I'm here to help you 👋",
+                "Need help with something? Ask me 💬",
+                "Learn to recycle better with me 📚",
+                "Did you know I can help you 24/7? ⏰"
+            ]
+        },
+        rewards: {
+            title: "Rewards",
+            explore: "Explore categories",
+            searching: "Looking for rewards...",
+            empty: "No rewards available in this category for now.",
+            successTitle: "Successful Exchange! 🎉",
+            successMsg: "You have redeemed \"{{title}}\".\n\nCheck your email for instructions.",
+            accept: "Accept",
+            categories: {
+                all: "All",
+                partners: "Partnerships",
+                products: "Products",
+                discounts: "Discounts",
+                experiences: "Experiences",
+                donations: "Donations"
+            },
+            greeting: "Hello, {{name}}",
+            headerTitle: "Reward Store",
+            pointsLabel: "Your EcoPoints",
+            historyText: "History",
+            modal: {
+                confirmTitle: "Confirm Exchange",
+                confirmPrompt: "Are you sure you want to redeem your points for:",
+                currentPoints: "Your current points:",
+                pointsToRedeem: "Points to redeem:",
+                remainingPoints: "Remaining points:",
+                warningLow: "You will have few points left. Keep recycling!",
+                redeemNote: "You will receive a redemption code that you can use to claim your prize.",
+                cancel: "Cancel",
+                confirm: "Confirm",
+                locked: "Locked",
+                needed: "Points needed",
+                missing: "You are missing {{count}} points",
+                canRedeem: "You can redeem it!",
+                description: "Description",
+                details: "Details",
+                stock: "Available stock: {{count}} units",
+                validUntil: "Valid until: {{date}}",
+                sponsored: "Sponsored by: {{name}}",
+                terms: "Terms and Conditions",
+                actionRedeem: "Redeem Prize"
             }
         },
         rank: {
@@ -582,7 +774,40 @@ export const translations = {
             },
             create: {
                 success: "Post created successfully"
-            }
+            },
+            createPost: {
+                title: "Create Post",
+                labels: {
+                    category: "Category",
+                    title: "Title",
+                    description: "Description",
+                    image: "Image (optional)",
+                    addImage: "Add image"
+                },
+                placeholders: {
+                    title: "What's on your mind?",
+                    description: "Tell us more details..."
+                },
+                alerts: {
+                    permissionTitle: "Permission denied",
+                    permissionMsg: "We need permission to access your photos to share your idea."
+                },
+                buttons: {
+                    submit: "Publish"
+                }
+            },
+            banner: {
+                welcome: "Hello, {{name}}! 🌱",
+                description: "Connect with your community and share green ideas."
+            },
+            empty: "No posts in this category yet.",
+            categories: {
+                all: "All",
+                doubts: "Doubts",
+                projects: "Projects",
+                general: "General"
+            },
+            title2: "Community Forum",
         },
         forumDetail: {
             commentsTitle: "Comments",
@@ -679,6 +904,9 @@ export const translations = {
             }
         },
         home: {
+            nextLevel: "Next level:",
+            currentProgress: "YOUR CURRENT PROGRESS",
+            pointsUnit: "pts",
             greeting: "Hello",
             roles: { citizen: "Self-generator", recycler: "Recycler" },
             quote: "The best time to plant a tree was 20 years ago. The second best time is now.",
@@ -730,6 +958,23 @@ export const translations = {
                 copiedMsg: "Number copied to clipboard."
             },
             footer: "Your donation helps maintain the servers."
+        },
+        ai: {
+            title: "Planet Bot",
+            subtitle: "Planetary Assistant",
+            welcome: "Hi! I'm Planet Bot 🌿. I'm here to help you recycle better. Select a question above or write your own.",
+            suggested: "Frequently Asked Questions:",
+            placeholder: "Write your question about recycling...",
+            typing: "Planet Bot is typing...",
+            error: "❌ Sorry, Planet Bot had a problem. Try again.",
+            tips: [
+                "💡 Did you know? A plastic bottle takes 500 years to decompose.",
+                "🌿 Recycling 1 ton of paper saves 17 trees!",
+                "🧴 Remember to wash and crush your bottles before recycling.",
+                "🔋 Batteries never go in regular trash, they are toxic!",
+                "🔄 Circular economy helps reduce waste.",
+                "🌍 Small actions generate big changes."
+            ]
         },
         partners: {
             title: "Partnerships",

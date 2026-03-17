@@ -23,6 +23,7 @@ export const EnvironmentalProgramsScreen = ({ navigation, onOpenDrawer }) => {
 
     useEffect(() => {
         startLoadingPrograms();
+        console.log("programs", programs)
     }, []);
 
     const safePrograms = Array.isArray(programs) ? programs : [];

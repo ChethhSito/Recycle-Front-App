@@ -133,7 +133,7 @@ export const DrawerMenu = ({ visible, onClose }) => {
 
                         {/* HEADER */}
                         <View style={componentStyles.drawerHeader}>
-                            <Image source={{ uri: user.avatar }} style={styles.avatar} />
+                            {/* 1. La Info del Usuario ahora va a la IZQUIERDA */}
                             <View style={styles.userInfo}>
                                 <Text style={[styles.userName, { color: textColor }]}>{user.fullName}</Text>
                                 <Text style={[styles.userEmail, { color: dark ? colors.onSurfaceVariant : 'rgba(255,255,255,0.7)' }]}>
@@ -141,10 +141,23 @@ export const DrawerMenu = ({ visible, onClose }) => {
                                 </Text>
                                 <View style={[styles.pointsBadge, { backgroundColor: dark ? colors.primaryContainer : 'rgba(255,255,255,0.2)' }]}>
                                     <Text style={{ color: textColor, fontWeight: 'bold' }}>
-                                        {user.points} {t.drawer.points}
+                                        {user.points || 0} {t.drawer.points}
                                     </Text>
                                 </View>
                             </View>
+
+                            {/* 2. El Avatar ahora va a la DERECHA con Placeholder */}
+                            {user.avatar ? (
+                                <Image source={{ uri: user.avatar }} style={styles.avatar} />
+                            ) : (
+                                <View style={[styles.avatar, {
+                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }]}>
+                                    <Icon name="account" size={40} color={textColor} />
+                                </View>
+                            )}
                         </View>
 
                         {/* SECCIONES */}

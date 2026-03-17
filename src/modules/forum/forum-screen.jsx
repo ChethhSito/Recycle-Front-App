@@ -71,8 +71,9 @@ export const ForumScreen = ({ navigation }) => {
     const categoryToSend = newPostData.category || 'General';
     const success = await startSavingPost({
       title: newPostData.title,
-      content: newPostData.description,
+      description: newPostData.description,
       category: categoryToSend,
+      image: newPostData.image, // 📸 ¡Esta es la pieza que faltaba!
     });
     if (success) setShowCreateModal(false);
   };
@@ -147,6 +148,9 @@ export const ForumScreen = ({ navigation }) => {
               <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
             ) : (
               filteredPosts.map((post) => {
+                // 1. Verificamos si el usuario actual está en el array de likes
+                const isLiked = post.likes?.includes(user?.uid || user?._id);
+
                 const postAdapted = {
                   ...post,
                   id: post._id,
@@ -154,6 +158,7 @@ export const ForumScreen = ({ navigation }) => {
                   time: getTimeAgo(post.createdAt),
                   description: post.content,
                   likes: post.likes ? post.likes.length : 0,
+                  isLiked: isLiked, // 🚀 Pasamos el estado del Like
                 };
 
                 return (

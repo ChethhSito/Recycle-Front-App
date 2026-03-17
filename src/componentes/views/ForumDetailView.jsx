@@ -36,6 +36,10 @@ export const ForumDetailView = ({ post, onBack }) => {
   };
 
   useEffect(() => {
+    console.log("post que tiene ", post)
+  }, []);
+
+  useEffect(() => {
     Animated.parallel([
       Animated.timing(slideAnim, { toValue: 0, duration: 400, useNativeDriver: true, easing: Easing.out(Easing.cubic) }),
       Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
@@ -101,9 +105,17 @@ export const ForumDetailView = ({ post, onBack }) => {
               <Text style={styles.headerSubtitle}>{post?.time}</Text>
             </View>
             <View style={[styles.headerAvatar, { backgroundColor: colors.primaryContainer }]}>
-              <Text style={[styles.headerAvatarText, { color: colors.onPrimaryContainer }]}>
-                {post?.avatarUrl}
-              </Text>
+              <View style={styles.headerAvatarContainer}>
+                {post?.avatarUrl ? (
+                  <Image source={{ uri: post.avatarUrl }} style={styles.headerAvatarImage} />
+                ) : (
+                  <View style={[styles.headerAvatar, { backgroundColor: colors.primaryContainer }]}>
+                    <Text style={{ color: colors.onPrimaryContainer }}>
+                      {post?.author?.substring(0, 1).toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
           </View>
 
@@ -125,6 +137,16 @@ export const ForumDetailView = ({ post, onBack }) => {
                 </View>
               </View>
             </View>
+
+            {post?.imageUrl && (
+              <View style={styles.imageContainer}>
+                <Image
+                  source={{ uri: post.imageUrl }}
+                  style={styles.postImage}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
 
             <View style={[styles.contentBox, { backgroundColor: colors.primaryContainer }]}>
               <Text style={[styles.contentText, { color: colors.onPrimaryContainer }]}>
@@ -216,6 +238,23 @@ const getStyles = (theme) => StyleSheet.create({
 // Estilos de Layout
 const styles = StyleSheet.create({
   animatedContainer: { flex: 1 },
+
+  imageContainer: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(0,0,0,0.05)', // Fondo neutro mientras carga
+    elevation: 3, // Sombra en Android
+    shadowColor: '#000', // Sombra en iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  postImage: {
+    width: '100%',
+    height: 250, // Altura fija para mantener consistencia
+  },
   header: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 16, flexDirection: 'row', alignItems: 'center' },
   backButton: { marginRight: 12 },
   headerInfo: { flex: 1 },

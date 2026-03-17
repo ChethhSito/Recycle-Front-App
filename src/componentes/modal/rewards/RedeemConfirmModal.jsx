@@ -1,94 +1,67 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { useTranslation } from '../../../hooks/use-translation';
+import { useTheme } from 'react-native-paper';
 
 export const RedeemConfirmModal = ({ visible, reward, userPoints, onClose, onConfirm }) => {
+    const theme = useTheme();
+    const { colors } = theme;
+    const t = useTranslation();
+
     if (!reward) return null;
 
     const pointsAfter = userPoints - reward.points;
+    const isLowPoints = pointsAfter < 100;
 
     return (
-        <Modal
-            visible={visible}
-            animationType="fade"
-            transparent={true}
-            onRequestClose={onClose}
-        >
+        <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={onClose}>
             <View style={styles.modalOverlay}>
-                <View style={styles.modalContent}>
-                    {/* Icono */}
-                    <View style={styles.iconContainer}>
-                        <Icon name="gift" size={48} color="#018f64" />
+                <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+                    <View style={[styles.iconContainer, { backgroundColor: colors.primaryContainer }]}>
+                        <Icon name="gift" size={48} color={colors.primary} />
                     </View>
 
-                    {/* Título */}
-                    <Text style={styles.title}>Confirmar Canje</Text>
+                    <Text style={[styles.title, { color: colors.onSurface }]}>{t.rewards.modal.confirmTitle}</Text>
+                    <Text style={[styles.message, { color: colors.onSurfaceVariant }]}>{t.rewards.modal.confirmPrompt}</Text>
 
-                    {/* Descripción */}
-                    <Text style={styles.message}>
-                        ¿Estás seguro que deseas canjear tus puntos por:
-                    </Text>
-
-                    {/* Premio */}
-                    <View style={styles.rewardInfo}>
-                        <Text style={styles.rewardTitle}>{reward.title}</Text>
+                    <View style={[styles.rewardInfo, { backgroundColor: colors.elevation.level1 }]}>
+                        <Text style={[styles.rewardTitle, { color: colors.onSurface }]}>{reward.title}</Text>
                         <View style={styles.pointsRow}>
-                            <Icon name="leaf" size={18} color="#018f64" />
-                            <Text style={styles.pointsText}>{reward.points} EcoPuntos</Text>
+                            <Icon name="leaf" size={18} color={colors.primary} />
+                            <Text style={[styles.pointsText, { color: colors.primary }]}>{reward.points} {t.home.pointsUnit}</Text>
                         </View>
                     </View>
 
-                    {/* Balance de puntos */}
-                    <View style={styles.balanceContainer}>
-                        <View style={styles.balanceRow}>
-                            <Text style={styles.balanceLabel}>Tus puntos actuales:</Text>
-                            <Text style={styles.balanceValue}>{userPoints}</Text>
-                        </View>
-                        <View style={styles.balanceRow}>
-                            <Text style={styles.balanceLabel}>Puntos a canjear:</Text>
-                            <Text style={[styles.balanceValue, styles.negative]}>-{reward.points}</Text>
-                        </View>
-                        <View style={styles.divider} />
-                        <View style={styles.balanceRow}>
-                            <Text style={styles.balanceLabelBold}>Puntos restantes:</Text>
-                            <Text style={[styles.balanceValueBold, pointsAfter < 100 && styles.warning]}>
-                                {pointsAfter}
-                            </Text>
-                        </View>
+                    <View style={[styles.balanceContainer, { backgroundColor: colors.elevation.level2 }]}>
+                        <BalanceRow label={t.rewards.modal.currentPoints} value={userPoints} color={colors.onSurface} />
+                        <BalanceRow label={t.rewards.modal.pointsToRedeem} value={`-${reward.points}`} color={colors.error} />
+                        <View style={[styles.divider, { backgroundColor: colors.outlineVariant }]} />
+                        <BalanceRow
+                            label={t.rewards.modal.remainingPoints}
+                            value={pointsAfter}
+                            color={isLowPoints ? colors.tertiary : colors.primary}
+                            isBold
+                        />
                     </View>
 
-                    {/* Advertencia si quedan pocos puntos */}
-                    {pointsAfter < 100 && (
-                        <View style={styles.warningContainer}>
-                            <Icon name="alert" size={16} color="#FF9800" />
-                            <Text style={styles.warningText}>
-                                Te quedarán pocos puntos. ¡Sigue reciclando!
-                            </Text>
+                    {isLowPoints && (
+                        <View style={[styles.warningContainer, { backgroundColor: colors.tertiaryContainer }]}>
+                            <Icon name="alert" size={16} color={colors.tertiary} />
+                            <Text style={[styles.warningText, { color: colors.onTertiaryContainer }]}>{t.rewards.modal.warningLow}</Text>
                         </View>
                     )}
 
-                    {/* Nota informativa */}
-                    <Text style={styles.infoText}>
-                        Recibirás un código de canje que podrás usar para reclamar tu premio.
-                    </Text>
+                    <Text style={[styles.infoText, { color: colors.onSurfaceVariant }]}>{t.rewards.modal.redeemNote}</Text>
 
-                    {/* Botones */}
                     <View style={styles.buttonsContainer}>
-                        <TouchableOpacity
-                            style={[styles.button, styles.cancelButton]}
-                            onPress={onClose}
-                            activeOpacity={0.8}
-                        >
-                            <Text style={styles.cancelButtonText}>Cancelar</Text>
+                        <TouchableOpacity style={[styles.button, { backgroundColor: colors.surfaceVariant }]} onPress={onClose}>
+                            <Text style={{ color: colors.onSurfaceVariant, fontWeight: 'bold' }}>{t.rewards.modal.cancel}</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
-                            style={[styles.button, styles.confirmButton]}
-                            onPress={onConfirm}
-                            activeOpacity={0.8}
-                        >
-                            <Icon name="check" size={20} color="#FFF" />
-                            <Text style={styles.confirmButtonText}>Confirmar</Text>
+                        <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={onConfirm}>
+                            <Icon name="check" size={20} color={colors.onPrimary} />
+                            <Text style={{ color: colors.onPrimary, fontWeight: 'bold', marginLeft: 6 }}>{t.rewards.modal.confirm}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -96,6 +69,12 @@ export const RedeemConfirmModal = ({ visible, reward, userPoints, onClose, onCon
         </Modal>
     );
 };
+const BalanceRow = ({ label, value, color, isBold }) => (
+    <View style={styles.balanceRow}>
+        <Text style={[isBold ? styles.balanceLabelBold : styles.balanceLabel]}>{label}</Text>
+        <Text style={[isBold ? styles.balanceValueBold : styles.balanceValue, { color }]}>{value}</Text>
+    </View>
+);
 
 const styles = StyleSheet.create({
     modalOverlay: {

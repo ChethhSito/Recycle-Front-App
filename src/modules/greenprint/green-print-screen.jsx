@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Share, Alert, StatusBar } from 'react-native';
 import { Text, IconButton, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
@@ -15,17 +15,40 @@ export const GreenFootprintScreen = ({ navigation }) => {
     const componentStyles = getStyles(theme);
     const { user } = useAuthStore();
 
+    useEffect(() => {
+        console.log("USERUAIRO ", user);
+    }, [user]);
+
     const userRecycledKg = user?.recyclingStats?.total_kg || 0;
 
     // --- LÓGICA DE EQUIVALENCIAS ---
-    const co2Saved = userRecycledKg * 1.5;
+    const FACTORS = {
+        plastic: 1.5,
+        paper: 0.9,
+        metal: 4.5, // El metal es el que más CO2 ahorra
+        glass: 0.3,
+        electronics: 2.5
+    };
+
+    const stats = user?.recyclingStats?.by_category;
+
+    // Cálculo preciso de CO2
+    const co2Saved =
+        (stats?.plastic?.kg || 0) * FACTORS.plastic +
+        (stats?.paper?.kg || 0) * FACTORS.paper +
+        (stats?.metal?.kg || 0) * FACTORS.metal +
+        (stats?.glass?.kg || 0) * FACTORS.glass +
+        (stats?.electronics?.kg || 0) * FACTORS.electronics;
+
+    const totalKg = user?.recyclingStats?.total_kg || 0;
+
     const stories = {
         co2: co2Saved.toFixed(1),
-        lightbulbHours: Math.floor(userRecycledKg * 10),
-        phoneCharges: Math.floor(userRecycledKg * 50),
-        showers: (userRecycledKg * 30 / 15).toFixed(0),
-        carKm: (co2Saved * 5).toFixed(1),
-        trees: (co2Saved / 20).toFixed(2)
+        lightbulbHours: Math.floor(co2Saved * 8), // Basado en el CO2, no solo en el peso
+        phoneCharges: Math.floor(co2Saved * 40),
+        showers: (co2Saved * 2).toFixed(0),
+        carKm: (co2Saved * 5.2).toFixed(1),
+        trees: (co2Saved / 20).toFixed(2) // 1 árbol absorbe ~20kg al año
     };
 
     // --- LÓGICA DEL PLANETA TRADUCIDA ---
@@ -51,12 +74,45 @@ export const GreenFootprintScreen = ({ navigation }) => {
 
     const handleShare = async () => {
         try {
-            // Reemplazamos la variable en el mensaje de compartir
-            const shareMsg = t.footprint.share.message.replace('{{trees}}', stories.trees);
+            let shareMsg = t.footprint.share.message
+                .replace('{{trees}}', stories.trees)
+                .replace('{{co2}}', stories.co2); // 🌍 Añade el CO2 al mensaje de compartir
+
             await Share.share({ message: shareMsg });
         } catch (error) {
             Alert.alert("Error", error.message);
         }
+    };
+
+    const renderFormattedText = (text, values = {}) => {
+        // 1. Reemplazamos los placeholders {{variable}} por sus valores reales
+        let replacedText = text;
+        Object.keys(values).forEach(key => {
+            replacedText = replacedText.replace(`{{${key}}}`, values[key]);
+        });
+
+        // 2. Dividimos el texto usando las etiquetas <bold> como separador
+        const parts = replacedText.split(/(<bold>.*?<\/bold>)/g);
+
+        return parts.map((part, index) => {
+            if (part.startsWith('<bold>') && part.endsWith('</bold>')) {
+                // Si es una parte para negrita, quitamos las etiquetas y aplicamos estilo
+                const content = part.replace('<bold>', '').replace('</bold>', '');
+                return (
+                    <Text
+                        key={index}
+                        style={{
+                            fontWeight: 'bold',
+                            fontFamily: 'InclusiveSans-Bold' // 🚀 Asegura que la negrita use tu fuente
+                        }}
+                    >
+                        {content}
+                    </Text>
+                );
+            }
+            // Si es texto normal, lo devolvemos tal cual
+            return <Text key={index}>{part}</Text>;
+        });
     };
 
     return (
@@ -120,7 +176,10 @@ export const GreenFootprintScreen = ({ navigation }) => {
                         <View style={[componentStyles.storyCard, { backgroundColor: dark ? '#3E3A20' : '#FFF9C4' }]}>
                             <Icon name="lightning-bolt" size={28} color="#FBC02D" style={componentStyles.storyIcon} />
                             <Text style={[componentStyles.storyText, { color: dark ? '#F0F0F0' : '#444' }]}>
-                                {t.footprint.equivalencies.energy.replace('{{hours}}', stories.lightbulbHours).replace('{{charges}}', stories.phoneCharges)}
+                                {renderFormattedText(t.footprint.equivalencies.energy, {
+                                    hours: stories.lightbulbHours,
+                                    charges: stories.phoneCharges
+                                })}
                             </Text>
                         </View>
 
@@ -128,15 +187,18 @@ export const GreenFootprintScreen = ({ navigation }) => {
                         <View style={[componentStyles.storyCard, { backgroundColor: dark ? '#1A2E38' : '#E1F5FE' }]}>
                             <Icon name="water" size={28} color="#039BE5" style={componentStyles.storyIcon} />
                             <Text style={[componentStyles.storyText, { color: dark ? '#F0F0F0' : '#444' }]}>
-                                {t.footprint.equivalencies.water.replace('{{showers}}', stories.showers)}
+                                {renderFormattedText(t.footprint.equivalencies.water, {
+                                    showers: stories.showers
+                                })}
                             </Text>
                         </View>
 
-                        {/* Transporte */}
                         <View style={[componentStyles.storyCard, { backgroundColor: dark ? '#3D2F1D' : '#FFECB3' }]}>
                             <Icon name="car-hatchback" size={28} color="#FF6F00" style={componentStyles.storyIcon} />
                             <Text style={[componentStyles.storyText, { color: dark ? '#F0F0F0' : '#444' }]}>
-                                {t.footprint.equivalencies.transport.replace('{{km}}', stories.carKm)}
+                                {renderFormattedText(t.footprint.equivalencies.transport, {
+                                    km: stories.carKm
+                                })}
                             </Text>
                         </View>
 
@@ -144,7 +206,9 @@ export const GreenFootprintScreen = ({ navigation }) => {
                         <View style={[componentStyles.storyCard, { backgroundColor: dark ? '#213123' : '#E8F5E9' }]}>
                             <Icon name="tree" size={28} color="#43A047" style={componentStyles.storyIcon} />
                             <Text style={[componentStyles.storyText, { color: dark ? '#F0F0F0' : '#444' }]}>
-                                {t.footprint.equivalencies.trees.replace('{{trees}}', stories.trees)}
+                                {renderFormattedText(t.footprint.equivalencies.trees, {
+                                    trees: stories.trees
+                                })}
                             </Text>
                         </View>
                     </View>

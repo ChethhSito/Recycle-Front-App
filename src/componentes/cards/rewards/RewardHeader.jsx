@@ -2,53 +2,61 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from '../../../hooks/use-translation';
 
-export const RewardHeader = ({ userName, avatarUrl, userPoints, onMenuPress }) => {
+export const RewardHeader = ({ userName, avatarUrl, userPoints, onMenuPress, theme }) => {
+    const t = useTranslation();
+    const { colors } = theme;
+    const componentStyles = getStyles(theme);
     return (
-        <View style={styles.mainWrapper}>
-            {/* Header con bordes redondeados pronunciados */}
+        <View style={componentStyles.mainWrapper}>
             <LinearGradient
-                colors={['#018f64', '#01a374']}
-                style={styles.container}
+                colors={[colors.greenMain, colors.primary]} // 🎨 Degradado basado en el tema
+                style={componentStyles.container}
             >
-                {/* Top Bar simplificada */}
-                <View style={styles.topBar}>
-                    <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
-                        <Icon name="menu" size={26} color="#000" />
+                <View style={componentStyles.topBar}>
+                    <TouchableOpacity onPress={onMenuPress} style={componentStyles.menuButton}>
+                        <Icon name="menu" size={26} color={colors.onPrimary} />
                     </TouchableOpacity>
 
-                    <View style={styles.headerInfo}>
-                        <Text style={styles.greeting}>Hola, {userName}</Text>
-                        <Text style={styles.headerTitle}>Tienda de Premios</Text>
+                    <View style={componentStyles.headerInfo}>
+                        {/* 🗣️ Saludo dinámico */}
+                        <Text style={[componentStyles.greeting, { color: colors.onPrimary }]}>
+                            {t.rewards.greeting.replace('{{name}}', userName)}
+                        </Text>
+                        <Text style={[componentStyles.headerTitle, { color: colors.onPrimary }]}>
+                            {t.rewards.headerTitle}
+                        </Text>
                     </View>
 
-                    <View style={styles.avatarWrapper}>
-                        <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+                    <View style={componentStyles.avatarWrapper}>
+                        <Image source={{ uri: avatarUrl }} style={componentStyles.avatar} />
                     </View>
                 </View>
 
-                {/* Mensaje motivador sutil */}
-
-
-                {/* TARJETA DE PUNTOS FLOTANTE (Overlap) */}
-                <View style={styles.pointsCard}>
-                    <View style={styles.pointsLeft}>
-                        <View style={styles.walletIconCircle}>
-                            <Icon name="wallet-outline" size={24} color="#018f64" />
+                {/* TARJETA DE PUNTOS FLOTANTE */}
+                <View style={[componentStyles.pointsCard, { backgroundColor: colors.elevation.level3 }]}>
+                    <View style={componentStyles.pointsLeft}>
+                        <View style={[componentStyles.walletIconCircle, { backgroundColor: colors.primaryContainer }]}>
+                            <Icon name="wallet-outline" size={24} color={colors.primary} />
                         </View>
                         <View>
-                            <Text style={styles.pointsLabel}>Tus EcoPuntos</Text>
-                            <Text style={styles.pointsValue}>
-                                {userPoints} <Text style={styles.pointsUnit}>pts</Text>
+                            <Text style={[componentStyles.pointsLabel, { color: colors.onSurfaceVariant }]}>
+                                {t.rewards.pointsLabel}
+                            </Text>
+                            <Text style={[componentStyles.pointsValue, { color: colors.onSurface }]}>
+                                {userPoints} <Text style={componentStyles.pointsUnit}>{t.home.pointsUnit}</Text>
                             </Text>
                         </View>
                     </View>
 
-                    <View style={styles.verticalDivider} />
+                    <View style={[componentStyles.verticalDivider, { backgroundColor: colors.outlineVariant }]} />
 
-                    <TouchableOpacity style={styles.historyBtn}>
-                        <Icon name="history" size={20} color="#666" />
-                        <Text style={styles.historyText}>Historial</Text>
+                    <TouchableOpacity style={componentStyles.historyBtn}>
+                        <Icon name="history" size={20} color={colors.onSurfaceVariant} />
+                        <Text style={[componentStyles.historyText, { color: colors.onSurfaceVariant }]}>
+                            {t.rewards.historyText}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </LinearGradient>
@@ -56,22 +64,18 @@ export const RewardHeader = ({ userName, avatarUrl, userPoints, onMenuPress }) =
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     mainWrapper: {
-        backgroundColor: '#b1eedc', // Color de fondo de la pantalla
-        paddingBottom: 35, // Espacio para que la tarjeta sobresalga
+        backgroundColor: theme.colors.background,
+        paddingBottom: 35,
     },
     container: {
         paddingTop: 50,
-        paddingBottom: 50, // Más espacio abajo para el overlap
+        paddingBottom: 50,
         paddingHorizontal: 20,
         borderBottomLeftRadius: 35,
         borderBottomRightRadius: 35,
         elevation: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
     },
     topBar: {
         flexDirection: 'row',
@@ -84,7 +88,6 @@ const styles = StyleSheet.create({
         width: 42,
         height: 42,
         borderRadius: 12,
-
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -94,13 +97,11 @@ const styles = StyleSheet.create({
     },
     greeting: {
         fontSize: 16,
-        color: '#000',
-
+        opacity: 0.9,
     },
     headerTitle: {
         fontSize: 22,
-
-        color: '#000',
+        fontWeight: 'bold',
     },
     avatarWrapper: {
         borderWidth: 2,
@@ -113,18 +114,11 @@ const styles = StyleSheet.create({
         height: 36,
         borderRadius: 12,
     },
-    subtitle: {
-        fontSize: 14,
-        color: '#000',
-        marginBottom: 10,
-    },
-    // --- ESTILOS DE LA TARJETA DE PUNTOS ---
     pointsCard: {
         position: 'absolute',
-        bottom: -35, // Flota sobre la pantalla menta
+        bottom: -35,
         left: 20,
         right: 20,
-        backgroundColor: '#31253B',
         borderRadius: 22,
         flexDirection: 'row',
         alignItems: 'center',
@@ -146,29 +140,22 @@ const styles = StyleSheet.create({
         width: 46,
         height: 46,
         borderRadius: 14,
-        backgroundColor: '#b1eedc',
         justifyContent: 'center',
         alignItems: 'center',
     },
     pointsLabel: {
         fontSize: 12,
-        color: '#fff',
-
     },
     pointsValue: {
         fontSize: 24,
-        fontWeight: '400',
-        color: '#fff',
+        fontWeight: 'bold',
     },
     pointsUnit: {
         fontSize: 14,
-        color: '#fff',
-
     },
     verticalDivider: {
         width: 1,
         height: 30,
-        backgroundColor: '#F3F4F6',
         marginHorizontal: 15,
     },
     historyBtn: {
@@ -178,7 +165,6 @@ const styles = StyleSheet.create({
     },
     historyText: {
         fontSize: 11,
-        color: '#fff',
-        fontWeight: '500',
+        fontWeight: '600',
     }
 });
