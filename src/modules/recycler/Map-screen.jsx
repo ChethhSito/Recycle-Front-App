@@ -54,6 +54,8 @@ export const MapScreen = () => {
         ? 'filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);'
         : '';
 
+    const requestsJson = JSON.stringify(nearbyRequests);
+
     const renderRequestItem = ({ item }) => {
         const catKey = item.category?.toUpperCase() || 'PLASTIC';
         const catStyle = CATEGORIES[catKey] || CATEGORIES.PLASTIC;
@@ -107,26 +109,50 @@ export const MapScreen = () => {
                 originWhitelist={['*']}
                 source={{
                     html: `
-                    <html>
-                    <head>
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-                        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-                        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-                        <style>
-                            body { margin: 0; background: ${dark ? '#121212' : '#FFFFFF'}; ${mapFilter} } 
-                            #map { width: 100%; height: 100vh; }
-                        </style>
-                    </head>
-                    <body>
-                        <div id="map"></div>
-                        <script>
-                            const map = L.map('map', { zoomControl: false }).setView([${location.coords.latitude}, ${location.coords.longitude}], 15);
-                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-                            L.marker([${location.coords.latitude}, ${location.coords.longitude}]).addTo(map);
-                        </script>
-                    </body>
-                    </html>
-                `}}
+        <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+            <style>
+                body { margin: 0; background: ${dark ? '#121212' : '#FFFFFF'}; } 
+                #map { width: 100%; height: 100vh; }
+            </style>
+        </head>
+        <body>
+            <div id="map"></div>
+            <script>
+                // 1. Inicializar mapa
+                const map = L.map('map', { zoomControl: false }).setView([${location.coords.latitude}, ${location.coords.longitude}], 14);
+                
+                // 🚀 SOLUCIÓN AL ERROR 403: Usar esta URL de CartoDB (esta NO bloquea)
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                    attribution: '© CartoDB'
+                }).addTo(map);
+
+                // 2. Tu marcador (Azul)
+                L.marker([${location.coords.latitude}, ${location.coords.longitude}]).addTo(map)
+                 .bindPopup("<b>Estás aquí</b>").openPopup();
+
+                // 3. Lógica para pintar las solicitudes con coordenadas invertidas 📍
+                const requests = ${requestsJson};
+                
+                requests.forEach(req => {
+                    if (req.location && req.location.coordinates) {
+                        // 🚨 LA CORRECCIÓN: 
+                        // Mongo: [Long, Lat] -> Leaflet: [Lat, Long]
+                        const lng = req.location.coordinates[0];
+                        const lat = req.location.coordinates[1];
+                        
+                        // Ahora sí el punto saldrá en Lima
+                        L.marker([lat, lng]).addTo(map)
+                         .bindPopup("<b>" + (req.materialType.toUpperCase() || 'RECICLAJE') + "</b><br>" + req.quantity + " " + req.measureType);
+                    }
+                });
+            </script>
+        </body>
+        </html>
+    `}}
                 style={componentStyles.map}
             />
 
@@ -135,7 +161,7 @@ export const MapScreen = () => {
                     <TouchableOpacity style={[componentStyles.backBtn, { backgroundColor: colors.primary }]} onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={24} color="#FFF" />
                     </TouchableOpacity>
-                    <Text style={[componentStyles.headerTitle, { color: colors.onSurface }]}>
+                    <Text style={[componentStyles.headerTitle, { color: colors.surface }]}>
                         {t.map.title}
                     </Text>
                 </View>

@@ -1,30 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, Animated, Dimensions, ScrollView, Alert, Share } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, StyleSheet, Modal, TouchableOpacity, Animated, Dimensions, ScrollView, Alert, Share } from 'react-native';
+import { Text, useTheme, IconButton } from 'react-native-paper'; // 🚀 Uso de Paper
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
 const { height } = Dimensions.get('window');
 
-export const VideoPlayerModal = ({ visible, video, onClose, onVideoComplete, onLike }) => {
+export const VideoPlayerModal = ({ visible, video, onClose, onVideoComplete }) => {
+    const theme = useTheme();
+    const { colors } = theme;
+
     const [showModal, setShowModal] = useState(visible);
-    const [isLiked, setIsLiked] = useState(false);
     const [playing, setPlaying] = useState(false);
     const [hasEarnedPoints, setHasEarnedPoints] = useState(false);
-    const slideAnim = React.useRef(new Animated.Value(height)).current;
+    const slideAnim = useRef(new Animated.Value(height)).current;
 
     useEffect(() => {
         if (visible) {
             setShowModal(true);
-            setPlaying(false);
+            setPlaying(true); // Auto-play al abrir
             setHasEarnedPoints(false);
-            slideAnim.setValue(height);
             Animated.spring(slideAnim, {
                 toValue: 0,
                 useNativeDriver: true,
-                damping: 15,
-                mass: 1.2,
-                stiffness: 100,
-                velocity: 8,
+                tension: 50,
+                friction: 10
             }).start();
         } else {
             setPlaying(false);
@@ -32,44 +32,28 @@ export const VideoPlayerModal = ({ visible, video, onClose, onVideoComplete, onL
                 toValue: height,
                 duration: 300,
                 useNativeDriver: true,
-            }).start(({ finished }) => {
-                if (finished) {
-                    setShowModal(false);
-                }
-            });
+            }).start(() => setShowModal(false));
         }
     }, [visible]);
 
-    const handleLike = () => {
-        if (!isLiked) {
-            setIsLiked(true);
-            onLike?.(video.id);
-        }
-    };
-
+    // 🏆 Lógica de finalización para puntos y vistas
     const onStateChange = (state) => {
         if (state === 'ended' && !hasEarnedPoints) {
             setHasEarnedPoints(true);
-            onVideoComplete?.(video.id);
+            // IMPORTANTE: Usamos _id para tu backend de MongoDB
+            if (video?._id) {
+                onVideoComplete?.(video._id);
+                Alert.alert("¡Felicidades!", "Has completado el video y ganado Eco-puntos.");
+            }
         }
     };
 
     const handleShare = async () => {
         try {
-            const message = `🌿 ¡Te recomiendo este video educativo de Nos Planet!\n\n📹 "${video.title}"\n\n${video.description || 'Aprende más sobre reciclaje y cuidado del medio ambiente.'}\n\n👉 Míralo aquí: ${video.videoUrl}\n\n#NosPlanet #Reciclaje #MedioAmbiente`;
-            
-            const result = await Share.share({
-                message: message,
+            await Share.share({
+                message: `🌿 ¡Mira este video educativo en Nos Planet!\n\n📹 "${video.title}"\n\n👉 ${video.videoUrl}`,
                 title: video.title,
             });
-
-            if (result.action === Share.sharedAction) {
-                if (result.activityType) {
-                    console.log('Compartido con:', result.activityType);
-                } else {
-                    console.log('Video compartido exitosamente');
-                }
-            }
         } catch (error) {
             Alert.alert('Error', 'No se pudo compartir el video');
         }
@@ -77,7 +61,6 @@ export const VideoPlayerModal = ({ visible, video, onClose, onVideoComplete, onL
 
     if (!showModal || !video) return null;
 
-    // Extraer ID de YouTube de la URL
     const getYoutubeId = (url) => {
         if (!url) return null;
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -87,106 +70,91 @@ export const VideoPlayerModal = ({ visible, video, onClose, onVideoComplete, onL
 
     const youtubeId = getYoutubeId(video.videoUrl);
 
+    // Blindaje de categoría (String vs Object)
+    const categoryName = typeof video.category === 'object' ? video.category.name : video.category;
+
     return (
-        <Modal
-            visible={showModal}
-            transparent
-            animationType="none"
-            onRequestClose={onClose}
-        >
+        <Modal visible={showModal} transparent animationType="none" onRequestClose={onClose}>
             <View style={styles.modalContainer}>
-                <TouchableOpacity
-                    style={styles.overlay}
-                    activeOpacity={1}
-                    onPress={onClose}
-                />
+                <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose} />
 
                 <Animated.View
                     style={[
                         styles.modalContent,
-                        { transform: [{ translateY: slideAnim }] }
+                        { backgroundColor: colors.surface, transform: [{ translateY: slideAnim }] }
                     ]}
                 >
-                    {/* Header */}
+                    {/* Botón de cerrar flotante para mejor UX */}
+                    <IconButton
+                        icon="close"
+                        size={24}
+                        style={styles.closeBtn}
+                        onPress={onClose}
+                        iconColor={colors.onSurface}
+                    />
+
                     <View style={styles.header}>
-                        <Text style={styles.headerTitle}>Video Educativo</Text>
-                        <TouchableOpacity onPress={onClose}>
-                            <Icon name="close" size={24} color="#32243B" />
-                        </TouchableOpacity>
+                        <Text style={[styles.headerTitle, { color: colors.onSurface }]}>Video Educativo</Text>
                     </View>
 
                     <ScrollView showsVerticalScrollIndicator={false}>
-                        {/* YouTube Player */}
                         <View style={styles.videoContainer}>
                             {youtubeId ? (
-                                <YoutubePlayer
-                                    height={220}
-                                    play={playing}
-                                    videoId={youtubeId}
-                                    onChangeState={onStateChange}
-                                />
+                                <View style={styles.playerWrapper}>
+                                    <YoutubePlayer
+                                        height={220}
+                                        play={playing}
+                                        videoId={youtubeId}
+                                        onChangeState={onStateChange}
+                                    />
+                                </View>
                             ) : (
-                                <View style={styles.videoPlaceholder}>
-                                    <Icon name="youtube" size={80} color="#FF0000" />
-                                    <Text style={styles.videoPlaceholderText}>
-                                        Video no disponible
-                                    </Text>
+                                <View style={[styles.videoPlaceholder, { backgroundColor: colors.surfaceVariant }]}>
+                                    <Icon name="youtube" size={80} color={colors.error} />
+                                    <Text style={{ color: colors.onSurfaceVariant }}>Video no disponible</Text>
                                 </View>
                             )}
                         </View>
 
-                        {/* Video Info */}
                         <View style={styles.infoSection}>
-                            <View style={styles.titleRow}>
-                                <Text style={styles.videoTitle}>{video.title}</Text>
-                            </View>
+                            <Text style={[styles.videoTitle, { color: colors.onSurface }]}>{String(video.title || '')}</Text>
 
                             <View style={styles.metaRow}>
                                 <View style={styles.metaItem}>
-                                    <Icon name="clock-outline" size={16} color="#666" />
-                                    <Text style={styles.metaText}>{video.duration}</Text>
+                                    <Icon name="clock-outline" size={16} color={colors.onSurfaceVariant} />
+                                    <Text style={{ color: colors.onSurfaceVariant }}>{String(video.duration || '0:00')}</Text>
                                 </View>
-                                
-                                {video.views && (
+
+                                {video.views !== undefined && (
                                     <View style={styles.metaItem}>
-                                        <Icon name="eye-outline" size={16} color="#666" />
-                                        <Text style={styles.metaText}>{video.views} vistas</Text>
+                                        <Icon name="eye-outline" size={16} color={colors.onSurfaceVariant} />
+                                        <Text style={{ color: colors.onSurfaceVariant }}>{String(video.views)} vistas</Text>
                                     </View>
                                 )}
 
-                                <View style={[styles.categoryBadge, { backgroundColor: getCategoryColor(video.category) }]}>
-                                    <Text style={styles.categoryText}>{video.category}</Text>
+                                <View style={[styles.categoryBadge, { backgroundColor: colors.primaryContainer }]}>
+                                    <Text style={{ color: colors.onPrimaryContainer, fontSize: 11, fontWeight: 'bold' }}>
+                                        {String(categoryName || 'General').toUpperCase()}
+                                    </Text>
                                 </View>
                             </View>
-                        </View>
 
-                        {/* Description */}
-                        <View style={styles.descriptionSection}>
-                            <Text style={styles.descriptionTitle}>Acerca de este video</Text>
-                            <Text style={styles.descriptionText}>
-                                {video.description || 'Este video te enseñará conceptos importantes sobre el reciclaje y cómo puedes contribuir al cuidado del medio ambiente desde tu hogar.'}
+                            <View style={[styles.divider, { backgroundColor: colors.outlineVariant }]} />
+
+                            <Text style={[styles.descriptionTitle, { color: colors.onSurface }]}>Acerca de este video</Text>
+                            <Text style={[styles.descriptionText, { color: colors.onSurfaceVariant }]}>
+                                {String(video.description || 'Aprende a cuidar el planeta con este video informativo.')}
                             </Text>
                         </View>
 
-                        {/* Action Buttons */}
+                        {/* Solo botón de compartir, eliminamos el de Like como pediste */}
                         <View style={styles.actionsSection}>
-                            <TouchableOpacity 
-                                style={styles.actionButton}
-                                onPress={handleLike}
+                            <TouchableOpacity
+                                style={[styles.shareBtn, { backgroundColor: colors.primary }]}
+                                onPress={handleShare}
                             >
-                                <Icon 
-                                    name={isLiked ? "heart" : "heart-outline"} 
-                                    size={24} 
-                                    color={isLiked ? "#FF4081" : "#018f64"} 
-                                />
-                                <Text style={[styles.actionButtonText, isLiked && { color: "#FF4081" }]}>
-                                    {isLiked ? 'Te Gusta' : 'Me Gusta'}
-                                </Text>
-                            </TouchableOpacity>
-                            
-                            <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-                                <Icon name="share-variant" size={24} color="#018f64" />
-                                <Text style={styles.actionButtonText}>Compartir</Text>
+                                <Icon name="share-variant" size={20} color={colors.onPrimary} />
+                                <Text style={{ color: colors.onPrimary, fontWeight: 'bold', marginLeft: 8 }}>COMPARTIR VIDEO</Text>
                             </TouchableOpacity>
                         </View>
                     </ScrollView>
@@ -196,140 +164,38 @@ export const VideoPlayerModal = ({ visible, video, onClose, onVideoComplete, onL
     );
 };
 
-const getCategoryColor = (category) => {
-    const colors = {
-        'Tutorial': '#00C6A0',
-        'Reciclaje': '#018f64',
-        'Eco-Tips': '#FFCB4D',
-        'Premios': '#FF4081',
-        'default': '#B7ECDC'
-    };
-    return colors[category] || colors.default;
-};
-
 const styles = StyleSheet.create({
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'flex-end',
-    },
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-    },
+    modalContainer: { flex: 1, justifyContent: 'flex-end' },
+    overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
     modalContent: {
-        backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        paddingTop: 24,
-        paddingBottom: 40,
-        maxHeight: '95%',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -3 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        paddingTop: 20,
+        paddingBottom: 30,
+        maxHeight: '90%',
+        elevation: 10,
     },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 24,
-        marginBottom: 20,
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#32243B',
-    },
-    videoContainer: {
-        paddingHorizontal: 24,
-        marginBottom: 20,
-    },
-    videoPlaceholder: {
-        width: '100%',
-        height: 220,
-        backgroundColor: '#B7ECDC',
-        borderRadius: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    videoPlaceholderText: {
-        color: '#32243B',
-        fontSize: 16,
-        fontWeight: '600',
-        marginTop: 8,
-    },
-    infoSection: {
-        paddingHorizontal: 24,
-        marginBottom: 20,
-    },
-    titleRow: {
-        marginBottom: 12,
-    },
-    videoTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#32243B',
-        lineHeight: 28,
-    },
-    metaRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 16,
-    },
-    metaItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    metaText: {
-        fontSize: 14,
-        color: '#666',
-    },
-    categoryBadge: {
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 12,
-    },
-    categoryText: {
-        color: '#FFFFFF',
-        fontSize: 12,
-        fontWeight: '600',
-    },
-    descriptionSection: {
-        paddingHorizontal: 24,
-        marginBottom: 20,
-    },
-    descriptionTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#32243B',
-        marginBottom: 8,
-    },
-    descriptionText: {
-        fontSize: 14,
-        color: '#666',
-        lineHeight: 20,
-    },
-    actionsSection: {
-        flexDirection: 'row',
-        paddingHorizontal: 24,
-        gap: 16,
-    },
-    actionButton: {
-        flex: 1,
+    closeBtn: { position: 'absolute', top: 10, right: 10, zIndex: 10 },
+    header: { paddingHorizontal: 24, marginBottom: 15, alignItems: 'center' },
+    headerTitle: { fontSize: 16, fontWeight: 'bold', opacity: 0.6, letterSpacing: 1 },
+    videoContainer: { marginBottom: 20 },
+    playerWrapper: { overflow: 'hidden', borderRadius: 0 },
+    videoPlaceholder: { width: '100%', height: 220, alignItems: 'center', justifyContent: 'center' },
+    infoSection: { paddingHorizontal: 24 },
+    videoTitle: { fontSize: 24, fontWeight: 'bold', lineHeight: 30, marginBottom: 10 },
+    metaRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 15 },
+    metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    categoryBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+    divider: { height: 1, width: '100%', marginVertical: 20 },
+    descriptionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
+    descriptionText: { fontSize: 15, lineHeight: 22 },
+    actionsSection: { paddingHorizontal: 24, marginTop: 25 },
+    shareBtn: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#B7ECDC',
-        paddingVertical: 12,
+        paddingVertical: 14,
         borderRadius: 16,
-        gap: 8,
-    },
-    actionButtonText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#018f64',
+        elevation: 2
     },
 });

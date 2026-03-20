@@ -1,11 +1,12 @@
 import { useSelector, useDispatch } from "react-redux";
-import { inductionApi } from "../api/induction/induction";
+import { inductionApi, registerViewApi } from "../api/induction/induction";
 import { useEffect, useCallback } from "react";
 import { setInduction, setLoading, setError } from "../store/induction/inductionSlice";
 
 export const useInduction = () => {
     const { induction, isLoading, error } = useSelector((state) => state.induction);
     const dispatch = useDispatch();
+    const { user } = useSelector((state) => state.auth);
 
     const fetchInduction = useCallback(async () => {
         try {
@@ -27,21 +28,32 @@ export const useInduction = () => {
         fetchInduction();
     }, [fetchInduction]);
 
+    // 4. Función de registro de vista actualizada
     const registerView = async (id) => {
         try {
-            // Lógica para registrar vista (podría ser otra acción o llamada directa)
-            // Aquí asumimos que simplemente se llama a la API, sin afectar el store global necesariamente,
-            // o quizás sí se quiera actualizar el contador localmente.
-            // Como no tengo importado la API de view aquí, debería importarla.
-            // Pero mejor, lo haré simple: llamar a la API importada.
-            const { registerViewApi } = require('../api/induction/induction'); // Lazy import or move import top
-            await registerViewApi(id);
-            // Opcional: refetch para actualizar vistas
-            // refetch(); 
+            // Validamos que el usuario exista antes de intentar sumar puntos
+            if (!user?._id) {
+                console.warn("No se puede registrar la vista: Usuario no identificado");
+                return;
+            }
+
+            // Llamamos a la API enviando ID de inducción e ID de usuario
+            await registerViewApi(id, user._id);
+
+            // 5. IMPORTANTE: Refetch después de registrar la vista
+            // Esto hará que el contador de 'views' se actualice en la pantalla del móvil
+            refetch();
+
         } catch (error) {
-            console.log(error);
+            console.error("Error en registerView:", error);
         }
     };
 
-    return { videos: induction, loading: isLoading, error, refetch, registerView };
-}
+    return {
+        videos: induction,
+        loading: isLoading,
+        error,
+        refetch,
+        registerView
+    };
+};

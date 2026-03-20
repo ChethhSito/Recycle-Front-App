@@ -234,7 +234,7 @@ export const RegisterScreen = ({ navigation }) => {
                                 control={control} name="password" rules={{ required: true }}
                                 render={({ field: { onChange, value } }) => (
                                     <TextInput
-                                        mode="flat" placeholder="Contraseña:" placeholderTextColor="#384745"
+                                        mode="flat" placeholder="Contraseña:" placeholderTextColor="#000000" textColor="#000000"
                                         secureTextEntry={!showPassword}
                                         style={styles.input} value={value} onChangeText={onChange} underlineColor="transparent" activeUnderlineColor="transparent"
                                         left={<TextInput.Icon icon="lock" color="#000000" />}
@@ -306,8 +306,8 @@ const styles = StyleSheet.create({
     backButton: { position: 'absolute', top: 50, left: 10, flexDirection: 'row', alignItems: 'center', zIndex: 10 },
     backText: { fontSize: 16, fontFamily: 'InclusiveSans-Regular', color: '#000', marginLeft: -10 },
     scrollContent: { flexGrow: 1, justifyContent: 'flex-end', paddingTop: 80 },
-    illustrationContainer: { alignItems: 'center', marginBottom: -30, zIndex: 1 },
-    illustration: { width: width * 1, height: height * 0.3, maxHeight: 280 },
+    illustrationContainer: { alignItems: 'center', marginBottom: -20, zIndex: 1 },
+    illustration: { width: width * 1, height: height * 0.33, maxHeight: 300 },
     formSection: { backgroundColor: '#018f64', paddingHorizontal: 25, paddingTop: 20, paddingBottom: 20, width: '100%' },
     title: { color: '#000', fontSize: 24, fontFamily: 'InclusiveSans-Bold', marginBottom: 5 },
     subtitle: { color: '#000', fontSize: 14, marginBottom: 20, opacity: 0.8 },

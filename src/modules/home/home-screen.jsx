@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, useWindowDimensions, Animated, ActivityIndicator } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 
 // Tus componentes personalizados
 import { CloudHeader, QuoteCard, ProgressCard, StatItem } from '../../componentes/cards/home';
@@ -23,7 +24,7 @@ export const HomeScreen = () => {
     const t = useTranslation(); // 🗣️ Inicializar traducciones
     const theme = useTheme();
     const { colors } = theme;
-    const { user } = useAuthStore();
+    const { user, startRefreshingUser } = useAuthStore();
     const { userLevelStatus, startLoadingUserStatus } = useLevels();
     const { programs, startLoadingPrograms, isLoading } = useProgramStore();
     const { requests, startLoadingRequests } = useRequestStore();
@@ -55,6 +56,22 @@ export const HomeScreen = () => {
         console.log("datos de user store ", user)
         console.log("datos programs creo ", programs)
     }, []);
+
+
+    useFocusEffect(
+        useCallback(() => {
+            // Cargamos todo de nuevo para asegurar datos frescos
+            startLoadingRequests();
+            startLoadingUserStatus();
+
+            // Si tienes una función para volver a traer el perfil del usuario (con sus nuevos puntos)
+            if (startRefreshingUser) {
+                startRefreshingUser();
+            }
+
+            // console.log("Datos actualizados al entrar a Home");
+        }, [])
+    );
 
     // Animación de pulso continua para el FAB
     useEffect(() => {

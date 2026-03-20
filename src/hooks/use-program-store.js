@@ -84,6 +84,47 @@ export const useProgramStore = () => {
             dispatch(onLoadError('Error al eliminar el programa'));
         }
     };
+
+
+    const startJoiningProgram = async (programId) => {
+        try {
+            const config = await getAuthConfig();
+
+            // Llamamos al endpoint POST :id/join que creamos en NestJS
+            // El segundo parámetro {} es el cuerpo (body) vacío
+            const { data } = await axios.post(`${urlPrograms}/${programId}/join`, {}, config);
+
+            // Reutilizamos onUpdateProgram para que el estado global 
+            // reciba el programa con tu ID dentro del array 'participants'
+            dispatch(onUpdateProgram(data.program));
+
+            return { ok: true, message: data.message };
+
+        } catch (error) {
+            console.log('❌ Error al unirse al programa:', error.response?.data || error.message);
+            dispatch(onLoadError('No se pudo procesar tu inscripción'));
+            return { ok: false };
+        }
+    };
+
+    const startLeavingProgram = async (programId) => {
+        try {
+            const config = await getAuthConfig();
+
+            // Llamamos al endpoint DELETE :id/leave
+            const { data } = await axios.delete(`${urlPrograms}/${programId}/leave`, config);
+
+            // Actualizamos Redux con el programa actualizado (ya sin tu ID)
+            dispatch(onUpdateProgram(data.program));
+
+            return { ok: true, message: data.message };
+
+        } catch (error) {
+            console.log('❌ Error al salir del programa:', error.response?.data || error.message);
+            dispatch(onLoadError('Error al cancelar la participación'));
+            return { ok: false };
+        }
+    };
     return {
         // Propiedades
         programs,
@@ -96,5 +137,8 @@ export const useProgramStore = () => {
         startLoadingProgramByType,
         startSavingProgram,
         startDeletingProgram,
+
+        startJoiningProgram,
+        startLeavingProgram,
     };
 }
